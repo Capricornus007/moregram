@@ -36,6 +36,7 @@ struct RichPage;
 class RichMessageHtmlExport;
 class Shown;
 class TonSite;
+class TLViewer;
 
 class Instance final : public base::has_weak_ptr {
 public:
@@ -85,6 +86,8 @@ public:
 	bool showMarkdown(
 		const QString &path,
 		QVariant context = {});
+
+	void showTLViewer(int32 layer, const QString& object);
 
 	[[nodiscard]] bool hasActiveWindow(
 		not_null<Main::Session*> session) const;
@@ -241,6 +244,8 @@ private:
 	base::flat_map<QString, MarkdownBinding> _markdownBindings;
 
 	std::vector<std::unique_ptr<RichMessageHtmlExport>> _htmlExports;
+
+	std::unique_ptr<TLViewer> _tlv;
 
 	rpl::lifetime _lifetime;
 

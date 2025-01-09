@@ -112,6 +112,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "media/audio/media_audio.h"
 #include "media/player/media_player_instance.h"
 #include "spellcheck/spellcheck_types.h"
+#include "iv/iv_instance.h" 
+#include "facades.h"
 #include "apiwrap.h"
 #include "styles/style_chat.h"
 #include "styles/style_chat_helpers.h"
@@ -2077,6 +2079,28 @@ void CopyPostLink(
 	} else {
 		show->showToast(tr::lng_context_about_private_link(tr::now));
 	}
+}
+
+void ViewAsJSON(
+	not_null<Window::SessionController*> controller,
+	FullMsgId itemId) {
+	ViewAsJSON(controller->uiShow(), itemId);
+}
+
+void ViewAsJSON(
+	std::shared_ptr<Main::SessionShow> show,
+	FullMsgId itemId) {
+	const auto item = show->session().data().message(itemId);
+	if (!item) {
+		return;
+	}
+	item->history()->session().api().exportMessageAsBase64(item,
+		crl::guard(show, [=](const QString& base64) {
+			Core::App().iv().showTLViewer(MTP::details::kCurrentLayer, base64);
+		}),
+		crl::guard(show, [=] {
+			show->showToast(u"error"_q);
+		}));
 }
 
 void CopyStoryLink(

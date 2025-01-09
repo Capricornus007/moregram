@@ -172,6 +172,50 @@ void Controller::showTonSite(
 		return HttpsToTonsite(value);
 	});
 	_windowTitleText = _subtitleText.value();
+	_menuToggle->hide();
+}
+
+void Controller::showTLViewer(
+	const Webview::StorageId& storageId,
+	QString url) {
+	if (!_webview) {
+		createWebview(storageId);
+	}
+	if (_webview && _webview->widget()) {
+		_webview->navigate(url);
+		activate();
+	}
+	_url = url;
+	_subtitleText = tr::lng_context_view_as_json(tr::now);
+	_windowTitleText = _subtitleText.value();
+	_menuToggle->hide();
+}
+
+QByteArray Controller::fillInChannelValuesScript(
+		base::flat_map<QByteArray, rpl::producer<bool>> inChannelValues) {
+	auto result = QByteArray();
+	for (auto &[id, in] : inChannelValues) {
+		if (_inChannelSubscribed.emplace(id).second) {
+			std::move(in) | rpl::start_with_next([=](bool in) {
+				if (_ready) {
+					_webview->eval(toggleInChannelScript(id, in));
+				} else {
+					_inChannelChanged[id] = in;
+				}
+			}, _lifetime);
+		}
+	}
+	for (const auto &[id, in] : base::take(_inChannelChanged)) {
+		result += toggleInChannelScript(id, in);
+	}
+	return result;
+}
+
+QByteArray Controller::toggleInChannelScript(
+		const QByteArray &id,
+		bool in) const {
+	const auto value = in ? "true" : "false";
+	return "IV.toggleChannelJoined('" + id + "', " + value + ");";
 }
 
 void Controller::createWindow() {
@@ -347,7 +391,9 @@ void Controller::createWebview(const Webview::StorageId &storageId) {
 		Q_UNUSED(newWindow);
 
 		if (uri == u"about:blank"_q
-			|| QUrl(uri).host().toLower().endsWith(u".magic.org"_q)) {
+			|| uri.startsWith(u"http://desktop-app-resource/"_q)
+			|| QUrl(uri).host().toLower().endsWith(u".magic.org"_q)
+			|| uri.startsWith(Iv::kTLViewerUrl.utf16())) {
 			return true;
 		}
 		_events.fire({ .type = Event::Type::OpenLink, .url = uri });

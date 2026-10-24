@@ -9,6 +9,10 @@ on:
 jobs:
   needs-user-action:
     runs-on: ubuntu-slim
+    # fork 的 GITHUB_TOKEN 預設唯讀：no-response 要建/套 label 並關 issue。
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - uses: lee-dohm/no-response@v0.5.0
         with:

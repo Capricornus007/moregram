@@ -249,8 +249,8 @@ jobs:
           _short="${GITHUB_SHA::8}"
           _name="moregram-desktop-${_short}.zip"
           zip -qr "$_name" artifact/
-          gh release delete moregram-linux-dev --yes --cleanup-tag 2>/dev/null || true
-          gh release create moregram-linux-dev \
+          gh release delete moregram-linux-dev -R "${{ github.repository }}" --yes --cleanup-tag 2>/dev/null || true
+          gh release create moregram-linux-dev -R "${{ github.repository }}" \
             --title "moregram desktop dev (${_short})" \
             --notes "滚动构建：commit ${GITHUB_SHA}（$(date -u '+%Y-%m-%d %H:%M UTC')）。固定 tag 覆盖式更新，旧 asset 随本版删除。" \
             "$_name"

@@ -414,39 +414,6 @@ private:
 
 };
 
-class TLViewer final : public base::has_weak_ptr {
-public:
-	TLViewer(not_null<Delegate*> delegate, QString uri);
-
-	[[nodiscard]] bool active() const;
-
-	void moveTo(QString uri);
-
-	void minimize();
-
-	[[nodiscard]] rpl::producer<Controller::Event> events() const {
-		return _events.events();
-	}
-
-	[[nodiscard]] rpl::lifetime& lifetime() {
-		return _lifetime;
-	}
-
-private:
-	void createController();
-
-	void showWindowed();
-
-	const not_null<Delegate*> _delegate;
-	QString _uri;
-	std::unique_ptr<Controller> _controller;
-
-	rpl::event_stream<Controller::Event> _events;
-
-	rpl::lifetime _lifetime;
-
-};
-
 Shown::Shown(
 	not_null<Delegate*> delegate,
 	not_null<Main::Session*> session,
@@ -736,48 +703,6 @@ void TonSite::moveTo(QString uri) {
 }
 
 void TonSite::minimize() {
-	if (_controller) {
-		_controller->minimize();
-	}
-}
-
-TLViewer::TLViewer(not_null<Delegate*> delegate, QString uri)
-	: _delegate(delegate)
-	, _uri(uri) {
-	showWindowed();
-}
-
-void TLViewer::createController() {
-	Expects(!_controller);
-
-	const auto showShareBox = [=](ShareBoxDescriptor&& descriptor) {
-		return ShareBoxResult();
-		};
-	_controller = std::make_unique<Controller>(
-		_delegate,
-		std::move(showShareBox));
-
-	_controller->events(
-	) | rpl::start_to_stream(_events, _controller->lifetime());
-}
-
-void TLViewer::showWindowed() {
-	if (!_controller) {
-		createController();
-	}
-
-	_controller->showTLViewer(Storage::TonSiteStorageId(), _uri);
-}
-
-bool TLViewer::active() const {
-	return _controller && _controller->active();
-}
-
-void TLViewer::moveTo(QString uri) {
-	_controller->showTLViewer({}, uri);
-}
-
-void TLViewer::minimize() {
 	if (_controller) {
 		_controller->minimize();
 	}
@@ -1659,44 +1584,6 @@ bool Instance::showMarkdown(
 	return true;
 }
 
-void Instance::showTLViewer(int32 layer, const QString& object) {
-	if (Platform::IsMac()) {
-		// Otherwise IV is not visible under the media viewer.
-		Core::App().hideMediaView();
-	}
-	auto uri = QString("%1#m=%2&l=%3&td=1").arg(Iv::kTLViewerUrl.data()).arg(object).arg(layer);
-	if (_tlv) {
-		_tlv->moveTo(uri);
-		return;
-	}
-	_tlv = std::make_unique<TLViewer>(_delegate, uri);
-	_tlv->events() | rpl::start_with_next([=](Controller::Event event) {
-		using Type = Controller::Event::Type;
-		const auto lower = event.url.toLower();
-		const auto urlChecked = lower.startsWith("http://")
-			|| lower.startsWith("https://");
-		switch (event.type) {
-		case Type::Close:
-			_tlv = nullptr;
-			break;
-		case Type::Quit:
-			Shortcuts::Launch(Shortcuts::Command::Quit);
-			break;
-		case Type::OpenLinkExternal:
-			if (urlChecked) {
-				File::OpenUrl(event.url);
-				closeAll();
-			} 
-			break;
-		case Type::OpenPage:
-		case Type::OpenLink:
-			if (urlChecked) {
-				UrlClickHandler::Open(event.url);
-			}
-			break;
-		}
-		}, _tlv->lifetime());
-
 void Instance::requestFull(
 		not_null<Main::Session*> session,
 		const QString &id) {
@@ -1904,9 +1791,6 @@ bool Instance::closeActive() {
 	} else if (_tonSite && _tonSite->active()) {
 		destroyLater(base::take(_tonSite));
 		return true;
-	} else if (_tlv && _tlv->active()) {
-		_tlv = nullptr;
-		return true;
 	}
 	const auto key = activeMarkdownKey();
 	if (key.isEmpty()) {
@@ -1922,9 +1806,6 @@ bool Instance::minimizeActive() {
 		return true;
 	} else if (_tonSite && _tonSite->active()) {
 		_tonSite->minimize();
-		return true;
-	} else if (_tlv && _tlv->active()) {
-		_tlv->minimize();
 		return true;
 	}
 	const auto i = _markdowns.find(activeMarkdownKey());
@@ -1948,7 +1829,6 @@ void Instance::closeAll() {
 		cancelInPageRequests(_inPageRequested.front().first);
 	}
 	cancelIvRequest();
-	_tlv = nullptr;
 	closeLegacyWindows();
 	_markdownBindings.clear();
 	for (auto &[_, controller] : base::take(_markdowns)) {

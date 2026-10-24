@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #pragma once
 
 #include "base/const_string.h"
+#include "base/flat_map.h"
 #include "base/invoke_queued.h"
 #include "base/object_ptr.h"
 #include "base/unique_qptr.h"
@@ -85,6 +86,13 @@ private:
 	void createWindow();
 	void createWebview(const Webview::StorageId &storageId);
 
+	// 64Gram 的 TL viewer 附帶的頻道開關腳本（JSON viewer 頁面用）。
+	QByteArray fillInChannelValuesScript(
+		base::flat_map<QByteArray, rpl::producer<bool>> inChannelValues);
+	[[nodiscard]] QByteArray toggleInChannelScript(
+		const QByteArray &id,
+		bool in) const;
+
 	void processKey(QKeyEvent *event);
 	void updateTitleGeometry(int newWidth) const;
 
@@ -108,6 +116,8 @@ private:
 	Ui::IconButton *_forward = nullptr;
 	Ui::RpWidget *_container = nullptr;
 	std::unique_ptr<Webview::Window> _webview;
+	base::flat_map<QByteArray, rpl::producer<bool>> _inChannelSubscribed;
+	base::flat_map<QByteArray, bool> _inChannelChanged;
 	rpl::event_stream<Event> _events;
 
 	rpl::lifetime _lifetime;

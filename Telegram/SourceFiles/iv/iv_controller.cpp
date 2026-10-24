@@ -172,7 +172,6 @@ void Controller::showTonSite(
 		return HttpsToTonsite(value);
 	});
 	_windowTitleText = _subtitleText.value();
-	_menuToggle->hide();
 }
 
 void Controller::showTLViewer(
@@ -186,9 +185,10 @@ void Controller::showTLViewer(
 		activate();
 	}
 	_url = url;
-	_subtitleText = tr::lng_context_view_as_json(tr::now);
+	// 64Gram 原本用 tr::lng_context_view_as_json；moregram 的語系沒有該鍵，
+	// 直接用純文字標題（JSON 檢視器不屬於既有 IV 語意）。
+	_subtitleText = u"JSON"_q;
 	_windowTitleText = _subtitleText.value();
-	_menuToggle->hide();
 }
 
 QByteArray Controller::fillInChannelValuesScript(

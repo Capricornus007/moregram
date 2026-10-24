@@ -50,6 +50,9 @@ jobs:
   linux:
     name: Rocky Linux 8
     runs-on: ${{ (github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/nightly') && 'depot-ubuntu-latest-16' || 'ubuntu-latest' }}
+    outputs:
+      # GITHUB_ENV 的動態值進不了 outputs 的 env context，走 step output 轉一手
+      artifact_name: ${{ steps.artifact_name.outputs.name }}
 
     strategy:
       matrix:
@@ -214,3 +217,41 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: out/Debug/artifact/
           retention-days: 1
+      - name: Expose artifact name to job outputs.
+        id: artifact_name
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: echo "name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
+
+  # 滚动 release（自建 feed 的 moregram-desktop-bin 取件点）：
+  # actions artifact 只留 1 天、下载还要 token，feed 的 PKGBUILD 够不着；
+  # 这里把构建产物发成固定 tag 的 rolling release（asset 覆盖式更新），
+  # PKGBUILD 的 pkgver 从 release 的 asset 名（带 commit 短 sha）读版本。
+  release:
+    name: Publish rolling release.
+    needs: linux
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    # fork 的 GITHUB_TOKEN 預設唯讀：gh release create／delete 需要 contents:write，
+    # 否則會在第一步 403（與 waiting-for-answer 的 label 同一個坑）。
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifact.
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.linux.outputs.artifact_name }}
+          path: artifact/
+      - name: Pack and publish.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          _short="${GITHUB_SHA::8}"
+          _name="moregram-desktop-${_short}.zip"
+          zip -qr "$_name" artifact/
+          gh release delete moregram-linux-dev --yes --cleanup-tag 2>/dev/null || true
+          gh release create moregram-linux-dev \
+            --title "moregram desktop dev (${_short})" \
+            --notes "滚动构建：commit ${GITHUB_SHA}（$(date -u '+%Y-%m-%d %H:%M UTC')）。固定 tag 覆盖式更新，旧 asset 随本版删除。" \
+            "$_name"
+

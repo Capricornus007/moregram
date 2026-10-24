@@ -43,6 +43,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/power_saving.h"
 #include "ui/vertical_list.h"
 #include "window/window_session_controller.h"
+#include "styles/style_boxes.h"
+#include "styles/style_chat_helpers.h"
+#include "styles/style_info.h" // inviteLinkListItem.
+#include "styles/style_layers.h"
+#include "GoogleAppTranslator.h"
 
 #include "styles/style_boxes.h"
 #include "styles/style_iv.h"

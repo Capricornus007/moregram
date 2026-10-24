@@ -430,6 +430,9 @@ PRIVATE
     boxes/translate_box.h
     boxes/unconfirmed_auth_denied_box.cpp
     boxes/unconfirmed_auth_denied_box.h
+    boxes/BaseTranslator.h
+    boxes/GoogleAppTranslator.h
+    boxes/GoogleAppTranslator.cpp
     boxes/url_auth_box.cpp
     boxes/url_auth_box.h
     boxes/username_box.cpp

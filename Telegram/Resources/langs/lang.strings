@@ -5607,6 +5607,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_context_save_custom_sound" = "Save for Notifications";
 "lng_context_translate" = "Translate";
 "lng_context_translate_selected" = "Translate Selected Text";
+"lng_context_view_as_json" = "View As JSON";
 "lng_context_read_hidden" = "read";
 "lng_context_read_show" = "show when";
 "lng_context_edit_shortcut" = "Edit Shortcut";
@@ -9413,6 +9414,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_bitrate_controller_192k" = "192 Kbps";
 "lng_bitrate_controller_256k" = "256 Kbps";
 "lng_bitrate_controller_320k" = "320 Kbps";
+
 
 "lng_chat_restriction_reason" = "Restriction Reason";
 "lng_copy_restriction_reason" = "Copy Restriction Reason";

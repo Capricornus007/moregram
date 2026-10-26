@@ -308,6 +308,8 @@ PRIVATE
     boxes/peers/verify_peers_box.h
     boxes/about_box.cpp
     boxes/about_box.h
+    boxes/enhanced_options_box.cpp
+    boxes/enhanced_options_box.h
     boxes/about_sponsored_box.cpp
     boxes/about_sponsored_box.h
     boxes/abstract_box.cpp
@@ -602,6 +604,8 @@ PRIVATE
     core/external_control.h
     core/file_utilities.cpp
     core/file_utilities.h
+    core/enhanced_settings.cpp
+    core/enhanced_settings.h
     core/launcher.cpp
     core/launcher.h
     core/local_url_handlers.cpp
@@ -1945,6 +1949,8 @@ PRIVATE
     settings/sections/settings_credits.h
     settings/settings_credits_graphics.cpp
     settings/settings_credits_graphics.h
+    settings/settings_enhanced.cpp
+    settings/settings_enhanced.h
     settings/settings_experimental.cpp
     settings/settings_experimental.h
     settings/sections/settings_folders.cpp

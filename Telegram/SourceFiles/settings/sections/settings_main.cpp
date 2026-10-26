@@ -54,10 +54,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/sections/settings_chat.h"
 #include "settings/settings_codes.h"
 #include "settings/settings_faq_suggestions.h"
+#include "settings.h"
 #include "settings/sections/settings_credits.h"
 #include "settings/sections/settings_folders.h"
 #include "settings/sections/settings_information.h"
 #include "settings/sections/settings_notifications.h"
+#include "settings/settings_enhanced.h"
 #include "settings/settings_power_saving.h"
 #include "settings/sections/settings_premium.h"
 #include "settings/sections/settings_privacy_security.h"
@@ -322,7 +324,9 @@ void Cover::refreshNameGeometry(int newWidth) {
 }
 
 void Cover::updatePhoneText() {
-	if (_user->session().settings().phoneNumberHidden()) {
+	if (!GetEnhancedBool("show_phone_number")) {
+		_phone->setText(tr::lng_info_mobile_hidden(tr::now));
+	} else if (_user->session().settings().phoneNumberHidden()) {
 		_phone->setMarkedText(
 			Ui::Text::Wrapped({ _phoneText }, EntityType::Spoiler));
 	} else {
@@ -444,6 +448,13 @@ void BuildSectionButtons(SectionBuilder &builder) {
 		.targetSection = CallsId(),
 		.icon = { &st::menuIconUnmute },
 		.keywords = { u"sessions"_q, u"calls"_q },
+	});
+
+	builder.addSectionButton({
+		.title = tr::lng_settings_enhanced(),
+		.targetSection = Enhanced::Id(),
+		.icon = { &st::menuIconManage },
+		.keywords = { u"enhanced"_q },
 	});
 
 	builder.addButton({

@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/sections/settings_information.h"
 
 #include "settings/sections/settings_main.h"
+#include "settings.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
 #include "settings/business/settings_chatbots.h"
@@ -590,22 +591,24 @@ void SetupRows(
 			Ui::MakeInformBox(tr::lng_change_phone_error()));
 		controller->window().activate();
 	};
-	const auto phoneButton = AddRow(
-		container,
-		tr::lng_settings_phone_label(),
-		Info::Profile::PhoneWithSpoilerValue(
-			self,
-			Info::Profile::PhoneValue(self)),
-		tr::lng_profile_copy_phone(tr::now),
-		showChangePhone,
-		{ &st::menuIconPhone },
-		true,
-		[=](not_null<Ui::PopupMenu*> menu) {
-			Info::Profile::AddPhoneSpoilerMenu(menu, self);
-		},
-		&st::menuIconCopy);
-	if (targets) {
-		targets->phone = phoneButton;
+	if (GetEnhancedBool("show_phone_number")) {
+		const auto phoneButton = AddRow(
+			container,
+			tr::lng_settings_phone_label(),
+			Info::Profile::PhoneWithSpoilerValue(
+				self,
+				Info::Profile::PhoneValue(self)),
+			tr::lng_profile_copy_phone(tr::now),
+			showChangePhone,
+			{ &st::menuIconPhone },
+			true,
+			[=](not_null<Ui::PopupMenu*> menu) {
+				Info::Profile::AddPhoneSpoilerMenu(menu, self);
+			},
+			&st::menuIconCopy);
+		if (targets) {
+			targets->phone = phoneButton;
+		}
 	}
 
 	auto username = Info::Profile::UsernameValue(self);

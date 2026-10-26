@@ -71,7 +71,7 @@ namespace EnhancedSettings {
 			return true;
 		}
 
-		bool ReadObjectOption(QJsonObject obj, QString key, std::function<void(QJsonObject)> callback) {
+[[maybe_unused]] bool ReadObjectOption(QJsonObject obj, QString key, std::function<void(QJsonObject)> callback) {
 			auto readResult = false;
 			auto readValueResult = ReadOption(obj, key, [&](QJsonValue v) {
 				if (v.isObject()) {
@@ -82,7 +82,7 @@ namespace EnhancedSettings {
 			return (readValueResult && readResult);
 		}
 
-		bool ReadArrayOption(QJsonObject obj, QString key, std::function<void(QJsonArray)> callback) {
+[[maybe_unused]] bool ReadArrayOption(QJsonObject obj, QString key, std::function<void(QJsonArray)> callback) {
 			auto readResult = false;
 			auto readValueResult = ReadOption(obj, key, [&](QJsonValue v) {
 				if (v.isArray()) {
@@ -104,7 +104,7 @@ namespace EnhancedSettings {
 			return (readValueResult && readResult);
 		}
 
-		bool ReadIntOption(QJsonObject obj, QString key, std::function<void(int)> callback) {
+[[maybe_unused]] bool ReadIntOption(QJsonObject obj, QString key, std::function<void(int)> callback) {
 			auto readResult = false;
 			auto readValueResult = ReadOption(obj, key, [&](QJsonValue v) {
 				if (v.isDouble()) {

@@ -9383,5 +9383,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_translate_to_tc" = "使用正體中文翻譯訊息";
 "lng_settings_voice_chat" = "Voice Chat";
 "lng_show_emoji_button_as_text_desc" = "Note: If you can't see an emoji button, please turn on this option.";
+"lng_context_view_as_json" = "View As JSON";
 
 // Keys finished

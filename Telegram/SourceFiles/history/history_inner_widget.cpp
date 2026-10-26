@@ -90,6 +90,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_app_config.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
+#include "settings.h"
 #include "mainwidget.h"
 #include "iv/editor/iv_editor_session.h"
 #include "iv/iv_rich_message_html_export.h"
@@ -3533,6 +3534,11 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 				}, &st::menuIconBlock);
 			}
 		}
+		if (GetEnhancedBool("show_json") && item && item->id > 0 && isUponSelected != 2 && isUponSelected != -2) {
+			_menu->addAction(tr::lng_context_view_as_json(tr::now), [=] {
+				HistoryView::ViewAsJSON(controller, itemId);
+			}, &st::menuIcon64gJson);
+		}
 	} else { // maybe cursor on some text history item?
 		const auto albumPartItem = _dragStateItem;
 		const auto item = [&]() -> HistoryItem* {
@@ -3840,6 +3846,11 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			}
 		} else if (Element::Moused()) {
 			addSelectMessageAction(Element::Moused()->data());
+		}
+		if (GetEnhancedBool("show_json") && item && item->id > 0 && isUponSelected != 2 && isUponSelected != -2) {
+			_menu->addAction(tr::lng_context_view_as_json(tr::now), [=] {
+				HistoryView::ViewAsJSON(controller, itemId);
+			}, &st::menuIcon64gJson);
 		}
 	}
 

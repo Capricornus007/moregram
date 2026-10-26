@@ -183,6 +183,10 @@ public:
 		Fn<void()> callback);
 
 	void requestMessageData(PeerData *peer, MsgId msgId, Fn<void()> done);
+	void exportMessageAsBase64(
+		not_null<HistoryItem*> item,
+		Fn<void(const QString&)> done,
+		Fn<void()> fail);
 	QString exportDirectMessageLink(
 		not_null<HistoryItem*> item,
 		bool inRepliesContext,

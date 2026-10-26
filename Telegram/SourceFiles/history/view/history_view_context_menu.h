@@ -81,6 +81,12 @@ void CopyPostLink(
 	FullMsgId itemId,
 	Context context,
 	std::optional<TimeId> videoTimestamp = {});
+void ViewAsJSON(
+	not_null<Window::SessionController*> controller,
+	FullMsgId itemId);
+void ViewAsJSON(
+	std::shared_ptr<Main::SessionShow> show,
+	FullMsgId itemId);
 void CopyStoryLink(
 	std::shared_ptr<Main::SessionShow> show,
 	FullStoryId storyId);

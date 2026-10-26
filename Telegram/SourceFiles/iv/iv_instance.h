@@ -36,6 +36,7 @@ struct RichPage;
 class RichMessageHtmlExport;
 class Shown;
 class TonSite;
+class TLViewer;
 
 class Instance final : public base::has_weak_ptr {
 public:
@@ -69,6 +70,8 @@ public:
 	void showTonSite(
 		const QString &uri,
 		QVariant context = {});
+
+	void showTLViewer(int32 layer, const QString& object);
 
 	void showRichMessage(
 		not_null<Window::SessionController*> controller,
@@ -229,6 +232,7 @@ private:
 		base::flat_set<mtpRequestId>> _inPageRequested;
 
 	std::unique_ptr<TonSite> _tonSite;
+	std::unique_ptr<TLViewer> _tlv;
 
 	struct MarkdownBinding {
 		Main::Session *session = nullptr;

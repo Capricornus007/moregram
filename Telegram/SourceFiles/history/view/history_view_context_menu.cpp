@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_context_menu.h"
+#include "settings.h"
 
 #include "api/api_attached_stickers.h"
 #include "api/api_editing.h"
@@ -815,6 +816,29 @@ bool AddRescheduleAction(
 		}, box->lifetime());
 	}, &st::menuIconReschedule);
 	return true;
+}
+
+void AddViewJSONAction(
+		not_null<Ui::PopupMenu*> menu,
+		const ContextMenuRequest& request,
+		not_null<ListWidget*> list) {
+	if (!GetEnhancedBool("show_json"))
+	{
+		return;
+	}
+	const auto item = request.item;
+	if (item == nullptr)
+	{
+		return;
+	}
+	if (!request.selectedItems.empty()) {
+		return;
+	}
+	const auto controller = list->controller();
+	const auto itemId = item->fullId();
+	menu->addAction(tr::lng_context_view_as_json(tr::now), [=] {
+		HistoryView::ViewAsJSON(controller, itemId);
+	}, &st::menuIcon64gJson);
 }
 
 bool AddReplyToMessageAction(
@@ -1787,6 +1811,7 @@ void FillContextMenuItems(
 	const auto hasWhoReactedItem = item
 		&& Api::WhoReactedExists(item, Api::WhoReactedList::All);
 
+	AddViewJSONAction(result, request, list);
 	AddReplyToMessageAction(result, request, list);
 	if (item) {
 		const auto media = item->media();
@@ -2077,6 +2102,28 @@ void CopyPostLink(
 	} else {
 		show->showToast(tr::lng_context_about_private_link(tr::now));
 	}
+}
+
+void ViewAsJSON(
+		not_null<Window::SessionController*> controller,
+		FullMsgId itemId) {
+	ViewAsJSON(controller->uiShow(), itemId);
+}
+
+void ViewAsJSON(
+		std::shared_ptr<Main::SessionShow> show,
+		FullMsgId itemId) {
+	const auto item = show->session().data().message(itemId);
+	if (!item) {
+		return;
+	}
+	item->history()->session().api().exportMessageAsBase64(item,
+		crl::guard(show, [=](const QString& base64) {
+			Core::App().iv().showTLViewer(MTP::details::kCurrentLayer, base64);
+		}),
+		crl::guard(show, [=] {
+			show->showToast(u"error"_q);
+		}));
 }
 
 void CopyStoryLink(

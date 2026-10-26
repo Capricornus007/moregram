@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_context_menu.h"
+#include "settings.h"
 
 #include "api/api_attached_stickers.h"
 #include "api/api_common.h"
@@ -2079,6 +2080,7 @@ void FillContextMenuItems(
 		AddWhoReactedAction(result, list, item, list->controller());
 	}
 
+	AddViewJSONAction(result, request, list);
 	AddReplyToMessageAction(result, request, list);
 	if (item) {
 		const auto media = item->media();

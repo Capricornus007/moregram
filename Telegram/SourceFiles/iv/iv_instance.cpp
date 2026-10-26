@@ -1314,7 +1314,7 @@ void Instance::showTLViewer(int32 layer, const QString& object) {
 			if (urlChecked) {
 				File::OpenUrl(event.url);
 				closeAll();
-			} 
+			}
 			break;
 		case Type::OpenPage:
 		case Type::OpenLink:

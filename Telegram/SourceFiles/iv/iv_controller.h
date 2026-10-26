@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "base/const_string.h"
 #include "iv/iv_delegate.h"
+#include "base/const_string.h"
 #include "ui/text/text.h"
 #include "webview/webview_common.h"
 
@@ -54,6 +55,7 @@ public:
 
 	[[nodiscard]] static bool IsGoodTonSiteUrl(const QString &uri);
 	void showTonSite(const Webview::StorageId &storageId, QString uri);
+	void showTLViewer(const Webview::StorageId &storageId, QString uri);
 
 	void showTLViewer(const Webview::StorageId& storageId, QString uri);
 

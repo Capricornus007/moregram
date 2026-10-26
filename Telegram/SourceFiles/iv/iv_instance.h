@@ -232,6 +232,7 @@ private:
 		base::flat_set<mtpRequestId>> _inPageRequested;
 
 	std::unique_ptr<TonSite> _tonSite;
+	std::unique_ptr<TLViewer> _tlv;
 
 	std::unique_ptr<TLViewer> _tlv;
 	struct MarkdownBinding {

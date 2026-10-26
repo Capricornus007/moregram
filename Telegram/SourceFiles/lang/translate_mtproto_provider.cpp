@@ -13,6 +13,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_session.h"
 #include "main/main_session.h"
 #include "mtproto/sender.h"
+#include "settings.h"
 #include "spellcheck/platform/platform_language.h"
 #include "ui/text/text_utilities.h"
 
@@ -50,7 +51,7 @@ public:
 			const LanguageId &to,
 			Fn<void(int, TranslateProviderResult)> doneOne,
 			Fn<void()> doneAll) override {
-		// using Flag = MTPmessages_TranslateText::Flag;  // 64Gram 原樣註釋——當前 MTP schema 無此 Flag 生成
+		// using Flag = MTPmessages_TranslateText::Flag;
 		if (requests.empty()) {
 			doneAll();
 			return;
@@ -111,23 +112,28 @@ public:
 			//}).fail([=](const MTP::Error &) {
 			//	failAll();
 			//}).send();
-			// moregram 沒有 64Gram 的 translate_to_tc 設定；目標語言一律照請求。
-			try {
-				auto result = GoogleAppTranslator::instance()->translate(
-					requests[0].text.text,
-					"auto",
-					to.twoLetterCode());
-				auto text = QVector<MTPTextWithEntities>();
-				text.push_back(MTP_textWithEntities(
-					MTP_string(result.translation),
-					Api::EntitiesToMTP(
-						_session,
-						TextWithEntities().entities,
-						Api::ConvertOption::SkipLocal)));
-				doneFromList(text);
-			} catch (...) {
-				failAll();
-			}
+
+			crl::async([=] {
+				try {
+					auto toTC = GetEnhancedBool("translate_to_tc"); // Override translate setting :)
+					auto result = GoogleAppTranslator::instance()->translate(requests[0].text.text, "auto", toTC ? "zh-Hant" : to.twoLetterCode());
+					crl::on_main([=] {
+						auto text = QVector<MTPTextWithEntities>();
+						text.push_back(MTP_textWithEntities(
+							MTP_string(result.translation),
+							Api::EntitiesToMTP(
+								_session,
+								TextWithEntities().entities,
+								Api::ConvertOption::SkipLocal)));
+						doneFromList(text);
+					});
+				}
+				catch (...) {
+					crl::on_main([=] {
+						failAll();
+					});
+				}
+			});
 			return;
 		}
 
@@ -167,24 +173,27 @@ public:
 		//	failAll();
 		//}).send();
 
-		// moregram 沒有 64Gram 的 translate_to_tc 設定；目標語言一律照請求。
-		try {
-			auto result = GoogleAppTranslator::instance()->translate(
-				requests[0].text.text,
-				"auto",
-				to.twoLetterCode());
-			auto text = QVector<MTPTextWithEntities>();
-			text.push_back(MTP_textWithEntities(
-				MTP_string(result.translation),
-				Api::EntitiesToMTP(
-				_session,
-				TextWithEntities().entities,
-				Api::ConvertOption::SkipLocal)));
-			doneFromList(text);
-		}
-		catch (...) {
-			failAll();
-		}
+		crl::async([=] {
+			try {
+				auto toTC = GetEnhancedBool("translate_to_tc"); // Override translate setting :)
+				auto result = GoogleAppTranslator::instance()->translate(requests[0].text.text, "auto", toTC ? "zh-Hant" : to.twoLetterCode());
+				crl::on_main([=] {
+					auto text = QVector<MTPTextWithEntities>();
+					text.push_back(MTP_textWithEntities(
+						MTP_string(result.translation),
+						Api::EntitiesToMTP(
+							_session,
+							TextWithEntities().entities,
+							Api::ConvertOption::SkipLocal)));
+					doneFromList(text);
+				});
+			}
+			catch (...) {
+				crl::on_main([=] {
+					failAll();
+				});
+			}
+		});
 	}
 
 private:

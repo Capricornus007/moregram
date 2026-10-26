@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "dialogs/dialogs_inner_widget.h" // kOptionCtrlClickChatNewWindow.
 #include "settings/sections/settings_main.h"
+#include "settings.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
 #include "settings/business/settings_chatbots.h"

@@ -662,8 +662,8 @@ public:
 		const SectionShow &params = SectionShow::Way::ClearStack);
 
 	void toggleFiltersMenu(bool enabled);
-	[[nodiscard]] rpl::producer<> filtersMenuChanged() const;
 	void reloadFiltersMenu();
+	[[nodiscard]] rpl::producer<> filtersMenuChanged() const;
 
 	[[nodiscard]] auto defaultChatTheme() const
 	-> const std::shared_ptr<Ui::ChatTheme> & {

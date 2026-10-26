@@ -54,6 +54,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/sections/settings_chat.h"
 #include "settings/settings_codes.h"
 #include "settings/settings_faq_suggestions.h"
+#include "settings.h"
 #include "settings/sections/settings_credits.h"
 #include "settings/sections/settings_folders.h"
 #include "settings/sections/settings_information.h"
@@ -327,7 +328,9 @@ void Cover::refreshNameGeometry(int newWidth) {
 }
 
 void Cover::updatePhoneText() {
-	if (_user->session().settings().phoneNumberHidden()) {
+	if (!GetEnhancedBool("show_phone_number")) {
+		_phone->setText(tr::lng_info_mobile_hidden(tr::now));
+	} else if (_user->session().settings().phoneNumberHidden()) {
 		_phone->setMarkedText(
 			Ui::Text::Wrapped({ _phoneText }, EntityType::Spoiler));
 	} else {

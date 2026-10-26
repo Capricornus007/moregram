@@ -13,6 +13,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_session.h"
 #include "main/main_session.h"
 #include "mtproto/sender.h"
+#include "settings.h"
 #include "spellcheck/platform/platform_language.h"
 #include "ui/text/text_utilities.h"
 

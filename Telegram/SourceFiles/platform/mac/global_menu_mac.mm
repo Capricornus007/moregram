@@ -160,7 +160,7 @@ void SendKeySequence(
 		objectForInfoDictionaryKey:@"CFBundleName"];
 	return [name isKindOfClass:[NSString class]]
 		? QString::fromNSString(name)
-		: u"Telegram"_q;
+		: u"moregram"_q;
 }
 
 void ForceDisabled(QAction *action, bool disabled) {
@@ -660,7 +660,7 @@ void Manager::buildWindowMenu(QMenu *window) {
 }
 
 void Manager::buildMenu() {
-	buildAppleMenu(_menuBar->addMenu(u"Telegram"_q));
+	buildAppleMenu(_menuBar->addMenu(u"moregram"_q));
 	_file = _menuBar->addMenu(u"File"_q);
 	buildFileMenu(_file);
 	_edit = _menuBar->addMenu(u"Edit"_q);

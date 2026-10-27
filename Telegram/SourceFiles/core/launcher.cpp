@@ -343,13 +343,9 @@ void Launcher::init() {
 	prepareSettings();
 	initQtMessageLogging();
 
-	// 這個名字在 Linux 上同時決定兩件事：
-	// 1) X11 的 WM_CLASS（lib/xdg 的 .desktop 裡 StartupWMClass 必須與之一致）；
-	// 2) QStandardPaths::AppLocalDataLocation，也就是資料目錄
-	//    ~/.local/share/TelegramDesktop（見 platform/linux/specific_linux.cpp 的
-	//    psAppDataPath()）。改名會讓既有登入資料看起來像消失，所以品牌改名只動
-	//    version.h 的 AppName/AppFile，這一行動用戶決定後再說。
-	QApplication::setApplicationName(u"TelegramDesktop"_q);
+	// Linux 上這名字同時決定 X11 的 WM_CLASS（lib/xdg 的 .desktop 裡 StartupWMClass
+	// 必須與之一致）與資料目錄 ~/.local/share/moregram（psAppDataPath()）。
+	QApplication::setApplicationName(u"moregram"_q);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	// fallback session management is useless for tdesktop since it doesn't have

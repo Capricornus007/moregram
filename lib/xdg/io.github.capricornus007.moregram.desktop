@@ -6,10 +6,8 @@ Exec=Telegram -- %U
 Icon=io.github.capricornus007.moregram
 Terminal=false
 # StartupWMClass 必須等於 Qt 的 WM_CLASS，後者來自 core/launcher.cpp 的
-# QApplication::setApplicationName("TelegramDesktop")；改這一欄要連同 setApplicationName
-# 一起改，而後者在 Linux 上也決定資料目錄 ~/.local/share/TelegramDesktop（遷移風險），
-# 因此暫維持原值。
-StartupWMClass=TelegramDesktop
+# QApplication::setApplicationName("moregram")；兩欄位要一起改。
+StartupWMClass=moregram
 Type=Application
 Categories=Chat;Network;InstantMessaging;Qt;
 MimeType=x-scheme-handler/tg;x-scheme-handler/tonsite;x-scheme-handler/ton;

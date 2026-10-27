@@ -38,6 +38,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/reactions/history_view_reactions_list.h"
 #include "info/info_memento.h"
 #include "iv/editor/iv_editor_session.h"
+#include "iv/iv_instance.h"
 #include "iv/iv_rich_message_html_export.h"
 #include "ui/effects/ripple_animation.h"
 #include "ui/widgets/popup_menu.h"

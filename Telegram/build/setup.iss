@@ -1,9 +1,9 @@
-#define MyAppShortName "64Gram"
-#define MyAppName "64Gram Desktop"
-#define MyAppPublisher "64Gram"
-#define MyAppURL "https://github.com/TDesktop-x64"
+#define MyAppShortName "moregram"
+#define MyAppName "moregram"
+#define MyAppPublisher "Capricornus007"
+#define MyAppURL "https://github.com/Capricornus007/moregram"
 #define MyAppExeName "Telegram.exe"
-#define MyAppId "9DB6C981-7FD2-41B5-AEF2-20C933FD3F21"
+#define MyAppId "914E9916-3DE1-4E74-9F8A-8729B91B1714"
 #define CurrentYear GetDateTimeString('yyyy','','')
 
 [Setup]
@@ -34,14 +34,15 @@ CloseApplications=force
 DisableDirPage=no
 DisableProgramGroupPage=no
 WizardStyle=modern
+SignTool=sha256
 
 #ifndef MyOutputBaseFilename
   #if MyBuildTarget == "winarm"
-    #define MyOutputBaseFilename "64Gram-arm64." + MyAppVersionFull
+    #define MyOutputBaseFilename "tsetup-arm64." + MyAppVersionFull
   #elif MyBuildTarget == "win64"
-    #define MyOutputBaseFilename "64Gram-x64." + MyAppVersionFull
+    #define MyOutputBaseFilename "tsetup-x64." + MyAppVersionFull
   #else
-    #define MyOutputBaseFilename "64Gram." + MyAppVersionFull
+    #define MyOutputBaseFilename "tsetup." + MyAppVersionFull
   #endif
 #endif
 OutputBaseFilename={#MyOutputBaseFilename}

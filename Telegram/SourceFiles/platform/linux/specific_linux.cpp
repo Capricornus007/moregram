@@ -233,7 +233,7 @@ bool GenerateDesktopFile(
 	DEBUG_LOG(("App Info: placing .desktop file to %1").arg(targetPath));
 	if (!QDir(targetPath).exists()) QDir().mkpath(targetPath);
 
-	const auto sourceFile = u":/misc/io.github.tdesktop_x64.TDesktop.desktop"_q;
+	const auto sourceFile = u":/misc/io.github.capricornus007.moregram.desktop"_q;
 	const auto targetFile = targetPath
 		+ QGuiApplication::desktopFileName()
 		+ u".desktop"_q;
@@ -363,25 +363,29 @@ bool GenerateDesktopFile(
 			appimagePath.size(),
 			md5Hash);
 
-		QFile::remove(u"%1appimagekit_%2.desktop"_q.arg(
+		QFile::remove(u"%1appimagekit_%2-%3.desktop"_q.arg(
 			targetPath,
+			md5Hash,
 			AppName.utf16().replace(' ', '_')));
 
 		const auto d = QFile::encodeName(QDir(cWorkingDir()).absolutePath());
 		hashMd5Hex(d.constData(), d.size(), md5Hash);
 
 		if (!Core::Launcher::Instance().customWorkingDir()) {
-			QFile::remove(u"%1io.github.tdesktop_x64.TDesktop._%2.desktop"_q.arg(
-				targetPath,
-				md5Hash));
+			QFile::remove(
+				u"%1io.github.capricornus007.moregram._%2.desktop"_q.arg(
+					targetPath,
+					md5Hash));
 
 			const auto exePath = QFile::encodeName(
 				cExeDir() + cExeName());
 			hashMd5Hex(exePath.constData(), exePath.size(), md5Hash);
 		}
 
-		QFile::remove(u"%1io.github.tdesktop_x64.TDesktop.desktop"_q.arg(
-			targetPath));
+		QFile::remove(
+			u"%1io.github.capricornus007.moregram.%2.desktop"_q.arg(
+				targetPath,
+				md5Hash));
 	}
 
 	return true;
@@ -438,9 +442,10 @@ bool GenerateServiceFile(bool silent = false) {
 		const auto d = QFile::encodeName(QDir(cWorkingDir()).absolutePath());
 		hashMd5Hex(d.constData(), d.size(), md5Hash);
 
-		QFile::remove(u"%1io.github.tdesktop_x64.TDesktop._%2.service"_q.arg(
-			targetPath,
-			md5Hash));
+		QFile::remove(
+			u"%1io.github.capricornus007.moregram._%2.service"_q.arg(
+				targetPath,
+				md5Hash));
 	}
 
 	XdgDBus::DBusProxy::new_for_bus(
@@ -735,12 +740,12 @@ void start() {
 				+ cExeName();
 		}
 
-		//if (!Core::UpdaterDisabled()) {
-		//	return u"org.telegram.desktop._%1"_q.arg(
-		//		Core::Launcher::Instance().instanceHash().constData());
-		//}
+		if (!Core::UpdaterDisabled()) {
+			return u"io.github.capricornus007.moregram._%1"_q.arg(
+				Core::Launcher::Instance().instanceHash().constData());
+		}
 
-		return u"io.github.tdesktop_x64.TDesktop"_q;
+		return u"io.github.capricornus007.moregram"_q;
 	}());
 
 	LOG(("App ID: %1").arg(QGuiApplication::desktopFileName()));

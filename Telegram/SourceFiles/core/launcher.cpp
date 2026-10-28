@@ -343,7 +343,9 @@ void Launcher::init() {
 	prepareSettings();
 	initQtMessageLogging();
 
-	QApplication::setApplicationName(u"64Gram"_q);
+	// Linux 上這名字同時決定 X11 的 WM_CLASS（lib/xdg 的 .desktop 裡 StartupWMClass
+	// 必須與之一致）與資料目錄 ~/.local/share/moregram（psAppDataPath()）。
+	QApplication::setApplicationName(u"moregram"_q);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	// fallback session management is useless for tdesktop since it doesn't have

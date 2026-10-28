@@ -43,6 +43,9 @@ constexpr auto kDictExtensions = { "dic", "aff" };
 
 constexpr auto kExceptions = {
 	AppFile,
+	// AppFile 在 moregram 裡是品牌名，不再是 "Telegram"；但使用者仍會在對話中
+	// 打到 Telegram 這個詞，所以把它留在拼字白名單裡，避免改名造成誤判。
+	"Telegram"_cs,
 	"\xd0\xa2\xd0\xb5\xd0\xbb\xd0\xb5\xd0\xb3\xd1\x80\xd0\xb0\xd0\xbc"_cs,
 };
 

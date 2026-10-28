@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -80,7 +80,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
-#include <core/enhanced_settings.h>
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
@@ -389,8 +388,8 @@ MainMenu::MainMenu(
 	parentResized();
 
 	_telegram->setMarkedText(tr::link(
-		u"64Gram Desktop"_q,
-		u"https://github.com/TDesktop-x64/tdesktop"_q));
+		u"moregram"_q,
+		u"https://github.com/Capricornus007/moregram"_q));
 	_telegram->setLinksTrusted();
 	// The canary version is too long for the "Version {version}" form.
 	_version->setMarkedText(
@@ -696,15 +695,6 @@ void MainMenu::setupMenu() {
 		});
 
 		AddMyChannelsBox(addAction(
-			tr::lng_create_supergroup_title(),
-			{ &st::menuIconGroups }
-		), controller, true)->addClickHandler([=](Qt::MouseButton which) {
-			if (which == Qt::LeftButton) {
-				controller->showNewSupergroup();
-			}
-		});
-
-		AddMyChannelsBox(addAction(
 			tr::lng_create_channel_title(),
 			{ &st::menuIconChannel }
 		), controller, false)->addClickHandler([=](Qt::MouseButton which) {
@@ -715,7 +705,7 @@ void MainMenu::setupMenu() {
 
 		addAction(
 			tr::lng_menu_contacts(),
-			{ &st::menuIconProfile }
+			{ &st::menuIconUserShow }
 		)->setClickedCallback([=] {
 			controller->show(PrepareContactsBox(controller));
 		});
@@ -813,32 +803,6 @@ void MainMenu::setupMenu() {
 			&_controller->window(),
 			toggle);
 	}, _nightThemeToggle->lifetime());
-
-	_showPhoneToggle = addAction(
-		tr::lng_settings_show_phone_number(),
-		{ &st::menuIconPhone }
-	)->toggleOn(rpl::single(GetEnhancedBool("show_phone_number")));
-
-	_showPhoneToggle->toggledChanges(
-	) | rpl::filter([=](bool showPhone) {
-		return (showPhone != GetEnhancedBool("show_phone_number"));
-	}) | rpl::on_next([=](bool showPhone) {
-		SetEnhancedValue("show_phone_number", !GetEnhancedBool("show_phone_number"));
-		EnhancedSettings::Write();
-	}, _showPhoneToggle->lifetime());
-
-	_screenshotToggle = addAction(
-		tr::lng_settings_screen_shot_mode(),
-		{ &st::menuIconLock }
-	)->toggleOn(rpl::single(GetEnhancedBool("screenshot_mode")));
-
-	_screenshotToggle->toggledChanges(
-	) | rpl::filter([=](bool screenShotMode) {
-		return (screenShotMode != GetEnhancedBool("screenshot_mode"));
-	}) | rpl::on_next([=](bool screenShotMode) {
-		SetEnhancedValue("screenshot_mode", !GetEnhancedBool("screenshot_mode"));
-		EnhancedSettings::Write();
-	}, lifetime());
 
 	Core::App().settings().systemDarkModeValue(
 	) | rpl::on_next([=](std::optional<bool> darkMode) {

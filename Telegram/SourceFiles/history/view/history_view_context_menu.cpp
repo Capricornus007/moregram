@@ -2122,6 +2122,7 @@ void FillContextMenuItems(
 			: tr::lng_context_copy_selected_items(tr::now);
 		result->addAction(text, [=] {
 			list->copySelectedText();
+			list->clearSelected();
 		}, &st::menuIconCopy);
 	}
 	if (request.overSelection

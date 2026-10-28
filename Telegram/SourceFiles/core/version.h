@@ -18,7 +18,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #endif // TDESKTOP_ALLOW_CLOSED_ALPHA
 
 // used in Updater.cpp and Setup.iss for Windows
-// moregram：AppId 換成自行產生的 GUID（對照 gram64/master 的 64Gram 自有 AppId），
+// moregram：AppId 換成自行產生的 GUID（對照 gram64/master 原品牌自有 AppId），
 // AppName/AppFile 是品牌顯示名的來源（托盤、通知、g_set_application_name、預設下載資料夾）。
 constexpr auto AppId = "{914E9916-3DE1-4E74-9F8A-8729B91B1714}"_cs;
 constexpr auto AppNameOld = "Telegram Win (Unofficial)"_cs;

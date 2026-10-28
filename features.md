@@ -27,7 +27,7 @@
 23. [Restore] upgraded to supergroup service message
 24. Create new supergroup
 25. [Restore] Discussion group button
-26. [Mention user via Create Link with tg://user?id=123456](https://t.me/tg_x64/156)
+26. Mention user via Create Link with tg://user?id=123456
 27. User Bio clickable
 28. `tg://openmessage` and `tg://user` clickable
 29. Show user total sent messages when you're deleting a message
@@ -39,8 +39,8 @@
 35. Disable Cloud Draft Sync To Local
 36. Always Show Scheduled Button option
 37. Mark All Chats As Read for "All Chats" Folder
-38. [Voice Chat Radio mode](https://t.me/tg_x64/238)
-39. [Auto unmute option](https://t.me/tg_x64/266)
+38. Voice Chat Radio mode
+39. Auto unmute option
 40. Voice chat bitrate option
 41. Show/Hide/View pinned message
 42. ~~Pin to top (Windows only)~~
@@ -50,7 +50,7 @@
 46. Hide 1 to 1 call panel window when press X(close window)
 47. Allow pin Voice Chat window to top
 48. Allow open link without warning
-49. [Hide messages from blocked user](https://t.me/tg_x64/519)
+49. Hide messages from blocked user
 50. Disable Premium Animation
 51. Message time with seconds
 52. Ban button for Join Requests

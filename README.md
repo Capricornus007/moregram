@@ -1,18 +1,16 @@
-﻿# 64Gram – Based on [Telegram Desktop](https://github.com/telegramdesktop/tdesktop)
+﻿# moregram – Based on [Telegram Desktop](https://github.com/telegramdesktop/tdesktop)
 
 The source code is published under GPLv3 with OpenSSL exception, the license is available [here][license].
 
-[![Preview of 64Gram][preview_image]][preview_image_url]
+[![Preview of moregram][preview_image]][preview_image_url]
 
 ## Project Goal
 
-Provide Windows 64bit build with some enhancements.
-
-~~Cause official Telegram Desktop do not provide Windows 64bit build, so [Project TDesktop x64](https://github.com/TDesktop-x64) is aimed at provide Windows native x64 build(with few enhancements) to everybody.~~
+moregram 是 [Telegram Desktop](https://github.com/telegramdesktop/tdesktop) 的強化分支：跟上游開發線保持零落後，並加上增強設定頁、JSON viewer、翻譯目標語系可選等官方沒有的功能，同時在 Linux 上以系統函式庫建置、直接出可供 pacman 使用的套件。
 
 ## Roadmap
 
-No Roadmap? Yes.
+跟著上游 `dev` 走，有需要就加自己的功能。
 
 ## [Features](features.md)
 
@@ -24,15 +22,14 @@ Linux 64 bit
 
 macOS > 10.12 and above
 
-The latest version is available on the [Release](https://github.com/TDesktop-x64/tdesktop/releases) page.
+最新版本與建置產物都在 [Release](https://github.com/Capricornus007/moregram/releases) 頁面。
 
 ## Localization
 
-If you want to translate this project, **Just Do It!**
+想翻譯就直接動手：譯文檔放在 `Telegram/Resources/langs/localization/`（檔名用語系 ID，例如 `en.json`），
+翻好的語言檔提 Pull Request 到 [Capricornus007/moregram](https://github.com/Capricornus007/moregram) 即可。
 
-Create a Pull Request: [Localization Repo](https://github.com/TDesktop-x64/Localization).
-
-**Here is a project [translation template](https://github.com/TDesktop-x64/Localization/blob/master/en.json).**
+**專案的翻譯範本見 [`Telegram/Resources/langs/localization/en.json`](Telegram/Resources/langs/localization/en.json)。**
 
 You can find a language ID on Telegram's log.txt
 
@@ -78,13 +75,13 @@ Then your language translation filename is `de.json` or something like that.
 
 ## Links
 
-* [Official Telegram Channel](https://t.me/tg_x64)
-* [Official discussion group](https://t.me/tg_x64_chat)
+* 本倉：[Capricornus007/moregram](https://github.com/Capricornus007/moregram)
+* 上游：[telegramdesktop/tdesktop](https://github.com/telegramdesktop/tdesktop)
 
 [//]: # (LINKS)
 [license]: LICENSE
 [win]: docs/building-win.md
 [mac]: docs/building-mac.md
 [linux]: docs/building-linux.md
-[preview_image]: https://github.com/TDesktop-x64/tdesktop/blob/dev/docs/assets/preview.png "Preview of 64Gram Desktop"
-[preview_image_url]: https://raw.githubusercontent.com/TDesktop-x64/tdesktop/dev/docs/assets/preview.png
+[preview_image]: https://github.com/Capricornus007/moregram/blob/dev/docs/assets/preview.png "Preview of moregram Desktop"
+[preview_image_url]: https://raw.githubusercontent.com/Capricornus007/moregram/dev/docs/assets/preview.png

@@ -50,7 +50,7 @@ public:
 			const LanguageId &to,
 			Fn<void(int, TranslateProviderResult)> doneOne,
 			Fn<void()> doneAll) override {
-		// using Flag = MTPmessages_TranslateText::Flag;  // 64Gram 原樣註釋——當前 MTP schema 無此 Flag 生成
+		// using Flag = MTPmessages_TranslateText::Flag;  // gram64 原樣註釋——當前 MTP schema 無此 Flag 生成
 		if (requests.empty()) {
 			doneAll();
 			return;

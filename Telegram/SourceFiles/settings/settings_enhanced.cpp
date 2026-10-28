@@ -1,8 +1,8 @@
 /*
-This file is part of 64Gram Desktop,
+This file is part of moregram Desktop,
 the unofficial app based on Telegram Desktop.
 For license and copyright information please follow this link:
-https://github.com/TDesktop-x64/tdesktop/blob/dev/LEGAL
+https://github.com/telegramdesktop/tdesktop/blob/dev/LEGAL
 */
 #include <base/timer_rpl.h>
 #include <ui/toast/toast.h>

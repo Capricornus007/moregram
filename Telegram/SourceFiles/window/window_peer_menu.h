@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -97,6 +97,8 @@ void AddSendMoneyAction(
 	not_null<UserData*> user,
 	const PeerMenuCallback &addAction);
 
+void PeerMenuHidePinnedMessage(not_null<PeerData*> peer);
+void PeerMenuUnhidePinnedMessage(not_null<PeerData*> peer);
 void PeerMenuExportChat(
 	not_null<Window::SessionController*> controller,
 	not_null<PeerData*> peer);
@@ -185,6 +187,15 @@ Fn<void()> DeleteAndLeaveHandler(
 Fn<void()> DeleteSublistHandler(
 	not_null<Window::SessionController*> controller,
 	not_null<Data::SavedSublist*> sublist);
+
+[[nodiscard]] Api::SendAction prepareSendAction(
+		History *history, Api::SendOptions options);
+
+QPointer<Ui::BoxContent> ShowNewForwardMessagesBox(
+	not_null<Window::SessionNavigation*> navigation,
+	MessageIdsList &&items,
+	bool no_quote,
+	FnMut<void()>&& successCallback = nullptr);
 
 object_ptr<Ui::BoxContent> PrepareChooseRecipientBox(
 	not_null<Main::Session*> session,

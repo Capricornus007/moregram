@@ -745,7 +745,7 @@ bool ReadFile(
 				).arg(version
 				).arg(name
 				).arg(AppVersion));
-			continue;
+//			continue;
 		}
 
 		// read data

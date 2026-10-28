@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -1843,6 +1843,12 @@ void OverlayWidget::updateControls() {
 		return dNow;
 	}();
 	_dateText = d.isValid() ? Ui::FormatDateTime(d) : QString();
+	if (_photo) {
+		_dateText += QString(" @ DC%1").arg(_photo->getDC());
+	}
+	else if (_document) {
+		_dateText += QString(" @ DC%1").arg(_document->getDC());
+	}
 	const auto destroyAt = _message ? _message->mediaDestroyAt() : TimeId();
 	if (destroyAt > 0) {
 		const auto left = std::max(
@@ -3616,7 +3622,7 @@ void OverlayWidget::forwardMedia() {
 		if (!_windowed) {
 			close();
 		}
-		Window::ShowForwardMessagesBox(active.front(), { 1, id });
+		Window::ShowNewForwardMessagesBox(active.front(), { 1, id }, false);
 	}
 }
 
@@ -4786,13 +4792,21 @@ void OverlayWidget::displayDocument(
 			if (_documentMedia->canBePlayed()
 				&& initStreaming(startStreaming)) {
 			} else if (_document->isVideoFile()) {
-				_documentMedia->automaticLoad(fileOrigin(), _message);
+				auto peerId = _from ? _from->id : PeerId(0);
+				auto user = _history->session().data().peerLoaded(_from ? _from->id : PeerId(0));
+				if (!blockExist(peerId.value) || (!GetEnhancedBool("blocked_user_spoiler_mode") && user && !user->isBlocked())) {
+					_documentMedia->automaticLoad(fileOrigin(), _message);
+				}
 				initStreamingThumbnail();
 			} else if (_document->isTheme()) {
 				_documentMedia->automaticLoad(fileOrigin(), _message);
 				initThemePreview();
 			} else {
-				_documentMedia->automaticLoad(fileOrigin(), _message);
+				auto peerId = _from ? _from->id : PeerId(0);
+				auto user = _history->session().data().peerLoaded(_from ? _from->id : PeerId(0));
+				if (!blockExist(peerId.value) || (!GetEnhancedBool("blocked_user_spoiler_mode") && user && !user->isBlocked())) {
+					_documentMedia->automaticLoad(fileOrigin(), _message);
+				}
 				_document->saveFromDataSilent();
 				auto &location = _document->location(true);
 				if (location.accessEnable()) {

@@ -7,6 +7,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "boxes/peers/edit_peer_requests_box.h"
 
+#include "api/api_chat_participants.h"
+#include "styles/palette.h"
 #include "api/api_invite_links.h"
 #include "apiwrap.h"
 #include "base/unixtime.h"
@@ -40,11 +42,13 @@ constexpr auto kPerPage = 200;
 constexpr auto kServerSearchDelay = crl::time(1000);
 constexpr auto kAcceptButton = 1;
 constexpr auto kRejectButton = 2;
+constexpr auto kBanButton = 3;
 
 class RowDelegate {
 public:
 	[[nodiscard]] virtual QSize rowAcceptButtonSize() = 0;
 	[[nodiscard]] virtual QSize rowRejectButtonSize() = 0;
+	[[nodiscard]] virtual QSize rowBanButtonSize() = 0;
 	virtual void rowPaintAccept(
 		Painter &p,
 		QRect geometry,
@@ -52,6 +56,12 @@ public:
 		int outerWidth,
 		bool over) = 0;
 	virtual void rowPaintReject(
+		Painter &p,
+		QRect geometry,
+		std::unique_ptr<Ui::RippleAnimation> &ripple,
+		int outerWidth,
+		bool over) = 0;
+	virtual void rowPaintBan(
 		Painter &p,
 		QRect geometry,
 		std::unique_ptr<Ui::RippleAnimation> &ripple,
@@ -85,6 +95,7 @@ private:
 	const not_null<RowDelegate*> _delegate;
 	std::unique_ptr<Ui::RippleAnimation> _acceptRipple;
 	std::unique_ptr<Ui::RippleAnimation> _rejectRipple;
+	std::unique_ptr<Ui::RippleAnimation> _banRipple;
 
 };
 
@@ -98,7 +109,7 @@ Row::Row(
 }
 
 int Row::elementsCount() const {
-	return 2;
+	return 3;
 }
 
 QRect Row::elementGeometry(int element, int outerWidth) const {
@@ -114,6 +125,15 @@ QRect Row::elementGeometry(int element, int outerWidth) const {
 			(st::communityRequestAcceptPosition
 				+ QPoint(accept.width() + st::requestButtonsSkip, 0)),
 			size);
+	} break;
+	case kBanButton: {
+		const auto accept = _delegate->rowAcceptButtonSize();
+		const auto reject = _delegate->rowRejectButtonSize();
+		const auto size = _delegate->rowBanButtonSize();
+		return QRect(
+					(st::communityRequestAcceptPosition
+				+ QPoint(accept.width() + reject.width() + st::requestButtonsSkip, 0)),
+				size);
 	} break;
 	}
 	return QRect();
@@ -135,6 +155,8 @@ void Row::elementAddRipple(
 		? &_acceptRipple
 		: (element == kRejectButton)
 		? &_rejectRipple
+		: (element == kBanButton)
+		? &_banRipple
 		: nullptr;
 	if (!pointer) {
 		return;
@@ -149,7 +171,9 @@ void Row::elementAddRipple(
 		ripple = std::make_unique<Ui::RippleAnimation>(
 			(element == kAcceptButton
 				? st::requestsAcceptButton.ripple
-				: st::requestsRejectButton.ripple),
+				: element == kRejectButton
+				? st::requestsRejectButton.ripple
+				: st::requestsBanButton.ripple),
 			std::move(mask),
 			std::move(updateCallback));
 	}
@@ -163,6 +187,9 @@ void Row::elementsStopLastRipple() {
 	if (_rejectRipple) {
 		_rejectRipple->lastStop();
 	}
+	if (_banRipple) {
+		_banRipple->lastStop();
+	}
 }
 
 void Row::elementsPaint(
@@ -172,6 +199,7 @@ void Row::elementsPaint(
 		int selectedElement) {
 	const auto accept = elementGeometry(kAcceptButton, outerWidth);
 	const auto reject = elementGeometry(kRejectButton, outerWidth);
+	const auto ban = elementGeometry(kBanButton, outerWidth);
 
 	const auto over = [&](int element) {
 		return (selectedElement == element);
@@ -188,6 +216,12 @@ void Row::elementsPaint(
 		_rejectRipple,
 		outerWidth,
 		over(kRejectButton));
+	_delegate->rowPaintBan(
+		p,
+		ban,
+		_banRipple,
+		outerWidth,
+		over(kBanButton));
 }
 
 } // namespace
@@ -198,6 +232,7 @@ public:
 
 	[[nodiscard]] QSize rowAcceptButtonSize() override;
 	[[nodiscard]] QSize rowRejectButtonSize() override;
+	[[nodiscard]] QSize rowBanButtonSize() override;
 	void rowPaintAccept(
 		Painter &p,
 		QRect geometry,
@@ -205,6 +240,12 @@ public:
 		int outerWidth,
 		bool over) override;
 	void rowPaintReject(
+		Painter &p,
+		QRect geometry,
+		std::unique_ptr<Ui::RippleAnimation> &ripple,
+		int outerWidth,
+		bool over) override;
+	void rowPaintBan(
 		Painter &p,
 		QRect geometry,
 		std::unique_ptr<Ui::RippleAnimation> &ripple,
@@ -228,10 +269,14 @@ private:
 	Ui::RoundRect _acceptRectOver;
 	Ui::RoundRect _rejectRect;
 	Ui::RoundRect _rejectRectOver;
+	Ui::RoundRect _banRect;
+	Ui::RoundRect _banRectOver;
 	QString _acceptText;
 	QString _rejectText;
+	QString _banText;
 	int _acceptTextWidth = 0;
 	int _rejectTextWidth = 0;
+	int _banTextWidth = 0;
 
 };
 
@@ -248,12 +293,20 @@ RequestsBoxController::RowHelper::RowHelper(bool isGroup)
 , _rejectRectOver(
 	st::requestsAcceptButton.height / 2,
 	st::requestsRejectButton.textBgOver)
+, _banRect(
+	st::requestsAcceptButton.height / 2,
+	st::requestsBanButton.textBg)
+, _banRectOver(
+	st::requestsAcceptButton.height / 2,
+	st::requestsBanButton.textBgOver)
 , _acceptText(isGroup
 	? tr::lng_group_requests_add(tr::now)
 	: tr::lng_group_requests_add_channel(tr::now))
 , _rejectText(tr::lng_group_requests_dismiss(tr::now))
+, _banText(tr::lng_group_requests_ban(tr::now))
 , _acceptTextWidth(st::requestsAcceptButton.style.font->width(_acceptText))
-, _rejectTextWidth(st::requestsRejectButton.style.font->width(_rejectText)) {
+, _rejectTextWidth(st::requestsRejectButton.style.font->width(_rejectText))
+, _banTextWidth(st::requestsRejectButton.style.font->width(_banText)){
 }
 
 RequestsBoxController::RequestsBoxController(
@@ -421,12 +474,13 @@ void RequestsBoxController::rowClicked(not_null<PeerListRow*> row) {
 void RequestsBoxController::rowElementClicked(
 		not_null<PeerListRow*> row,
 		int element) {
-	processRequest(row->peer()->asUser(), (element == kAcceptButton));
+	processRequest(row->peer()->asUser(), (element == kAcceptButton), (element == kBanButton));
 }
 
 void RequestsBoxController::processRequest(
 		not_null<UserData*> user,
-		bool approved) {
+		bool approved,
+		bool banned) {
 	const auto remove = [=] {
 		if (const auto row = delegate()->peerListFindRow(user->id.value)) {
 			delegate()->peerListRemoveRow(row);
@@ -448,6 +502,13 @@ void RequestsBoxController::processRequest(
 					tr::marked));
 		}
 	});
+	if (banned) {
+		if (_peer->isChat()) {
+			session().api().chatParticipants().kick(_peer->asChat(), user);
+		} else {
+			session().api().chatParticipants().kick(_peer->asChannel(), user, ChatRestrictionsInfo());
+		}
+	}
 	const auto fail = crl::guard(this, remove);
 	session().api().inviteLinks().processRequest(
 		_peer,
@@ -486,6 +547,14 @@ QSize RequestsBoxController::RowHelper::rowRejectButtonSize() {
 	};
 }
 
+QSize RequestsBoxController::RowHelper::rowBanButtonSize() {
+	const auto &st = st::requestsBanButton;
+	return {
+			(st.width <= 0) ? (_banTextWidth - st.width) : st.width,
+			st.height,
+	};
+}
+
 void RequestsBoxController::RowHelper::rowPaintAccept(
 		Painter &p,
 		QRect geometry,
@@ -520,6 +589,26 @@ void RequestsBoxController::RowHelper::rowPaintReject(
 		ripple,
 		_rejectText,
 		_rejectTextWidth,
+		outerWidth,
+		over);
+}
+
+void RequestsBoxController::RowHelper::rowPaintBan(
+		Painter &p,
+		QRect geometry,
+		std::unique_ptr<Ui::RippleAnimation> &ripple,
+		int outerWidth,
+		bool over) {
+	_banRect.setColor(st::banButtonBg);
+	paintButton(
+		p,
+		geometry,
+		st::requestsBanButton,
+		_banRect,
+		_banRectOver,
+		ripple,
+		_banText,
+		_banTextWidth,
 		outerWidth,
 		over);
 }

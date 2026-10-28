@@ -19,6 +19,7 @@ enum class Command {
 	Lock,
 	Minimize,
 	Quit,
+	GlobalSearch,
 	ReopenClosedWindow,
 	CloseOtherWindows,
 
@@ -95,6 +96,9 @@ enum class Command {
 	SupportScrollToCurrent,
 	SupportHistoryBack,
 	SupportHistoryForward,
+
+	FastForward,
+	FastCopy,
 };
 
 [[maybe_unused]] constexpr auto kShowFolder = {

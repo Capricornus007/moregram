@@ -86,10 +86,10 @@ constexpr auto kDefaultChargeStars = 10;
 		{ Flag::SendMusic, tr::lng_rights_chat_music(tr::now) },
 		{ Flag::SendVoiceMessages, tr::lng_rights_chat_voice_messages(tr::now) },
 		{ Flag::SendFiles, tr::lng_rights_chat_files(tr::now) },
-		{ Flag::SendStickers
-			| Flag::SendGifs
-			| Flag::SendGames
-			| Flag::SendInline, tr::lng_rights_chat_stickers(tr::now) },
+		{ Flag::SendStickers, tr::lng_admin_log_banned_send_stickers2(tr::now) },
+		{ Flag::SendGifs, tr::lng_admin_log_banned_send_gifs(tr::now) },
+		{ Flag::SendInline, tr::lng_admin_log_banned_use_inline(tr::now) },
+		{ Flag::SendGames, tr::lng_admin_log_banned_send_games(tr::now) },
 		{ Flag::EmbedLinks, tr::lng_rights_chat_send_links(tr::now) },
 		{ Flag::SendPolls, tr::lng_rights_chat_send_polls(tr::now) },
 		{ Flag::SendReactions, tr::lng_rights_chat_send_reactions(tr::now) },
@@ -303,21 +303,6 @@ auto Dependencies(ChatRestrictions)
 	using Flag = ChatRestriction;
 
 	return {
-		// stickers <-> gifs
-		{ Flag::SendGifs, Flag::SendStickers },
-		{ Flag::SendStickers, Flag::SendGifs },
-
-		// stickers <-> games
-		{ Flag::SendGames, Flag::SendStickers },
-		{ Flag::SendStickers, Flag::SendGames },
-
-		// stickers <-> inline
-		{ Flag::SendInline, Flag::SendStickers },
-		{ Flag::SendStickers, Flag::SendInline },
-
-		// embed_links -> send_plain
-		{ Flag::EmbedLinks, Flag::SendOther },
-
 		// send_* -> view_messages
 		{ Flag::SendStickers, Flag::ViewMessages },
 		{ Flag::SendGifs, Flag::ViewMessages },
@@ -1486,11 +1471,11 @@ ChatRestrictions FixDependentRestrictions(ChatRestrictions restrictions) {
 
 	// Fix iOS bug of saving send_inline like embed_links.
 	// We copy send_stickers to send_inline.
-	if (restrictions & ChatRestriction::SendStickers) {
-		restrictions |= ChatRestriction::SendInline;
-	} else {
-		restrictions &= ~ChatRestriction::SendInline;
-	}
+	//if (restrictions & ChatRestriction::SendStickers) {
+	//	restrictions |= ChatRestriction::SendInline;
+	//} else {
+	//	restrictions &= ~ChatRestriction::SendInline;
+	//}
 
 	// Apply the strictest.
 	const auto fixOne = [&] {

@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -87,6 +87,10 @@ public:
 	[[nodiscard]] int titleLeft() const;
 
 	void showChooseMessagesForReport(Data::ReportInput reportInput);
+	
+	rpl::producer<> oldForwardSelectionRequest() const {
+		return _oldForwardSelection.events();
+	}
 	void clearChooseMessagesForReport();
 
 	bool toggleSearch(bool shown, anim::type animated);
@@ -106,6 +110,12 @@ public:
 
 	[[nodiscard]] rpl::producer<> forwardSelectionRequest() const {
 		return _forwardSelection.events();
+	}
+	[[nodiscard]] rpl::producer<> forwardNoQuoteSelectionRequest() const {
+		return _forwardNoQuoteSelection.events();
+	}
+	[[nodiscard]] rpl::producer<> savedMessagesSelectionRequest() const {
+		return _savedMessagesSelection.events();
 	}
 	[[nodiscard]] rpl::producer<> sendNowSelectionRequest() const {
 		return _sendNowSelection.events();
@@ -233,7 +243,7 @@ private:
 	Ui::Animations::Simple _searchShown;
 
 	object_ptr<Ui::RoundButton> _clear;
-	object_ptr<Ui::RoundButton> _forward, _sendNow, _delete;
+	object_ptr<Ui::RoundButton> _forward, _sendNow, _delete, _forwardNoQuote, _savedMessages, _oldForward;
 	object_ptr<Ui::InputField> _searchField = { nullptr };
 	object_ptr<Ui::FadeWrapScaled<Ui::IconButton>> _chooseFromUser
 		= { nullptr };
@@ -255,6 +265,8 @@ private:
 	object_ptr<Ui::IconButton> _call;
 	object_ptr<Ui::IconButton> _groupCall;
 	object_ptr<Ui::IconButton> _search;
+	object_ptr<Ui::IconButton> _recentActions;
+	object_ptr<Ui::IconButton> _admins;
 	object_ptr<Ui::IconButton> _infoToggle;
 	object_ptr<Ui::IconButton> _menuToggle;
 	base::unique_qptr<Ui::PopupMenu> _menu;
@@ -279,7 +291,10 @@ private:
 
 	base::Timer _onlineUpdater;
 
+	rpl::event_stream<> _oldForwardSelection;
 	rpl::event_stream<> _forwardSelection;
+	rpl::event_stream<> _forwardNoQuoteSelection;
+	rpl::event_stream<> _savedMessagesSelection;
 	rpl::event_stream<> _sendNowSelection;
 	rpl::event_stream<> _deleteSelection;
 	rpl::event_stream<> _clearSelection;
@@ -287,6 +302,12 @@ private:
 
 	rpl::lifetime _backLifetime;
 
+	struct reqData {
+		int requestTime;
+		int memberCount;
+	};
+	QMap<QString, reqData> lastChatRequest;
+	mutable QMutex reqMutex;
 };
 
 } // namespace HistoryView

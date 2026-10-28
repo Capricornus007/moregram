@@ -330,7 +330,8 @@ void Entry::notifyUnreadStateChange(const UnreadState &wasState) {
 
 const Ui::Text::String &Entry::chatListNameText() const {
 	const auto version = chatListNameVersion();
-	if (_chatListNameVersion < version) {
+	if (_chatListNameVersion < version || GetEnhancedBool("screenshot_mode") != _previousMode) {
+		_previousMode = GetEnhancedBool("screenshot_mode");
 		_chatListNameVersion = version;
 		_chatListNameText.setText(
 			st::semiboldTextStyle,
@@ -353,7 +354,7 @@ DateText ResolveDateText(
 	if (cache.messageTimeId != date
 		|| cache.todaySerial != LastTodaySerial) {
 		const auto qdt = base::unixtime::parse(date);
-		cache.text = Ui::FormatDialogsDate(qdt);
+		cache.text = Ui::FormatDialogsDate(qdt, GetEnhancedBool("show_seconds"));
 		cache.width = st::dialogsDateFont->width(cache.text);
 		cache.messageTimeId = date;
 		cache.todaySerial = LastTodaySerial;

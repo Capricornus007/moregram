@@ -28,6 +28,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/sandbox.h"
 #include "core/local_url_handlers.h"
 #include "core/launcher.h"
+#include "core/enhanced_settings.h"
 #include "core/proxy_rotation_manager.h"
 #include "core/ui_integration.h"
 #include "core/version.h"
@@ -305,10 +306,12 @@ Application::~Application() {
 	Media::Player::finish(_audio.get());
 	style::StopManager();
 
+	EnhancedSettings::Finish();
 	Instance = nullptr;
 }
 
 void Application::run() {
+	EnhancedSettings::Start();
 	// Depends on OpenSSL on macOS, so on ThirdParty::start().
 	// Depends on notifications settings.
 	_notifications = std::make_unique<Window::Notifications::System>();
@@ -1327,7 +1330,7 @@ bool Application::openInternalUrl(const QString &url, QVariant context) {
 }
 
 QString Application::changelogLink() const {
-	return u"https://telegramdesktop.github.io/tdesktop/changelog/"_q;
+	return u"https://github.com/TDesktop-x64/tdesktop/releases"_q;
 }
 
 bool Application::openCustomUrl(
@@ -2108,7 +2111,7 @@ void Application::RegisterUrlScheme() {
 		.arguments = arguments,
 		.protocol = u"tg"_q,
 		.protocolName = u"Telegram Link"_q,
-		.shortAppName = u"tdesktop"_q,
+		.shortAppName = u"64Gram"_q,
 		.longAppName = QCoreApplication::applicationName(),
 		.displayAppName = AppName.utf16(),
 		.displayAppDescription = AppName.utf16(),

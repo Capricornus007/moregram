@@ -283,6 +283,8 @@ public:
 	[[nodiscard]] int commonChatsCount() const;
 	void setCommonChatsCount(int count);
 
+	QString restriction_reason;
+
 	[[nodiscard]] int peerGiftsCount() const;
 	void setPeerGiftsCount(int count);
 

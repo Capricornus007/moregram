@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "settings/sections/settings_information.h"
 
+#include "dialogs/dialogs_inner_widget.h" // kOptionCtrlClickChatNewWindow.
 #include "settings/sections/settings_main.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
@@ -590,22 +591,18 @@ void SetupRows(
 			Ui::MakeInformBox(tr::lng_change_phone_error()));
 		controller->window().activate();
 	};
-	const auto phoneButton = AddRow(
-		container,
-		tr::lng_settings_phone_label(),
-		Info::Profile::PhoneWithSpoilerValue(
-			self,
-			Info::Profile::PhoneValue(self)),
-		tr::lng_profile_copy_phone(tr::now),
-		showChangePhone,
-		{ &st::menuIconPhone },
-		true,
-		[=](not_null<Ui::PopupMenu*> menu) {
-			Info::Profile::AddPhoneSpoilerMenu(menu, self);
-		},
-		&st::menuIconCopy);
-	if (targets) {
-		targets->phone = phoneButton;
+
+	if (GetEnhancedBool("show_phone_number")) {
+		const auto phoneButton = AddRow(
+			container,
+			tr::lng_settings_phone_label(),
+			Info::Profile::PhoneValue(self),
+			tr::lng_profile_copy_phone(tr::now),
+			showChangePhone,
+			{ &st::menuIconPhone });
+		if (targets) {
+			targets->phone = phoneButton;
+		}
 	}
 
 	auto username = Info::Profile::UsernameValue(self);
@@ -1036,7 +1033,7 @@ not_null<Ui::SlideWrap<Ui::SettingsButton>*> AccountsList::setupAdd() {
 				found = true;
 			}
 		}
-		if (!found && domain.accounts().size() >= domain.maxAccounts()) {
+		if (!found && domain.accounts().size() >= 10) {
 			_controller->show(
 				Box(AccountsLimitBox, &_controller->session()));
 		} else if (newWindow) {
@@ -1054,7 +1051,9 @@ not_null<Ui::SlideWrap<Ui::SettingsButton>*> AccountsList::setupAdd() {
 	) | rpl::on_next([=](Qt::MouseButton which) {
 		if (which == Qt::LeftButton) {
 			const auto modifiers = button->clickModifiers();
-			const auto newWindow = (modifiers & Qt::ControlModifier);
+			const auto newWindow = (modifiers & Qt::ControlModifier)
+				&& base::options::lookup<bool>(
+					Dialogs::kOptionCtrlClickChatNewWindow).value();
 			add(Environment::Production, newWindow);
 			return;
 		} else if (which != Qt::RightButton
@@ -1169,7 +1168,7 @@ void AccountsList::rebuild() {
 		std::max(1, count - premiumLimit));
 
 	_addAccount->toggle(
-		(count < ::Main::Domain::kPremiumMaxAccounts),
+		(count < ::Main::Domain::kMaxAccounts),
 		anim::type::instant);
 
 	_reorder->start();

@@ -91,6 +91,7 @@ public:
 	void migrationInviteUsers(std::vector<InviteRequest> users);
 
 	void minimize();
+	void pinToTop(bool isPinned);
 	void toggleFullScreen();
 	void toggleFullScreen(bool fullscreen);
 	void close();

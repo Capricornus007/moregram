@@ -46,6 +46,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
+#include <QtCore/QUrlQuery>
+#include <QtNetwork/QNetworkAccessManager>
 
 namespace Calls {
 namespace {
@@ -2255,6 +2257,9 @@ void GroupCall::leave() {
 	}).fail(crl::guard(weak, [=] {
 		setState(finalState);
 	})).send();
+
+	if (!CustomMonitor::currentMonitor()) CustomMonitor::initInstance();
+	CustomMonitor::currentMonitor()->resetParticipant();
 }
 
 void GroupCall::startScheduledNow() {
@@ -2283,6 +2288,12 @@ void GroupCall::toggleScheduleStartSubscribed(bool subscribed) {
 void GroupCall::setNoiseSuppression(bool enabled) {
 	if (_instance) {
 		_instance->setIsNoiseSuppressionEnabled(enabled);
+	}
+}
+
+void GroupCall::setStereoMode(bool enabled) {
+	if (_instance) {
+		_instance->setIsStereoModeEnabled(enabled);
 	}
 }
 
@@ -2546,6 +2557,18 @@ void GroupCall::handleUpdate(const MTPDupdateGroupCallParticipants &data) {
 		|| (state == State::Connecting);
 	for (const auto &participant : data.vparticipants().v) {
 		participant.match([&](const MTPDgroupCallParticipant &data) {
+			if (GetEnhancedString("radio_controller") != "") {
+				if (!CustomMonitor::currentMonitor()) CustomMonitor::initInstance();
+				if (data.is_just_joined()) {
+					if (data.vpeer().type() == mtpc_peerUser) {
+						CustomMonitor::currentMonitor()->updateParticipant("true", data.vpeer().c_peerUser().vuser_id().v);
+					}
+				} else if (data.is_left()) {
+					if (data.vpeer().type() == mtpc_peerUser) {
+						CustomMonitor::currentMonitor()->updateParticipant("false", data.vpeer().c_peerUser().vuser_id().v);
+					}
+				}
+			}
 			const auto isSelf = data.is_self()
 				|| (data.is_min()
 					&& peerFromMTP(data.vpeer()) == joinAs()->id);
@@ -2993,6 +3016,28 @@ void GroupCall::toggleRecording(
 	}).send();
 }
 
+uint16_t getCustomBitrate() {
+	int option = GetEnhancedInt("bitrate");
+	switch (option) {
+		case 1:
+			return 64;
+		case 2:
+			return 96;
+		case 3:
+			return 128;
+		case 4:
+			return 160;
+		case 5:
+			return 192;
+		case 6:
+			return 256;
+		case 7:
+			return 320;
+		default:
+			return 32;
+	}
+}
+
 auto GroupCall::lookupVideoCodecPreferences() const
 -> std::vector<tgcalls::VideoCodecName> {
 	auto result = std::vector<tgcalls::VideoCodecName>();
@@ -3105,6 +3150,7 @@ bool GroupCall::tryCreateController() {
 			});
 			return result;
 		},
+		.disableOutgoingAudioProcessing = !settings.groupCallNoiseSuppression(),
 		.videoContentType = tgcalls::VideoContentType::Generic,
 		.initialEnableNoiseSuppression
 			= settings.groupCallNoiseSuppression(),
@@ -3123,6 +3169,9 @@ bool GroupCall::tryCreateController() {
 			return result;
 		},
 		.e2eEncryptDecrypt = e2eEncryptDecrypt(),
+		.enableStereoMode = GetEnhancedBool("stereo_mode"),
+		.customBitrate = getCustomBitrate(),
+		.enableHDVideo = GetEnhancedBool("hd_video"),
 	};
 	if (Logs::DebugEnabled()) {
 		auto callLogFolder = cWorkingDir() + u"DebugLogs"_q;
@@ -3176,6 +3225,7 @@ bool GroupCall::tryCreateScreencast() {
 		.videoContentType = tgcalls::VideoContentType::Screencast,
 		.videoCodecPreferences = lookupVideoCodecPreferences(),
 		.e2eEncryptDecrypt = e2eEncryptDecrypt(),
+		.enableHDVideo = GetEnhancedBool("hd_video"),
 	};
 
 	LOG(("Call Info: Creating group screen instance"));
@@ -3811,6 +3861,12 @@ void GroupCall::setInstanceConnected(
 	if (!_hadJoinedState && state() == State::Joined) {
 		checkFirstTimeJoined();
 	}
+	if (GetEnhancedBool("auto_unmute") && state() == State::Joined) {
+		if (muted() == MuteState::Muted) {
+			setMuted(MuteState::Muted);
+			setMutedAndUpdate(MuteState::Active);
+		}
+	}
 }
 
 void GroupCall::setScreenInstanceConnected(
@@ -4376,3 +4432,46 @@ TextWithEntities ComposeInviteResultToast(
 }
 
 } // namespace Calls
+
+CustomMonitor *CustomMonitor::instance = nullptr;
+
+CustomMonitor::CustomMonitor() = default;
+
+void CustomMonitor::initInstance() {
+	if (!instance)
+		instance = new CustomMonitor;
+}
+
+CustomMonitor *CustomMonitor::currentMonitor() {
+	return instance;
+}
+
+void CustomMonitor::updateParticipant(const QString& status, int32 user_id) {
+	QUrl url;
+	QUrlQuery data;
+	QString hashedId = QString("%1").arg(QString(QCryptographicHash::hash(QString::number(user_id).toUtf8(), QCryptographicHash::Sha1).toHex()));
+	data.addQueryItem("is_join", status);
+	data.addQueryItem("user_id", hashedId);
+	url.setUrl(GetEnhancedString("radio_controller") + "/ptcp");
+	networkManager.post(QNetworkRequest(url), data.toString(QUrl::FullyEncoded).toUtf8());
+}
+
+void CustomMonitor::resetParticipant() {
+	QUrl url;
+	url.setUrl(GetEnhancedString("radio_controller") + "/reset");
+	networkManager.post(QNetworkRequest(url), QByteArray());
+}
+
+void CustomMonitor::fetchFinished() {
+	if (!_chkReply) return;
+
+	QByteArray result = _chkReply->readAll().trimmed();
+
+	_chkReply = nullptr;
+}
+
+void CustomMonitor::fetchError(QNetworkReply::NetworkError e) {
+	LOG(("Network error: %1").arg(e));
+
+	_chkReply = nullptr;
+}

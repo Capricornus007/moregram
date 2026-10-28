@@ -127,7 +127,6 @@ protected:
 
 	void initHook() override;
 	void clearWidgetsHook() override;
-
 private:
 	void applyInitialWorkMode();
 	void ensureLayerCreated();
@@ -149,3 +148,7 @@ private:
 	object_ptr<Window::Theme::WarningWidget> _testingThemeWarning = { nullptr };
 
 };
+
+namespace App {
+MainWindow *wnd();
+} // namespace App

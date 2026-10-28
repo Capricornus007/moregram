@@ -335,6 +335,10 @@ public:
 
 	std::unique_ptr<Data::UploadState> uploadingData;
 
+	int32 getDC(){
+		return this->_dc;
+	};
+
 private:
 	enum class Flag : ushort {
 		StreamingMaybeYes = 0x0001,

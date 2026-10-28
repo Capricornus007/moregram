@@ -380,7 +380,8 @@ infoLayerTopBar: InfoTopBar(infoTopBar) {
 infoLayerTopBarMenuPosition: point(48px, 37px);
 
 
-infoProfileTopBarHeightMax: 180px + infoLayerTopBarHeight;
+infoProfileTopBarHeightMax: 200px + infoLayerTopBarHeight;
+infoProfileTopBarChatIdTop: 155px;
 
 infoProfileBirthdayConfettiSize: 360px;
 infoProfileBirthdayDigitSize: 64px;
@@ -971,6 +972,14 @@ topBarGroupCall: IconButton(topBarSearch) {
 topBarInfo: IconButton(topBarSearch) {
 	icon: icon {{ "top_bar_profile", menuIconFg }};
 	iconOver: icon {{ "top_bar_profile", menuIconFgOver }};
+}
+topBarRecentActions: IconButton(topBarSearch) {
+	icon: icon {{ "info/edit/group_manage_actions_topbar", menuIconFg }};
+	iconOver: icon {{ "info/edit/group_manage_actions_topbar", menuIconFgOver }};
+}
+topBarAdmins: IconButton(topBarSearch) {
+	icon: icon {{ "info/edit/group_manage_admins_topbar", menuIconFg }};
+	iconOver: icon {{ "info/edit/group_manage_admins_topbar", menuIconFgOver }};
 }
 topBarInfoActive: icon {{ "top_bar_profile", windowActiveTextFg }};
 topBarActionSkip: 10px;

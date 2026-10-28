@@ -497,9 +497,21 @@ ChatWidget::ChatWidget(
 	) | rpl::on_next([=] {
 		confirmDeleteSelected();
 	}, _topBar->lifetime());
+	_topBar->oldForwardSelectionRequest(
+	) | rpl::on_next([=] {
+		confirmOldForwardSelected();
+	}, _topBar->lifetime());
 	_topBar->forwardSelectionRequest(
 	) | rpl::on_next([=] {
 		confirmForwardSelected();
+	}, _topBar->lifetime());
+	_topBar->forwardNoQuoteSelectionRequest(
+	) | rpl::on_next([=] {
+		confirmForwardNoQuoteSelected();
+	}, _topBar->lifetime());
+	_topBar->savedMessagesSelectionRequest(
+	) | rpl::on_next([=] {
+		confirmForwardSelectedToSavedMessages();
 	}, _topBar->lifetime());
 	_topBar->clearSelectionRequest(
 	) | rpl::on_next([=] {
@@ -6030,8 +6042,20 @@ void ChatWidget::confirmDeleteSelected() {
 	ConfirmDeleteSelectedItems(_inner);
 }
 
+void ChatWidget::confirmOldForwardSelected() {
+	ConfirmOldForwardSelectedItems(_inner);
+}
+
 void ChatWidget::confirmForwardSelected() {
 	ConfirmForwardSelectedItems(_inner);
+}
+
+void ChatWidget::confirmForwardNoQuoteSelected() {
+	ConfirmForwardNoQuoteSelectedItems(_inner);
+}
+
+void ChatWidget::confirmForwardSelectedToSavedMessages() {
+	ConfirmForwardSelectedToSavedMessagesItems(_inner);
 }
 
 void ChatWidget::clearSelected() {

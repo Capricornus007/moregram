@@ -417,6 +417,9 @@ void MessageView::paint(
 		return;
 	}
 	_lastPaintGeometry = geometry;
+	if (GetEnhancedBool("screenshot_mode")) {
+		return;
+	}
 	p.setFont(st::dialogsTextFont);
 	p.setPen(context.active
 		? st::dialogsTextFgActive

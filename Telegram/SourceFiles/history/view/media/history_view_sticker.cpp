@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/media/history_view_media_common.h"
 #include "history/view/media/history_view_sticker_player.h"
 #include "lang/lang_keys.h"
+#include "main/main_session.h"
 #include "ui/image/image.h"
 #include "ui/chat/chat_style.h"
 #include "ui/effects/path_shift_gradient.h"
@@ -168,6 +169,12 @@ void Sticker::initSize(int customSize) {
 		_size = Size(_data);
 	}
 	_size = DownscaledSize(_size, Size());
+	
+	auto peerId = _parent->data()->from() ? _parent->data()->from()->id : PeerId(0);
+	auto user = _parent->history()->session().data().peerLoaded(_parent->data()->from() ? _parent->data()->from()->id : PeerId(0));
+	if ((GetEnhancedBool("blocked_user_spoiler_mode") && blockExist(peerId.value)) || (GetEnhancedBool("blocked_user_spoiler_mode") && user && user->isBlocked())) {
+		_size = DownscaledSize(_data->dimensions, {128,kMaxSizeFixed});
+	}
 }
 
 QSize Sticker::countOptimalSize() {

@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -42,6 +42,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/window_session_controller.h"
 #include "history/history.h"
 #include "history/view/history_view_message.h"
+#include "facades.h"
 #include "styles/style_chat.h"
 #include "styles/style_menu_icons.h"
 
@@ -885,7 +886,7 @@ PeerData *ParticipantsAdditionalData::applyParticipant(
 				&& overrideRole != Role::Members) {
 				return logBad();
 			}
-			return applyRegular(data.userId());
+			return applyRegular(data);
 		}
 		case Api::ChatParticipant::Type::Restricted:
 		case Api::ChatParticipant::Type::Banned:
@@ -913,7 +914,7 @@ PeerData *ParticipantsAdditionalData::applyParticipant(
 
 UserData *ParticipantsAdditionalData::applyCreator(
 		const Api::ChatParticipant &data) {
-	if (const auto user = applyRegular(data.userId())) {
+	if (const auto user = applyRegular(data)) {
 		_creator = user;
 		_adminRights[user] = data.rights();
 		if (user->isSelf()) {
@@ -966,14 +967,21 @@ UserData *ParticipantsAdditionalData::applyAdmin(
 	return user;
 }
 
-UserData *ParticipantsAdditionalData::applyRegular(UserId userId) {
-	const auto user = _peer->owner().userLoaded(userId);
+UserData *ParticipantsAdditionalData::applyRegular(const Api::ChatParticipant &data) {
+	const auto user = _peer->owner().userLoaded(data.userId());
 	if (!user) {
 		return nullptr;
 	} else if (_peer->isChat()) {
 		// This can come from saveAdmin or saveRestricted callback.
 		_admins.erase(user);
 		return user;
+	}
+
+	if (data.memberSince()) {
+		_memberSince[user] = data.memberSince();
+	}
+	else {
+		_memberSince.remove(user);
 	}
 
 	_infoNotLoaded.erase(user);
@@ -2020,9 +2028,28 @@ base::unique_qptr<Ui::PopupMenu> ParticipantsBoxController::rowContextMenu(
 				std::move(text));
 			if (const auto n = _navigation) {
 				button->setActionTriggered([=] {
-					n->parentController()->show(PrepareShortInfoBox(by, n));
+					n->parentController()->showPeerInfo(by);
 				});
 			}
+			result->addSeparator();
+			result->addAction(std::move(button));
+		};
+
+		const auto addJoinInfoAction = [&](
+				tr::phrase<lngtag_date> phrase,
+				TimeId since) {
+			auto text = phrase(
+				tr::now,
+				lt_date,
+				Ui::Text::Bold(
+				langDateTimeFull(base::unixtime::parse(since))),
+				Ui::Text::WithEntities);
+			auto button = base::make_unique_q<Ui::Menu::MultilineAction>(
+				result->menu(),
+				result->st().menu,
+				st::historyHasCustomEmoji,
+				st::historyHasCustomEmojiPosition,
+				std::move(text));
 			result->addSeparator();
 			result->addAction(std::move(button));
 		};
@@ -2041,6 +2068,8 @@ base::unique_qptr<Ui::PopupMenu> ParticipantsBoxController::rowContextMenu(
 				if (const auto since = _additional.adminPromotedSince(user)) {
 					addInfoAction(by, tr::lng_rights_about_by, since);
 				}
+			} else if (const auto since = _additional.memberSince(user)) {
+				addJoinInfoAction(tr::lng_group_invite_joined_status, since);
 			}
 		}
 	});
@@ -2052,12 +2081,15 @@ base::unique_qptr<Ui::PopupMenu> ParticipantsBoxController::rowContextMenu(
 				? tr::lng_context_view_channel
 				: tr::lng_context_view_group)(tr::now),
 			crl::guard(this, [=, this] {
-				_navigation->parentController()->show(
-					PrepareShortInfoBox(participant, _navigation));
+				_navigation->parentController()->showPeerInfo(participant);
 			}),
 			(participant->isUser()
 				? &st::menuIconProfile
 				: &st::menuIconInfo));
+		result->addAction(
+			tr::lng_context_show_messages_from(tr::now),
+			crl::guard(this, [=] { App::searchByHashtag(QString(), _peer, participant); }),
+			&st::menuIconInfo);
 	}
 	if (user && SupportsMemberTags(_peer)) {
 		const auto isSelf = user->isSelf();
@@ -2580,20 +2612,24 @@ void ParticipantsBoxController::refreshCustomStatus(
 		not_null<PeerListRow*> row) const {
 	const auto participant = row->peer();
 	const auto user = participant->asUser();
+	QString title;
 	if (_role == Role::Admins) {
+		if (_additional.memberRank(user) != "") {
+			title = _additional.memberRank(user) + "|";
+		}
 		Assert(user != nullptr);
 		if (const auto by = _additional.adminPromotedBy(user)) {
-			row->setCustomStatus(tr::lng_channel_admin_status_promoted_by(
+			row->setCustomStatus(title+tr::lng_channel_admin_status_promoted_by(
 				tr::now,
 				lt_user,
 				by->name()));
 		} else {
 			if (_additional.isCreator(user)) {
 				row->setCustomStatus(
-					tr::lng_channel_admin_status_creator(tr::now));
+					title+tr::lng_channel_admin_status_creator(tr::now));
 			} else {
 				row->setCustomStatus(
-					tr::lng_channel_admin_status_not_admin(tr::now));
+					title+tr::lng_channel_admin_status_not_admin(tr::now));
 			}
 		}
 	} else if (_role == Role::Kicked || _role == Role::Restricted) {

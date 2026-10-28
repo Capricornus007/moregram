@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -42,6 +42,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_peer_photo.h"
 #include "api/api_self_destruct.h"
 #include "main/main_session.h"
+#include "facades.h"
 #include "styles/style_add_contact_box.h"
 #include "styles/style_boxes.h"
 #include "styles/style_chat_helpers.h"

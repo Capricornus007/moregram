@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #pragma once
 
+#include <apiwrap.h>
 #include "base/timer.h"
 #include "data/data_report.h"
 #include "ui/rp_widget.h"
@@ -151,6 +152,8 @@ public:
 		return _theme.get();
 	}
 
+	[[nodiscard]] Api::SendAction prepareSendAction(
+			History *history, Api::SendOptions options) const;
 	Ui::ChatPaintContext preparePaintContext(const QRect &clip) const;
 
 	using CollapseGap = Ui::CollapseGap;
@@ -532,8 +535,12 @@ private:
 		SelectAction action) const;
 	void changeAccessibilitySelection(int index, SelectAction action);
 	void extendAccessibilitySelection(int oldIndex, int newIndex);
+	void oldForwardItem(FullMsgId itemId);
+	void oldForwardAsGroup(FullMsgId itemId);
 	void forwardItem(FullMsgId itemId);
 	void forwardAsGroup(FullMsgId itemId);
+	void forwardItemNoQuote(FullMsgId itemId);
+	void forwardAsGroupNoQuote(FullMsgId itemId);
 	void deleteItem(not_null<HistoryItem*> item);
 	void deleteItem(FullMsgId itemId);
 	void deleteAsGroup(FullMsgId itemId);
@@ -543,6 +550,7 @@ private:
 	void blockSenderAsGroup(FullMsgId itemId);
 	void copySelectedText(bool withImageText = false);
 	void editCaptionUploadLayer(not_null<HistoryItem*> item);
+	void setupShortcuts();
 
 	[[nodiscard]] auto reactionButtonParameters(
 		not_null<const Element*> view,

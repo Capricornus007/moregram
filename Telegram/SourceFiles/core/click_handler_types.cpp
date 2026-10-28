@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -294,10 +294,10 @@ void SearchByHashtag(ClickContext context, const QString &tag) {
 		? data.message(my.itemId)->history()->peer.get()
 		: nullptr;
 	controller->content()->searchMessages(
-		tag + ' ',
+		tag,
 		(inPeer && !inPeer->isUser())
 			? data.history(inPeer).get()
-			: Dialogs::Key());
+			: Dialogs::Key(), nullptr);
 }
 
 void ExportToCalendar(TimeId date, const QString &messageText) {
@@ -489,7 +489,7 @@ void HiddenUrlClickHandler::Open(QString url, QVariant context) {
 		auto openContext = context;
 		const auto forceConfirmation = my.forceExternalUrlConfirmation
 			&& my.ignoreIv;
-		const auto skipConfirmation = base::IsCtrlPressed();
+		const auto skipConfirmation = (base::IsCtrlPressed() || GetEnhancedBool("disable_link_warning"));
 		if (forceConfirmation) {
 			my.forceExternalUrlConfirmation = false;
 			openContext = QVariant::fromValue(my);

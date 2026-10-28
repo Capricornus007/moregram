@@ -591,6 +591,14 @@ bool Gif::autoplayEnabled() const {
 	} else if (_realParent->isSponsored()) {
 		return true;
 	}
+	const auto peerId = _parent->data()->from()
+		? _parent->data()->from()->id
+		: PeerId(0);
+	const auto user = history()->session().data().peerLoaded(peerId);
+	if ((GetEnhancedBool("blocked_user_spoiler_mode") && blockExist(peerId.value))
+		|| (GetEnhancedBool("blocked_user_spoiler_mode") && user && user->isBlocked())) {
+		return false;
+	}
 	return Data::AutoDownload::ShouldAutoPlay(
 		_data->session().settings().autoDownload(),
 		_realParent->history()->peer,

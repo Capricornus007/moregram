@@ -1400,6 +1400,9 @@ void ParseAttributes(
 		}, [&](const MTPDdocumentAttributeSticker &data) {
 			result.isSticker = true;
 			result.stickerEmoji = ParseString(data.valt());
+			data.vstickerset().match([&](const MTPDinputStickerSetID &data) {
+				result.stickerSetId = data.vid().v;
+			}, [&](const auto &data) {});
 		}, [&](const MTPDdocumentAttributeCustomEmoji &data) {
 			result.isSticker = true;
 			result.stickerEmoji = ParseString(data.valt());
@@ -2962,6 +2965,7 @@ Message ParseMessage(
 				result.media.thumb().file = File();
 			}
 			context.botId = 0;
+			result.media_group_id = data.vgrouped_id().value_or_empty();
 		}
 		if (const auto replyMarkup = data.vreply_markup()) {
 			replyMarkup->match([](const MTPDreplyKeyboardMarkup &) {

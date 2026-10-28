@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -65,6 +65,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/window_session_controller.h"
 #include "apiwrap.h"
 #include "api/api_rich_tasks.h"
+#include "main/main_account.h"
 #include "styles/style_chat.h"
 #include "styles/style_chat_helpers.h"
 #include "styles/style_chat_style.h"
@@ -2074,6 +2075,7 @@ void Message::draw(Painter &p, const PaintContext &context) const {
 			paintFromName(p, trect, context);
 			paintEphemeralBadge(p, trect, context);
 			paintTopicButton(p, trect, context);
+			validateForwardedNameText(item);
 			paintForwardedInfo(p, trect, context);
 			paintViaBotIdInfo(p, trect, context);
 			paintReplyInfo(p, trect, context);
@@ -2304,6 +2306,11 @@ void Message::draw(Painter &p, const PaintContext &context) const {
 			}
 		}
 	}
+
+	if (GetEnhancedBool("screenshot_mode") != _previousMode) {
+		_previousMode = GetEnhancedBool("screenshot_mode"); // Update the previous mode
+	}
+
 	if (gestureShift) {
 		p.translate(-gestureShift, 0);
 		if (context.reactionInfo && context.reactionInfo->effectPaint) {
@@ -5514,7 +5521,7 @@ void Message::validateFromNameText(PeerData *from) const {
 		return;
 	}
 	const auto version = from->nameVersion();
-	if (_fromNameVersion < version) {
+	if (_fromNameVersion < version || GetEnhancedBool("screenshot_mode") != _previousMode) {
 		_fromNameVersion = version;
 		_fromName.setText(
 			st::msgNameStyle,
@@ -5533,6 +5540,14 @@ void Message::validateFromNameText(PeerData *from) const {
 		}
 	} else if (_fromNameStatus) {
 		_fromNameStatus = nullptr;
+	}
+}
+
+void Message::validateForwardedNameText(HistoryItem *item) const {
+	const auto forwarded = item->Get<HistoryMessageForwarded>();
+	const auto via = item->Get<HistoryMessageVia>();
+	if (forwarded && GetEnhancedBool("screenshot_mode") != _previousMode) {
+		forwarded->create(via, item);
 	}
 }
 
@@ -6585,6 +6600,11 @@ QRect Message::countGeometry() const {
 		contentLeft += std::max(
 			((st::msgMaxWidth + 2 * st::msgPhotoSkip) - contentWidth) / 2,
 			0);
+	}
+
+	// sponsored move to right
+	if (data()->isSponsored()) {
+		contentLeft = st::msgMargin.right() + availableWidth - contentWidth;
 	}
 
 	const auto contentTop = marginTop();

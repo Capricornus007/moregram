@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -45,6 +45,7 @@ inline auto ToSingleLine() {
 rpl::producer<not_null<PeerData*>> MigratedOrMeValue(
 	not_null<PeerData*> peer);
 
+[[nodiscard]] rpl::producer<TextWithEntities> StringValue(QString text);
 [[nodiscard]] rpl::producer<QString> NameValue(not_null<PeerData*> peer);
 [[nodiscard]] rpl::producer<QString> TitleValue(
 	not_null<Data::ForumTopic*> topic);

@@ -1,4 +1,4 @@
-# This file is part of Telegram Desktop,
+﻿# This file is part of Telegram Desktop,
 # the official desktop application for the Telegram messaging service.
 #
 # For license and copyright information please follow this link:
@@ -350,6 +350,8 @@ PRIVATE
     boxes/language_box.h
     boxes/max_invite_box.cpp
     boxes/max_invite_box.h
+    boxes/enhanced_options_box.cpp
+    boxes/enhanced_options_box.h
     boxes/moderate_messages_box.cpp
     boxes/moderate_messages_box.h
     boxes/music_attach_box.cpp
@@ -587,6 +589,8 @@ PRIVATE
     core/crash_reports.h
     core/credits_amount.h
     core/deadlock_detector.h
+    core/enhanced_settings.cpp
+    core/enhanced_settings.h
     core/deep_links/deep_links_chats.cpp
     core/deep_links/deep_links_chats.h
     core/deep_links/deep_links_contacts.cpp
@@ -1945,6 +1949,8 @@ PRIVATE
     settings/sections/settings_credits.h
     settings/settings_credits_graphics.cpp
     settings/settings_credits_graphics.h
+    settings/settings_enhanced.cpp
+    settings/settings_enhanced.h
     settings/settings_experimental.cpp
     settings/settings_experimental.h
     settings/sections/settings_folders.cpp
@@ -2458,6 +2464,8 @@ PRIVATE
     apiwrap.cpp
     apiwrap.h
     config.h
+    facades.cpp
+    facades.h
     logs.cpp
     logs.h
     main.cpp
@@ -2521,6 +2529,7 @@ PRIVATE
     winrc/Telegram.manifest
     langs/lang.strings
     langs/cloud_lang.strings
+    langs/localization/en.json
     numbers.txt
 )
 
@@ -2676,7 +2685,7 @@ else()
 endif()
 
 if (build_macstore)
-    set(bundle_identifier "org.telegram.desktop")
+    set(bundle_identifier "io.github.tdesktop_x64.TDesktop")
     set(bundle_entitlements "Telegram Lite.entitlements")
     set(output_name "Telegram Lite")
     target_link_options(Telegram
@@ -2763,7 +2772,7 @@ if (MSVC)
         # Keep delay-load protection across Qt variants with different imports.
         /IGNORE:4199
         /DELAYLOAD:secur32.dll
-        /DELAYLOAD:winmm.dll
+        # /DELAYLOAD:winmm.dll
         /DELAYLOAD:ws2_32.dll
         /DELAYLOAD:user32.dll
         /DELAYLOAD:gdi32.dll
@@ -2941,9 +2950,9 @@ endif()
 
 if (LINUX AND DESKTOP_APP_USE_PACKAGED)
     include(GNUInstallDirs)
-    configure_file("../lib/xdg/org.telegram.desktop.service" "${CMAKE_CURRENT_BINARY_DIR}/org.telegram.desktop.service" @ONLY)
-    configure_file("../lib/xdg/org.telegram.desktop.metainfo.xml" "${CMAKE_CURRENT_BINARY_DIR}/org.telegram.desktop.metainfo.xml" @ONLY)
-    generate_appstream_changelog(Telegram "${CMAKE_SOURCE_DIR}/changelog.txt" "${CMAKE_CURRENT_BINARY_DIR}/org.telegram.desktop.metainfo.xml")
+    configure_file("../lib/xdg/io.github.tdesktop_x64.TDesktop.service" "${CMAKE_CURRENT_BINARY_DIR}/io.github.tdesktop_x64.TDesktop.service" @ONLY)
+    configure_file("../lib/xdg/io.github.tdesktop_x64.TDesktop.metainfo.xml" "${CMAKE_CURRENT_BINARY_DIR}/io.github.tdesktop_x64.TDesktop.metainfo.xml" @ONLY)
+    generate_appstream_changelog(Telegram "${CMAKE_SOURCE_DIR}/64gram_changelog.txt" "${CMAKE_CURRENT_BINARY_DIR}/io.github.tdesktop_x64.TDesktop.metainfo.xml")
     install(TARGETS Telegram RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" BUNDLE DESTINATION "${CMAKE_INSTALL_BINDIR}")
     install(FILES "Resources/art/icon16.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/16x16/apps" RENAME "org.telegram.desktop.png")
     install(FILES "Resources/art/icon16@2x.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/16x16@2/apps" RENAME "org.telegram.desktop.png")
@@ -2962,7 +2971,7 @@ if (LINUX AND DESKTOP_APP_USE_PACKAGED)
     install(FILES "Resources/icons/tray_monochrome.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/symbolic/apps" RENAME "org.telegram.desktop-symbolic.svg")
     install(FILES "Resources/icons/tray_monochrome_attention.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/symbolic/apps" RENAME "org.telegram.desktop-attention-symbolic.svg")
     install(FILES "Resources/icons/tray_monochrome_mute.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/symbolic/apps" RENAME "org.telegram.desktop-mute-symbolic.svg")
-    install(FILES "../lib/xdg/org.telegram.desktop.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/org.telegram.desktop.service" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/dbus-1/services")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/org.telegram.desktop.metainfo.xml" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
+    install(FILES "../lib/xdg/io.github.tdesktop_x64.TDesktop.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/io.github.tdesktop_x64.TDesktop.service" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/dbus-1/services")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/io.github.tdesktop_x64.TDesktop.metainfo.xml" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
 endif()

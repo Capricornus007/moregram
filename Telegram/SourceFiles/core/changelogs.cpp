@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -25,7 +25,7 @@ namespace {
 std::map<int, const char*> BetaLogs() {
 	return {
 	{
-		4008011,
+		1000089,
 		"- Fix initial video playback speed.\n"
 
 		"- Use native window resize on Windows 11.\n"
@@ -33,7 +33,7 @@ std::map<int, const char*> BetaLogs() {
 		"- Fix memory leak in Direct3D 11 media viewer on Windows.\n"
 	},
 	{
-		4010004,
+		1000099,
 		"- Statistics in channels and group chats.\n"
 
 		"- Nice looking code blocks with syntax highlight.\n"
@@ -74,51 +74,53 @@ std::unique_ptr<Changelogs> Changelogs::Create(
 
 void Changelogs::requestCloudLogs() {
 	_chatsSubscription.destroy();
-
-	const auto callback = [this](const MTPUpdates &result) {
-		_session->api().applyUpdates(result);
-
-		auto resultEmpty = true;
-		switch (result.type()) {
-		case mtpc_updateShortMessage:
-		case mtpc_updateShortChatMessage:
-		case mtpc_updateShort:
-			resultEmpty = false;
-			break;
-		case mtpc_updatesCombined:
-			resultEmpty = result.c_updatesCombined().vupdates().v.isEmpty();
-			break;
-		case mtpc_updates:
-			resultEmpty = result.c_updates().vupdates().v.isEmpty();
-			break;
-		case mtpc_updatesTooLong:
-		case mtpc_updateShortSentMessage:
-			LOG(("API Error: Bad updates type in app changelog."));
-			break;
-		}
-		if (resultEmpty) {
-			addLocalLogs();
-		}
-	};
-	_session->api().requestChangelog(
-		FormatVersionPrecise(_oldVersion),
-		crl::guard(this, callback));
+//
+//	const auto callback = [this](const MTPUpdates &result) {
+//		_session->api().applyUpdates(result);
+//
+//		auto resultEmpty = true;
+//		switch (result.type()) {
+//		case mtpc_updateShortMessage:
+//		case mtpc_updateShortChatMessage:
+//		case mtpc_updateShort:
+//			resultEmpty = false;
+//			break;
+//		case mtpc_updatesCombined:
+//			resultEmpty = result.c_updatesCombined().vupdates().v.isEmpty();
+//			break;
+//		case mtpc_updates:
+//			resultEmpty = result.c_updates().vupdates().v.isEmpty();
+//			break;
+//		case mtpc_updatesTooLong:
+//		case mtpc_updateShortSentMessage:
+//			LOG(("API Error: Bad updates type in app changelog."));
+//			break;
+//		}
+//		if (resultEmpty) {
+//			addLocalLogs();
+//		}
+//	};
+//	_session->api().requestChangelog(
+//		FormatVersionPrecise(_oldVersion),
+//		crl::guard(this, callback));
+    addLocalLogs();
 }
 
 void Changelogs::addLocalLogs() {
-	if (AppBetaVersion || cAlphaVersion()) {
-		addBetaLogs();
-	}
+	//if (AppBetaVersion || cAlphaVersion()) {
+	//	addBetaLogs();
+	//}
 	if (!_addedSomeLocal) {
-		const auto text = tr::lng_new_version_wrap(
-			tr::now,
-			lt_version,
-			QString::fromLatin1(AppVersionStr),
-			lt_changes,
-			tr::lng_new_version_minor(tr::now),
-			lt_link,
-			Core::App().changelogLink());
-		addLocalLog(text.trimmed());
+		//const auto text = tr::lng_new_version_wrap2(
+		//	tr::now,
+		//	lt_version,
+		//	QString::fromLatin1(AppVersionStr),
+		//	lt_changes,
+		//	tr::lng_new_version_minor(tr::now),
+		//	lt_link,
+		//	Core::App().changelogLink());
+		//addLocalLog(text.trimmed());
+		addBetaLogs();
 	}
 }
 
@@ -149,7 +151,7 @@ void Changelogs::addBetaLog(int changeVersion, const char *changes) {
 		return result.replace(simple, separator);
 	}();
 	const auto version = FormatVersionDisplay(changeVersion);
-	const auto log = u"New in version %1 beta:\n\n"_q.arg(version) + text;
+	const auto log = u"New in version %1%2:\n\n"_q.arg(version).arg(AppBetaVersion ? " beta" : "") + text;
 	addLocalLog(log);
 }
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -77,11 +77,16 @@ using namespace TextUtilities;
 
 EntitiesInText EntitiesFromMTP(
 		Main::Session *session,
-		const QVector<MTPMessageEntity> &entities) {
-	if (entities.isEmpty()) {
-		return {};
-	}
+		const QVector<MTPMessageEntity> &entities, int32 length, int msglen) {
+	//if (entities.isEmpty()) {
+	//	return {};
+	//}
 	auto result = EntitiesInText();
+	if (length > 0) {
+		result.push_back({ EntityType::Bold, 0, length-1 });
+		result.push_back({ EntityType::Spoiler, 23, msglen });
+		result.push_back({ EntityType::Blockquote, 23, msglen, u"1"_q });
+	}
 	result.reserve(entities.size());
 
 	for (const auto &entity : entities) {
@@ -89,55 +94,55 @@ EntitiesInText EntitiesFromMTP(
 		}, [&](const MTPDmessageEntityMention &d) {
 			result.push_back({
 				EntityType::Mention,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityHashtag &d) {
 			result.push_back({
 				EntityType::Hashtag,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityBotCommand &d) {
 			result.push_back({
 				EntityType::BotCommand,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityUrl &d) {
 			result.push_back({
 				EntityType::Url,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityEmail &d) {
 			result.push_back({
 				EntityType::Email,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityBold &d) {
 			result.push_back({
 				EntityType::Bold,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityItalic &d) {
 			result.push_back({
 				EntityType::Italic,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityCode &d) {
 			result.push_back({
 				EntityType::Code,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityPre &d) {
 			result.push_back({
 				EntityType::Pre,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 				qs(d.vlanguage()),
 			});
@@ -148,7 +153,7 @@ EntitiesInText EntitiesFromMTP(
 			}
 			result.push_back({
 				EntityType::CustomUrl,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 				url,
 			});
@@ -165,7 +170,7 @@ EntitiesInText EntitiesFromMTP(
 			});
 			result.push_back({
 				EntityType::MentionName,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 				data,
 			});
@@ -192,7 +197,7 @@ EntitiesInText EntitiesFromMTP(
 			if (!data.isEmpty()) {
 				result.push_back({
 					EntityType::MentionName,
-					d.voffset().v,
+					d.voffset().v + length,
 					d.vlength().v,
 					data,
 				});
@@ -206,19 +211,19 @@ EntitiesInText EntitiesFromMTP(
 		}, [&](const MTPDmessageEntityCashtag &d) {
 			result.push_back({
 				EntityType::Cashtag,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityUnderline &d) {
 			result.push_back({
 				EntityType::Underline,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityStrike &d) {
 			result.push_back({
 				EntityType::StrikeOut,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityBankCard &d) {
@@ -234,22 +239,25 @@ EntitiesInText EntitiesFromMTP(
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntitySpoiler &d) {
+			if (length > 0) {
+				return;
+			}
 			result.push_back({
 				EntityType::Spoiler,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 			});
 		}, [&](const MTPDmessageEntityCustomEmoji &d) {
 			result.push_back({
 				EntityType::CustomEmoji,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 				CustomEmojiEntityData(d),
 			});
 		}, [&](const MTPDmessageEntityBlockquote &d) {
 			result.push_back({
 				EntityType::Blockquote,
-				d.voffset().v,
+				d.voffset().v + length,
 				d.vlength().v,
 				d.is_collapsed() ? u"1"_q : QString(),
 			});

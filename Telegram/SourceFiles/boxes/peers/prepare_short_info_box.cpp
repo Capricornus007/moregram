@@ -243,6 +243,7 @@ void ProcessFullPhoto(
 			.birthday = user ? user->birthday() : Data::Birthday(),
 			.note = user ? user->note() : TextWithEntities(),
 			.isBio = (user && !user->isBot()),
+			.user_id = QString::number(peer->id.value),
 		};
 	});
 }

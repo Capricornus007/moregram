@@ -597,6 +597,8 @@ public:
 	TimeId inviteDate = 0;
 	bool inviteViaRequest = false;
 
+	QString restriction_reason;
+
 private:
 	struct InvitePeek {
 		QString hash;

@@ -5,11 +5,13 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include <core/enhanced_settings.h>
 #include "api/api_blocked_peers.h"
 
 #include "apiwrap.h"
 #include "base/unixtime.h"
 #include "data/data_changes.h"
+#include "data/data_histories.h"
 #include "data/data_peer.h"
 #include "data/data_peer_id.h"
 #include "data/data_session.h"
@@ -87,6 +89,15 @@ void BlockedPeers::block(not_null<PeerData*> peer) {
 	)).done([=] {
 		const auto data = _blockRequests.take(peer);
 		peer->setIsBlocked(true);
+
+			if (GetEnhancedBool("blocked_user_spoiler_mode")) {
+				if (!blockExist(peer->id.value)) {
+					EnhancedSettings::Manager().addIdToBlocklist(int64(peer->id.value));
+				}
+				auto &histories = _session->data().histories();
+				histories.editHistoriesMessages(peer, true);
+			}
+
 		if (_slice) {
 			_slice->list.insert(
 				_slice->list.begin(),
@@ -131,6 +142,15 @@ void BlockedPeers::unblock(
 	)).done([=] {
 		const auto data = _blockRequests.take(peer);
 		peer->setIsBlocked(false);
+
+		if (GetEnhancedBool("blocked_user_spoiler_mode")) {
+			if (blockExist(peer->id.value)) {
+				EnhancedSettings::Manager().removeIdFromBlocklist(int64(peer->id.value));
+			}
+			auto& histories = _session->data().histories();
+			histories.editHistoriesMessages(peer, false);
+		}
+
 		if (_slice) {
 			auto &list = _slice->list;
 			for (auto i = list.begin(); i != list.end(); ++i) {

@@ -201,6 +201,8 @@ public:
 	bool confirmSendingFiles(const QStringList &files);
 	bool confirmSendingFiles(not_null<const QMimeData*> data);
 
+	static bool hasHiddenPinnedMessage(not_null<PeerData*> peer);
+	static bool switchPinnedHidden(not_null<PeerData*> peer, bool hidden);
 	void updateControlsVisibility();
 	void updateControlsGeometry();
 
@@ -310,7 +312,10 @@ public:
 
 	QPixmap grabForShowAnimation(const Window::SectionSlideParams &params);
 
+	void oldForwardSelected();
 	void forwardSelected();
+	void forwardNoQuoteSelected();
+	void forwardSelectedToSavedMessages();
 	void confirmDeleteSelected();
 	void clearSelected();
 
@@ -505,6 +510,9 @@ private:
 	void unblockUser();
 	void sendBotStartCommand();
 	void joinChannel();
+	void goToDiscussionGroup();
+
+	[[nodiscard]] bool hasDiscussionGroup() const;
 
 	void supportInitAutocomplete();
 	void supportInsertText(const QString &text);
@@ -933,6 +941,7 @@ private:
 	object_ptr<Ui::FlatButton> _botStart;
 	object_ptr<Ui::FlatButton> _joinChannel;
 	object_ptr<Ui::FlatButton> _muteUnmute;
+	object_ptr<Ui::FlatButton> _discuss;
 	QPointer<Ui::IconButton> _giftToChannel;
 	QPointer<Ui::IconButton> _directMessage;
 	rpl::lifetime _directMessageLifetime;

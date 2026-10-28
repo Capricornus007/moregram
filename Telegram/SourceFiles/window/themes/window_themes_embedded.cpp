@@ -20,6 +20,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <QtGui/QGuiApplication>
 #include <QtGui/QPalette>
 
+#include "base/platform/base_platform_info.h"
+
 namespace Window {
 namespace Theme {
 namespace {

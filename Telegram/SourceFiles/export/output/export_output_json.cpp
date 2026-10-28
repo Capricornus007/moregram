@@ -230,6 +230,20 @@ QByteArray SerializeText(
 	return SerializeArray(context, text);
 }
 
+QByteArray SerializeFullText(const std::vector<Data::TextPart>& data) {
+	if (data.empty()) {
+		return SerializeString("");
+	}
+
+	QByteArray text = QByteArray();
+
+	for (auto part : data) {
+		text += part.text;
+	}
+
+	return SerializeString(text);
+}
+
 Data::Utf8String FormatUsername(const Data::Utf8String &username) {
 	return username.isEmpty() ? username : ('@' + username);
 }
@@ -1673,6 +1687,7 @@ QByteArray SerializeMessage(
 			push("width", image.width);
 			push("height", image.height);
 		}
+		push("media_group_id", message.media_group_id);
 	};
 	const auto pushSpoiler = [&](const auto &media) {
 		if (media.spoilered) {
@@ -2130,6 +2145,8 @@ QByteArray SerializeMessage(
 		if (data.isSticker) {
 			pushType("sticker");
 			push("sticker_emoji", data.stickerEmoji);
+			push("sticker_id", Data::NumberToString(data.id));
+			push("sticker_set_id", Data::NumberToString(data.stickerSetId));
 		} else if (data.isVideoMessage) {
 			pushType("video_message");
 		} else if (data.isVoiceMessage) {
@@ -2316,6 +2333,8 @@ QByteArray SerializeMessage(
 	}, [&](const UnsupportedMedia &) {
 		Expects(message.richMessage.has_value());
 	}, [](v::null_t) {});
+
+	pushBare("full_text", SerializeFullText(message.text));
 
 	if (message.richMessage) {
 		pushBare(

@@ -63,6 +63,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "lang/lang_keys.h"
 #include "boxes/peers/edit_participant_box.h"
 #include "boxes/peers/edit_participants_box.h"
+#include "ui/boxes/confirm_box.h"
 #include "data/data_changes.h"
 #include "data/data_session.h"
 #include "data/data_photo.h"
@@ -81,6 +82,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <QtWidgets/QApplication>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
+
+#include "boxes/abstract_box.h"
 
 namespace AdminLog {
 namespace {

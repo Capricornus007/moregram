@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 using "ui/colors.palette";
 
+filtersSavedMessage: icon {{ "folders/saved_messages", sideBarIconFg }};
 foldersCat: icon {{ "folders/folders_cat", sideBarIconFg }};
 foldersCatActive: icon {{ "folders/folders_cat", sideBarIconFgActive }};
 foldersBook: icon {{ "folders/folders_book", sideBarIconFg }};

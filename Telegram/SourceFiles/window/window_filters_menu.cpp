@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -44,6 +44,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/storage_media_prepare.h"
 #include "api/api_chat_filters.h"
 #include "apiwrap.h"
+#include "mainwidget.h"
+#include "history/history.h"
 #include "styles/style_widgets.h"
 #include "styles/style_window.h"
 #include "styles/style_menu_icons.h"
@@ -361,7 +363,7 @@ void FiltersMenu::refresh() {
 	const auto maxLimit = (reorderAll ? 1 : 0)
 		+ Data::PremiumLimits(&_session->session()).dialogFiltersCurrent();
 	const auto premiumFrom = (reorderAll ? 0 : 1) + maxLimit;
-	if (!reorderAll) {
+	if (!reorderAll && !GetEnhancedBool("hide_all_chats")) {
 		_reorder->addPinnedInterval(0, 1);
 	}
 	_reorder->addPinnedInterval(
@@ -430,16 +432,30 @@ void FiltersMenu::refresh() {
 		refocus->setFocus();
 		scrollToButton(refocus);
 	}
+	// Fix active chat folder when hide all chats is enabled.
+	if (GetEnhancedBool("hide_all_chats") && filters->isEarlyStart()) {
+		const auto lookup_id = filters->lookupId(0);
+		_session->setActiveChatsFilter(lookup_id);
+	}
 }
 
 void FiltersMenu::setupList() {
 	_list = _container->add(object_ptr<TabListLayout>(_container));
 	_list->setAccessibleName(tr::lng_filters_title(tr::now));
-	_setup = prepareButton(
-		_container,
-		-1,
-		{ TextWithEntities{ tr::lng_filters_setup(tr::now) } },
-		Ui::FilterIcon::Edit);
+	if (!GetEnhancedBool("replace_edit_button")) {
+		_setup = prepareButton(
+				_container,
+				-1,
+				{ TextWithEntities{ tr::lng_filters_setup(tr::now) } },
+				Ui::FilterIcon::Edit);
+	} else {
+		_setup = prepareButton(
+				_container,
+				-1,
+				{ TextWithEntities{ tr::lng_saved_messages(tr::now) } },
+				Ui::FilterIcon::SavedMessage);
+	}
+
 	_reorder = std::make_unique<Ui::VerticalLayoutReorder>(_list, &_scroll);
 
 	_reorder->updates(
@@ -681,10 +697,14 @@ base::unique_qptr<Ui::SideBarButton> FiltersMenu::prepareButton(
 		} else if (id >= 0) {
 			_session->setActiveChatsFilter(id);
 		} else {
-			openFiltersSettings();
+			if (GetEnhancedBool("replace_edit_button")) {
+				_session->showPeerHistory(_session->session().userPeerId());
+			} else {
+				openFiltersSettings();
+			}
 		}
 	});
-	if (id >= 0) {
+	if (id > 0) {
 		raw->setAcceptDrops(true);
 		raw->events(
 		) | rpl::filter([=](not_null<QEvent*> e) {
@@ -716,6 +736,83 @@ base::unique_qptr<Ui::SideBarButton> FiltersMenu::prepareButton(
 			}
 		}, raw->lifetime());
 	}
+	// Mark all chats as read
+	if (id == 0) {
+		raw->events(
+		) | rpl::filter([=](not_null<QEvent*> e) {
+			return e->type() == QEvent::ContextMenu;
+		}) | rpl::on_next([=] {
+			_popupMenu = base::make_unique_q<Ui::PopupMenu>(
+				raw,
+				st::popupMenuWithIcons);;
+			const auto addAction = Window::PeerMenuCallback([&](
+					Window::PeerMenuCallback::Args args) {
+				return _popupMenu->addAction(
+					args.text,
+					crl::guard(&_outer, std::move(args.handler)),
+					args.icon);
+			});
+			MarkAsReadMenu::AddAllChatsAction(
+					&_session->session(),
+					_session->uiShow(),
+					addAction);
+			_popupMenu->popup(QCursor::pos());
+		}, raw->lifetime());
+	}
+
+	// -1 means the "Edit" button
+	if (id == -1 && GetEnhancedBool("replace_edit_button")) {
+		raw->setAcceptDrops(true);
+		raw->events(
+		) | rpl::filter([=](not_null<QEvent*> e) {
+			return ((e->type() == QEvent::ContextMenu) && (id >= 0))
+				|| e->type() == QEvent::DragEnter
+				|| e->type() == QEvent::DragMove
+				|| e->type() == QEvent::DragLeave
+				|| e->type() == QEvent::Drop;
+		}) | rpl::on_next([=](not_null<QEvent*> e) {
+			using namespace Storage;
+			if (e->type() == QEvent::DragEnter) {
+				const auto d = static_cast<QDragEnterEvent*>(e.get());
+				const auto data = d->mimeData();
+
+				if (data->hasFormat(u"application/x-td-forward"_q)) {
+					d->setDropAction(Qt::CopyAction);
+					d->accept();
+					// updateDragInScroll(_parent->geometry().contains(d->pos()));
+				} else if (ComputeMimeDataState(data) != MimeDataState::None) {
+					_drag.timer.callOnce(ChoosePeerByDragTimeout);
+					_drag.filterId = id;
+					d->setDropAction(Qt::CopyAction);
+					d->accept();
+				}
+			} else if (e->type() == QEvent::DragMove) {
+				_drag.timer.callOnce(ChoosePeerByDragTimeout);
+			} else if (e->type() == QEvent::DragLeave) {
+				_drag.filterId = FilterId(-1);
+				_drag.timer.cancel();
+			} else if (e->type() == QEvent::Drop) {
+				_drag.timer.cancel();
+
+				const auto d = static_cast<QDropEvent*>(e.get());
+				const auto data = d->mimeData();
+				const auto controller = _session->parentController();
+				const auto session = &controller->session();
+				const auto history = session->data().history(session->user()).get();
+
+				d->setDropAction(Qt::CopyAction);
+				d->accept();
+
+				controller->content()->filesOrForwardDrop(
+					history->asThread(),
+					data);
+
+				controller->widget()->raise();
+				controller->widget()->activateWindow();
+			}
+		}, raw->lifetime());
+	}
+
 	return button;
 }
 
@@ -798,11 +895,11 @@ void FiltersMenu::applyReorder(
 
 	const auto filters = &_session->session().data().chatsFilters();
 	const auto &list = filters->list();
-	if (!premium()) {
-		if (list[0].id() != FilterId()) {
-			filters->moveAllToFront();
-		}
-	}
+	//if (!premium()) {
+	//	if (list[0].id() != FilterId()) {
+	//		filters->moveAllToFront();
+	//	}
+	//}
 	Assert(oldPosition >= 0 && oldPosition < list.size());
 	Assert(newPosition >= 0 && newPosition < list.size());
 	const auto id = list[oldPosition].id();

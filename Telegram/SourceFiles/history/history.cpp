@@ -788,6 +788,43 @@ void History::destroyMessagesByTopic(MsgId topicRootId) {
 	}
 }
 
+void History::editHistoryMessages(PeerData* peer, bool isHide) {
+	for (const auto &message : _items) {
+		if (message->isRegular() && !message->isService() && message->from() == peer) {
+			if (isHide) {
+				hideMessage(message.get());
+			} else {
+				unhideMessage(message.get());
+			}
+		}
+	}
+}
+
+void History::unhideMessage(not_null<HistoryItem*> item) {
+	auto text = item->originalText();
+	auto blkMsg = QString("[Blocked User Message]");
+
+	if (text.text.contains(blkMsg)) {
+		item->setText(item->getOriginalMessage());
+		if (item->media()) {
+			owner().requestItemTextRefresh(item);
+			owner().requestItemViewRefresh(item);
+		} else {
+			owner().requestItemResize(item);
+		}
+	}
+}
+
+void History::hideMessage(not_null<HistoryItem*> item) {
+	item->setText(item->getBlockedMessage());
+	if (item->media()) {
+		owner().requestItemTextRefresh(item);
+		owner().requestItemViewRefresh(item);
+	} else {
+		owner().requestItemResize(item);
+	}
+}
+
 void History::destroyMessagesBySublist(not_null<PeerData*> sublistPeer) {
 	auto toDestroy = std::vector<not_null<HistoryItem*>>();
 	toDestroy.reserve(_items.size());

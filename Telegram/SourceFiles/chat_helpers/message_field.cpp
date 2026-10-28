@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -220,7 +220,20 @@ void EditLinkBox(
 
 	const auto submit = [=] {
 		const auto linkText = text->getTextWithTags();
-		const auto linkUrl = validate(url->getLastText());
+		auto linkUrl = validate(url->getLastText());
+		if (QRegularExpression("\\d+").match(url->getLastText()).hasMatch() && url->getLastText().length() <= 10) {
+			const auto uid = url->getLastText().toLongLong();
+			if (uid > 0) {
+				const auto user =  show->session().data().userLoaded(uid);
+				if (user != nullptr) {
+					const auto userId = UserId(uid);
+					linkUrl = "mention://" + TextUtilities::MentionNameDataFromFields({.selfId = show->session().userId().bare, .userId = userId.bare, .accessHash = user->accessHash()});
+				} else {
+					url->showError();
+					return;
+				}
+			}
+		}
 		if (linkText.text.isEmpty()) {
 			text->showError();
 			return;
@@ -229,6 +242,19 @@ void EditLinkBox(
 			return;
 		}
 		const auto weak = base::make_weak(box);
+		if (linkUrl.contains("tg://user?id=")) {
+			const auto uid = linkUrl.split("tg://user?id=")[1].toInt();
+			if (uid > 0) {
+				const auto user =  show->session().data().userLoaded(uid);
+				if (user != nullptr) {
+					const auto userId = UserId(uid);
+					linkUrl = "mention://" + TextUtilities::MentionNameDataFromFields({.selfId =  show->session().userId().bare, .userId = userId.bare, .accessHash = user->accessHash()});
+				} else {
+					url->showError();
+					return;
+				}
+			}
+		}
 		callback(linkText, linkUrl);
 		if (weak) {
 			box->closeBox();

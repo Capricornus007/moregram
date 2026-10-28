@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -24,6 +24,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_chat_participants.h"
 #include "api/api_communities.h"
 #include "api/api_global_privacy.h"
+#include "base/random.h"
+#include "base/openssl_help.h"
 #include "lang/lang_keys.h"
 #include "lottie/lottie_icon.h"
 #include "ui/boxes/confirm_box.h"
@@ -48,6 +50,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "boxes/peers/edit_forum_topic_box.h"
 #include "boxes/peers/edit_contact_box.h"
 #include "boxes/peers/prepare_short_info_box.h"
+#include "boxes/share_box.h"
 #include "calls/calls_instance.h"
 #include "inline_bots/bot_attach_web_view.h" // InlineBots::PeerType.
 #include "ui/toast/toast.h"
@@ -63,21 +66,25 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/vertical_list.h"
 #include "ui/controls/feature_list.h"
 #include "ui/ui_utility.h"
+#include "core/application.h"
 #include "main/main_app_config.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
+#include "main/session/send_as_peers.h"
 #include "menu/menu_mute.h"
 #include "menu/menu_ttl_validator.h"
 #include "apiwrap.h"
 #include "mainwidget.h"
 #include "api/api_blocked_peers.h"
 #include "api/api_chat_filters.h"
+#include "api/api_sending.h"
 #include "api/api_polls.h"
 #include "api/api_todo_lists.h"
 #include "api/api_updates.h"
 #include "mtproto/mtproto_config.h"
 #include "history/history.h"
 #include "history/history_item_helpers.h" // GetErrorForSending.
+#include "history/history_widget.h"
 #include "history/history_item_components.h"
 #include "history/view/controls/history_view_forward_panel.h"
 #include "history/view/history_view_context_menu.h"
@@ -106,6 +113,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/stickers/data_custom_emoji.h"
 #include "data/data_changes.h"
 #include "data/data_session.h"
+#include "data/data_file_origin.h"
 #include "data/data_folder.h"
 #include "data/data_poll.h"
 #include "data/data_channel.h"
@@ -140,6 +148,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QAction>
 #include <QtWidgets/QApplication>
+#include <QtGui/QClipboard>
+#include <api/api_text_entities.h>
+#include <history/view/history_view_pinned_section.h>
+
+#include "boxes/abstract_box.h"
+#include "data/business/data_shortcut_messages.h"
 
 namespace Window {
 namespace {
@@ -341,6 +355,10 @@ private:
 	void addTTLSubmenu(bool addSeparator);
 	void addSendGift();
 	void addSendMoney();
+
+	void addPinnedMessages();
+	void addFirstMessage();
+	void addViewChannel();
 	void addCreateTopic();
 	void addViewAsMessages();
 	void addViewAsTopics();
@@ -1704,6 +1722,58 @@ void Filler::addSendMoney() {
 	}
 }
 
+void Filler::addPinnedMessages() {
+	const auto channel = _peer->asChannel();
+	if (!channel) {
+		return;
+	}
+	if (channel->owner().history(channel)->hasPinnedMessages()) {
+		auto hasHidden = HistoryWidget::hasHiddenPinnedMessage(channel);
+		if (hasHidden) {
+			_addAction(
+					tr::lng_pinned_message_show(tr::now),
+					[=] { PeerMenuUnhidePinnedMessage(channel); }, &st::menuIconEdit);
+		} else {
+			_addAction(
+					tr::lng_pinned_message_hide(tr::now),
+					[=] { PeerMenuHidePinnedMessage(channel); }, &st::menuIconEdit);
+		}
+		_addAction(
+				tr::lng_pinned_message_view(tr::now),
+				[=] {
+					const auto history = channel->owner().history(channel);
+					App::wnd()->sessionController()->showSection(std::make_shared<HistoryView::PinnedMemento>(history));
+				}, & st::menuIconEdit);
+	}
+}
+
+void Filler::addFirstMessage() {
+	const auto peer = _peer->isMegagroup() ? _peer->asMegagroup() : _peer->asChannel();
+	if (!peer) {
+		return;
+	}
+	_addAction(tr::lng_go_to_first_message(tr::now), [=] {
+		App::wnd()->sessionController()->showPeerHistory(
+				peer,
+				Window::SectionShow::Way::Forward,
+				1);
+	}, &st::menuIconShowInChat);
+}
+
+void Filler::addViewChannel() {
+	const auto peer = _peer->asChannel();
+	if (!peer) {
+		return;
+	}
+	if (const auto chat = peer->discussionLink()) {
+		_addAction(peer->isMegagroup() ? tr::lng_profile_view_channel(tr::now) : tr::lng_profile_view_discussion(tr::now), [=] {
+			App::wnd()->sessionController()->showPeerHistory(
+					chat,
+					Window::SectionShow::Way::Forward);
+		}, &st::menuIconDiscussion);
+	}
+}
+
 void Filler::fill() {
 	if (_folder) {
 		fillArchiveActions();
@@ -1913,11 +1983,12 @@ void Filler::fillContextMenuActions() {
 	addNewWindow();
 	addUngroup();
 	addHidePromotion();
+	addInfo();
 	addToggleArchive();
 	addTogglePin();
-	if (ViewProfileInChatsListContextMenu.value()) {
-		addInfo();
-	}
+	//if (ViewProfileInChatsListContextMenu.value()) {
+	//	addInfo();
+	//}
 	addToggleMuteSubmenu(false);
 	addToggleUnreadMark();
 	addToggleTopicClosed();
@@ -1943,11 +2014,14 @@ void Filler::fillHistoryActions() {
 	addStoryArchive();
 	addSupportInfo();
 	addBoostChat();
+	addViewChannel();
+	addFirstMessage();
+	addPinnedMessages();
 	addCreatePoll();
 	addCreateTodoList();
 	addThemeEdit();
+	// addViewDiscussion();
 	addToggleNoForwards();
-	addViewDiscussion();
 	addDirectMessages();
 	addExportChat();
 	addTranslate();
@@ -2189,6 +2263,20 @@ void Filler::addSetPersonalChannel() {
 }
 
 } // namespace
+
+void PeerMenuHidePinnedMessage(not_null<PeerData*> peer) {
+	auto hidden = HistoryWidget::switchPinnedHidden(peer, true);
+	if (hidden) {
+		peer->owner().history(peer)->setHasPinnedMessages(true);
+	}
+}
+
+void PeerMenuUnhidePinnedMessage(not_null<PeerData*> peer) {
+	auto unhidden = HistoryWidget::switchPinnedHidden(peer, false);
+	if (unhidden) {
+		peer->owner().history(peer)->setHasPinnedMessages(true);
+	}
+}
 
 void PeerMenuExportChat(
 		not_null<Window::SessionController*> controller,
@@ -3114,6 +3202,74 @@ base::weak_qptr<Ui::BoxContent> ShowChooseRecipientBox(
 		typesRestriction));
 }
 
+Api::SendAction prepareSendAction(
+		History *history, Api::SendOptions options) {
+	auto result = Api::SendAction(history, options);
+	result.replyTo = FullReplyTo();
+	return result;
+}
+
+// Source from share box
+QPointer<Ui::BoxContent> ShowNewForwardMessagesBox(
+		not_null<Window::SessionNavigation*> navigation,
+		MessageIdsList &&msgIds,
+		bool no_quote,
+		FnMut<void()>&& successCallback) {
+	const auto item = navigation->session().data().message(msgIds[0]);
+	const auto history = item->history();
+	const auto owner = &history->owner();
+	const auto session = &history->session();
+	const auto isGame = item->getMessageBot()
+		&& item->media()
+		&& (item->media()->game() != nullptr);
+
+	const auto items = owner->idsToItems(msgIds);
+	const auto hasCaptions = ranges::any_of(items, [](auto item) {
+		return item->media()
+			&& !item->originalText().text.isEmpty()
+			&& item->media()->allowsEditCaption();
+	});
+	const auto hasOnlyForcedForwardedInfo = hasCaptions
+		? false
+		: ranges::all_of(items, [](auto item) {
+			return item->media() && item->media()->forceForwardedInfo();
+		});
+
+	const auto requiredRight = item->requiredSendRight();
+	const auto requiresInline = item->requiresSendInlineRight();
+	auto filterCallback = [=](not_null<Data::Thread*> thread) {
+		if (const auto user = thread->peer()->asUser()) {
+			if (user->canSendIgnoreMoneyRestrictions()) {
+				return true;
+			}
+		}
+		return Data::CanSend(thread, requiredRight)
+			&& (!requiresInline
+				|| Data::CanSend(thread, ChatRestriction::SendInline))
+			&& (!isGame || !thread->peer()->isBroadcast());
+	};
+	const auto weak = std::make_shared<base::weak_qptr<ShareBox>>();
+	*weak = Ui::show(Box<ShareBox>(ShareBox::Descriptor{
+						.session = session,
+						.submitCallback = ShareBox::DefaultForwardCallback(
+						   navigation->parentController()->uiShow(),
+			               history,
+			               msgIds,
+			               TimeId(0),
+			               no_quote,
+						   std::move(successCallback)),
+						.filterCallback = std::move(filterCallback),
+						.title = no_quote ? tr::lng_title_forward_as_copy() : tr::lng_title_multiple_forward(),
+						.forwardOptions = {
+							.sendersCount = ItemsForwardSendersCount(items),
+							.captionsCount = ItemsForwardCaptionsCount(items),
+							.show = !hasOnlyForcedForwardedInfo,
+						},
+						.moneyRestrictionError = WriteMoneyRestrictionError,
+					}), Ui::LayerOption::CloseOther);
+	return weak->get();
+}
+
 base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(
 		std::shared_ptr<ChatHelpers::Show> show,
 		Data::ForwardDraft &&draft,
@@ -3850,8 +4006,8 @@ base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(
 		MessageIdsList &&items,
 		Fn<void()> &&successCallback) {
 	return ShowForwardMessagesBox(
-		navigation,
-		Data::ForwardDraft{ .ids = std::move(items) },
+		navigation->uiShow(),
+		Data::ForwardDraft{ .ids = items },
 		std::move(successCallback));
 }
 

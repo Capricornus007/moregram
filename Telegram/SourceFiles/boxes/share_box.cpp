@@ -237,6 +237,7 @@ ShareBox::ShareBox(QWidget*, Descriptor &&descriptor)
 		_bottomWidget->resizeToWidth(st::boxWideWidth);
 		_bottomWidget->show();
 	}
+	header = _descriptor.title;
 }
 
 void ShareBox::prepareCommentField() {
@@ -292,9 +293,7 @@ void ShareBox::prepare() {
 	_select->resizeToWidth(st::boxWideWidth);
 	Ui::SendPendingMoveResizeEvents(_select);
 
-	setTitle(_descriptor.titleOverride
-		? std::move(_descriptor.titleOverride)
-		: tr::lng_share_title());
+	setTitle(header);
 
 	_inner = setInnerWidget(
 		object_ptr<Inner>(this, _descriptor, uiShow()),
@@ -1823,13 +1822,19 @@ ShareBox::SubmitCallback ShareBox::DefaultForwardCallback(
 		std::shared_ptr<Ui::Show> show,
 		not_null<History*> history,
 		MessageIdsList msgIds,
-		std::optional<TimeId> videoTimestamp) {
+		std::optional<TimeId> videoTimestamp,
+		bool no_quote,
+		FnMut<void()>&& successCallback) {
 	struct State final {
+		State(FnMut<void()>&& callback)
+		: submitCallback(std::move(callback)) {
+		}
 		base::flat_set<mtpRequestId> requests;
 		mtpRequestId nextRequestKey = 0;
 		bool failed = false;
+		FnMut<void()> submitCallback;
 	};
-	const auto state = std::make_shared<State>();
+	const auto state = std::make_shared<State>(std::move(successCallback));
 	return [=](
 			std::vector<not_null<Data::Thread*>> &&result,
 			Fn<bool()> checkPaid,
@@ -1864,21 +1869,27 @@ ShareBox::SubmitCallback ShareBox::DefaultForwardCallback(
 		}
 
 		using Flag = MTPmessages_ForwardMessages::Flag;
-		const auto commonSendFlags = Flag(0)
-			| Flag::f_with_my_score
-			| (options.scheduled ? Flag::f_schedule_date : Flag(0))
+		auto commonSendFlags = MTPmessages_ForwardMessages::Flags(0);
+		if (no_quote) {
+			commonSendFlags = (options.scheduled ? Flag::f_schedule_date : Flag(0)) | Flag::f_drop_author;
+		} else {
+			commonSendFlags = Flag(0)
+				| Flag::f_with_my_score
+				| (options.scheduled ? Flag::f_schedule_date : Flag(0))
 			| ((options.scheduled && options.scheduleRepeatPeriod)
 				? Flag::f_schedule_repeat_period
 				: Flag(0))
-			| ((forwardOptions != Data::ForwardOptions::PreserveInfo)
-				? Flag::f_drop_author
-				: Flag(0))
-			| ((forwardOptions == Data::ForwardOptions::NoNamesAndCaptions)
-				? Flag::f_drop_media_captions
+				| ((forwardOptions != Data::ForwardOptions::PreserveInfo)
+					? Flag::f_drop_author
+					: Flag(0))
+				| ((forwardOptions == Data::ForwardOptions::NoNamesAndCaptions)
+					? Flag::f_drop_media_captions
 				: Flag(0))
 			| (videoTimestamp.has_value()
 				? Flag::f_video_timestamp
-				: Flag(0));
+					: Flag(0));
+		}
+
 		const auto ranges = CollectForwardRanges(items);
 		if (ranges.empty()) {
 			return;
@@ -2065,6 +2076,9 @@ ShareBox::SubmitCallback ShareBox::DefaultForwardCallback(
 					donePhraseArgs);
 			}
 		}
+		if (state->submitCallback) {
+			state->submitCallback();
+		}
 	};
 }
 
@@ -2177,7 +2191,8 @@ void FastShareMessage(
 		.submitCallback = ShareBox::DefaultForwardCallback(
 			show,
 			history,
-			msgIds),
+			msgIds,
+			false),
 		.filterCallback = std::move(filterCallback),
 		.st = st,
 		.forwardOptions = {

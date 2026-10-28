@@ -791,3 +791,13 @@ void MainWindow::handleStartFiles(QStringList paths) {
 }
 
 MainWindow::~MainWindow() = default;
+
+namespace App {
+
+MainWindow *wnd() {
+	return (Core::IsAppLaunched() && Core::App().activePrimaryWindow())
+		? Core::App().activePrimaryWindow()->widget().get()
+		: nullptr;
+}
+
+} // namespace App

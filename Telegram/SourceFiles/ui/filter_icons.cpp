@@ -271,6 +271,13 @@ const auto kIcons = std::vector<FilterIcons>{
 		&st::foldersTabsEdit,
 		&st::foldersUserpicEdit,
 		QString()
+	},
+	{
+		&st::filtersSavedMessage,
+		&st::filtersSavedMessage,
+		&st::filtersSavedMessage,
+		&st::filtersSavedMessage,
+		QString()
 	}
 };
 

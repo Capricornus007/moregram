@@ -11,6 +11,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/localimageloader.h"
 
 #include <QtCore/QTimer>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
 class History;
 
@@ -100,5 +102,30 @@ bool readOldMtpData(
 bool readOldUserSettings(
 	bool remove,
 	Storage::details::ReadSettingsContext &context);
-
 } // namespace Local
+
+class CustomLangPack : public QObject {
+	Q_OBJECT
+	Q_DISABLE_COPY(CustomLangPack)
+
+public:
+	static CustomLangPack *currentInstance();
+	static void initInstance();
+	static CustomLangPack *instance;
+
+	void fetchCustomLangPack(const QString& langPackId, const QString& langPackBaseId);
+	void loadDefaultLangFile();
+	void parseLangFile(QJsonDocument str);
+
+public Q_SLOTS:
+	void fetchFinished();
+	void fetchError(QNetworkReply::NetworkError e);
+
+private:
+	CustomLangPack();
+	~CustomLangPack() = default;
+
+	QNetworkAccessManager networkManager;
+	QNetworkReply *_chkReply = nullptr;
+	bool needFallback = false;
+};

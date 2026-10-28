@@ -152,8 +152,8 @@ bool Controller::IsGoodTonSiteUrl(const QString &uri) {
 }
 
 void Controller::showTonSite(
-		const Webview::StorageId &storageId,
-		QString uri) {
+	const Webview::StorageId& storageId,
+	QString uri) {
 	const auto url = TonsiteToHttps(uri);
 	Assert(!url.isEmpty());
 
@@ -166,11 +166,26 @@ void Controller::showTonSite(
 	}
 	_url = url;
 	_subtitleText = _url.value(
-	) | rpl::filter([=](const QString &url) {
+	) | rpl::filter([=](const QString& url) {
 		return !url.isEmpty() && url != u"about:blank"_q;
-	}) | rpl::map([=](QString value) {
-		return HttpsToTonsite(value);
-	});
+		}) | rpl::map([=](QString value) {
+			return HttpsToTonsite(value);
+			});
+	_windowTitleText = _subtitleText.value();
+}
+
+void Controller::showTLViewer(
+	const Webview::StorageId& storageId,
+	QString url) {
+	if (!_webview) {
+		createWebview(storageId);
+	}
+	if (_webview && _webview->widget()) {
+		_webview->navigate(url);
+		activate();
+	}
+	_url = url;
+	_subtitleText = tr::lng_context_view_as_json(tr::now);
 	_windowTitleText = _subtitleText.value();
 }
 
@@ -347,7 +362,8 @@ void Controller::createWebview(const Webview::StorageId &storageId) {
 		Q_UNUSED(newWindow);
 
 		if (uri == u"about:blank"_q
-			|| QUrl(uri).host().toLower().endsWith(u".magic.org"_q)) {
+			|| QUrl(uri).host().toLower().endsWith(u".magic.org"_q)
+			|| uri.startsWith(Iv::kTLViewerUrl.utf16())) {
 			return true;
 		}
 		_events.fire({ .type = Event::Type::OpenLink, .url = uri });

@@ -59,6 +59,10 @@ inline constexpr auto kDefaultOutline2Opacity = 0.3;
 inline constexpr auto kDefaultOutline3Opacity = 0.6;
 inline constexpr auto kDefaultOutlineOpacitySecond = 0.5;
 
+extern const char kOptionUncoloredQuote[];
+
+[[nodiscard]] bool UncoloredQuoteEnabled();
+
 struct MessageStyle {
 	CornersPixmaps msgBgCornersSmall;
 	CornersPixmaps msgBgCornersLarge;

@@ -198,6 +198,16 @@ base::options::toggle ShowChannelJoinedBelowAbout({
 		const QString &addToLink) {
 	const auto weak = base::make_weak(controller);
 	return [=](QString link) {
+		//if (!link.startsWith(u"https://"_q)) {
+		//	link = peer->session().createInternalLinkFull(peer->userName())
+		//		+ addToLink;
+		//}
+		//if (!link.isEmpty()) {
+		//	QGuiApplication::clipboard()->setText(link);
+		//	Ui::Toast::Show(
+		//		show.toastParent(),
+		//		tr::lng_username_copied(tr::now));
+		//}
 		if (link.startsWith(u"internal:"_q)) {
 			Core::App().openInternalUrl(link,
 				QVariant::fromValue(ClickHandlerContext{
@@ -1814,6 +1824,16 @@ Section DetailsFiller::makeInfo() {
 		const auto addToLink = topicRootId
 			? ('/' + QString::number(topicRootId.bare))
 			: QString();
+		if (_peer->isMegagroup()) {
+			addInfoLine(
+				tr::lng_chat_restriction_reason(),
+				StringValue(_peer->asMegagroup()->restriction_reason));
+		} else if (_peer->isChannel()) {
+			addInfoLine(
+				tr::lng_chat_restriction_reason(),
+				StringValue(_peer->asChannel()->restriction_reason));
+		}
+
 		auto linkText = LinkValue(
 			_peer,
 			true,
@@ -2062,7 +2082,7 @@ Section DetailsFiller::makePersonalChannel(not_null<UserData*> user) {
 
 			const auto date = Ui::CreateChild<Ui::FlatLabel>(
 				line,
-				Ui::FormatDialogsDate(ItemDateTime(item)),
+				Ui::FormatDialogsDate(ItemDateTime(item), GetEnhancedBool("show_seconds")),
 				st::infoPersonalChannelDateLabel);
 
 			const auto name = Ui::CreateChild<Ui::FlatLabel>(

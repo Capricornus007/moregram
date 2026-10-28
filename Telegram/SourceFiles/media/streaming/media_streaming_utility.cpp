@@ -411,7 +411,7 @@ bool FrameResizeMayExpand(
 }
 
 ExpandDecision DecideVideoFrameResize(QSize outer, QSize original) {
-	return DecideFrameResize(outer, original, 1, 2);
+	return DecideFrameResize(outer, original, 1, 1);
 }
 
 QSize CalculateResizeFromOuter(QSize outer, QSize original) {

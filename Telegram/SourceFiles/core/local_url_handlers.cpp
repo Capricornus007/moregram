@@ -82,6 +82,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtGui/QGuiApplication>
 
+#include "boxes/abstract_box.h"
+
 namespace Core {
 namespace {
 
@@ -885,6 +887,58 @@ bool HandleUnknown(
 	});
 	controller->session().api().requestDeepLinkInfo(request, callback);
 	return true;
+}
+
+bool HandleOpenMessage(
+		Window::SessionController *controller,
+		const Match &match,
+		const QVariant &context) {
+	if (!controller) {
+		return false;
+	}
+	const auto params = url_parse_params(
+		match->captured(1),
+		qthelp::UrlParamNameTransform::ToLower);
+	const auto userId = params.value(qsl("user_id")).toLongLong();
+	const auto msgId = params.value(qsl("message_id")).toInt();
+	if (!userId) {
+		return false;
+	}
+	const auto peer = controller->session().data().peerLoaded(static_cast<PeerId>(userId));
+	if (peer != nullptr) {
+		controller->showPeerHistory(
+				peer,
+				Window::SectionShow::Way::Forward,
+				msgId);
+		return true;
+	}
+	Core::App().hideMediaView();
+	Ui::show(Ui::MakeInformBox(tr::lng_user_not_found(tr::now)));
+	return false;
+}
+
+bool HandleUser(
+		Window::SessionController *controller,
+		const Match &match,
+		const QVariant &context) {
+	if (!controller) {
+		return false;
+	}
+	const auto params = url_parse_params(
+				match->captured(1),
+		qthelp::UrlParamNameTransform::ToLower);
+	const auto userId = params.value(qsl("id")).toLongLong();
+	if (!userId) {
+		return false;
+	}
+	const auto peer = controller->session().data().peerLoaded(static_cast<PeerId>(userId));
+	if (peer != nullptr) {
+		controller->showPeerInfo(peer);
+		return true;
+	}
+	Core::App().hideMediaView();
+	Ui::show(Ui::MakeInformBox(tr::lng_user_not_found(tr::now)));
+	return false;
 }
 
 bool OpenMediaTimestamp(
@@ -1915,6 +1969,14 @@ const std::vector<LocalUrlHandler> &LocalUrlHandlers() {
 		{
 			u"^test_chat_theme/?\\?(.+)(#|$)"_q,
 			ResolveTestChatTheme,
+		},
+		{
+			qsl("^openmessage\\?(.+)(#|$)"),
+			HandleOpenMessage
+		},
+		{
+			qsl("^user\\?(.+)(#|$)"),
+			HandleUser
 		},
 		{
 			u"^invoice/?\\?(.+)(#|$)"_q,

@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -312,6 +312,7 @@ private:
 	[[nodiscard]] bool suggestionsCoverList() const;
 	[[nodiscard]] bool searchActive() const;
 
+	void setupShortcuts(not_null<Window::SessionController *> controller);
 	[[nodiscard]] bool redirectToSearchPossible() const;
 	[[nodiscard]] bool redirectKeyToSearch(QKeyEvent *e) const;
 	[[nodiscard]] bool redirectImeToSearch() const;

@@ -16,6 +16,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_session.h"
 #include "ui/boxes/confirm_box.h"
 #include "base/event_filter.h"
+#include "boxes/peer_list_controllers.h"
 #include "boxes/peers/edit_participants_box.h"
 #include "boxes/peers/edit_peer_color_box.h"
 #include "boxes/peers/edit_peer_common.h"
@@ -88,6 +89,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/ui_utility.h"
 #include "window/window_session_controller.h"
 #include "api/api_invite_links.h"
+#include "boxes/abstract_box.h"
 #include "styles/style_chat_helpers.h"
 #include "styles/style_credits.h"
 #include "styles/style_layers.h"
@@ -538,6 +540,7 @@ private:
 	void deleteWithConfirmation();
 	void deletePeer();
 	void editReactions();
+	void upgradeWithConfirmation();
 
 	[[nodiscard]] std::optional<Saving> validate() const;
 	[[nodiscard]] bool validateUsernamesOrder(Saving &to) const;
@@ -1586,6 +1589,9 @@ void Controller::fillManageSection() {
 			|| (channel->isBroadcast() && channel->canEditInformation()));
 	const auto canEditDirectMessages = isChannel
 		&& (channel->isBroadcast() && channel->canEditInformation());
+	const auto canUpgradeToSupergroup = [&] {
+		return isChannel ? false : chat->amCreator() && chat->asChat();
+	}();
 	const auto canEditWelcomeMessages = isChannel
 		? ((channel->isMegagroup()
 			|| (channel->isBroadcast() && channel->amIn()))
@@ -1833,6 +1839,14 @@ void Controller::fillManageSection() {
 
 	if (canEditStickers) {
 		_controls.buttonsLayout->add(createStickersEdit());
+	}
+
+	if (canUpgradeToSupergroup) {
+		AddButtonDelete(
+			_controls.buttonsLayout,
+			tr::lng_profile_migrate_button(),
+			[=] { upgradeWithConfirmation(); }
+		);
 	}
 
 	if (canDelete) {
@@ -3111,6 +3125,28 @@ void Controller::deletePeer() {
 	//		Ui::show(Box<Ui::InformBox>(tr::lng_cant_delete_channel(tr::now)));
 	//	}
 	}).send();
+}
+
+void Controller::upgradeWithConfirmation() {
+	const auto chat = _peer->asChat();
+	Assert(chat != nullptr);
+
+    auto text = tr::lng_sure_upgrade_group(tr::now);
+	text.append("\n\n" + tr::lng_profile_convert_feature2(tr::now));
+	text.append("\n" + tr::lng_profile_convert_feature4(tr::now));
+	text.append("\n\n" + tr::lng_chat_upgrade_warning(tr::now));
+	
+	const auto upgradedCallback = crl::guard(this, [=] {
+		chat->session().api().migrateChat(chat, nullptr);
+		Ui::hideLayer();
+	});
+	Ui::show(
+			Ui::MakeConfirmBox({
+				.text = text,
+				.confirmed = upgradedCallback,
+				.confirmText = tr::lng_profile_convert_confirm(),
+			}),
+		Ui::LayerOption::KeepOther);
 }
 
 } // namespace

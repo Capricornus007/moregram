@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -57,6 +57,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_settings.h"
 
 #include <QtGui/QGuiApplication>
+#include <core/enhanced_settings.h>
+#include <ui/toast/toast.h>
 
 namespace Calls::Group {
 namespace {
@@ -390,6 +392,24 @@ void SettingsBox(
 			Core::App().saveSettingsDelayed();
 		}, layout->lifetime());
 
+	AddButtonWithIcon(
+		layout,
+		tr::lng_settings_stereo_mode(),
+		st::groupCallSettingsButton
+	)->toggleOn(
+		rpl::single(GetEnhancedBool("show_scheduled_button"))
+	)->toggledChanges(
+	) | rpl::filter([=](bool toggled) {
+		return (toggled != GetEnhancedBool("show_scheduled_button"));
+	}) | rpl::on_next([=](bool toggled) {
+		call->setStereoMode(toggled);
+		if (call->muted() == MuteState::Active) {
+			call->setMuted(MuteState::Muted);
+			call->setMutedAndUpdate(MuteState::Active);
+		}
+		SetEnhancedValue("show_scheduled_button", toggled);
+		EnhancedSettings::Write();
+	}, layout->lifetime());
 		using GlobalShortcut = base::GlobalShortcut;
 		struct PushToTalkState {
 			rpl::variable<QString> recordText = tr::lng_group_call_ptt_shortcut();

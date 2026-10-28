@@ -5,8 +5,10 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include <core/application.h>
 #include "calls/group/calls_group_menu.h"
 
+#include "calls/calls_instance.h"
 #include "calls/group/calls_group_call.h"
 #include "calls/group/calls_group_settings.h"
 #include "calls/group/calls_group_panel.h"
@@ -579,6 +581,10 @@ void FillMenu(
 		if (const auto strong = weak.get()) {
 			showBox(Box(SettingsBox, strong));
 		}
+	});
+	menu->addAction(cVoiceChatPinned() ? tr::lng_settings_unpin_voice_chat(tr::now) : tr::lng_settings_pin_voice_chat(tr::now), [=] {
+		cSetVoiceChatPinned(!cVoiceChatPinned());
+		Core::App().calls().setVoiceChatPinned(cVoiceChatPinned());
 	});
 	const auto finish = [=] {
 		if (const auto strong = weak.get()) {

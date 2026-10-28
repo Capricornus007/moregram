@@ -455,6 +455,11 @@ requestsRejectButton: RoundButton(defaultBoxButton) {
 	textTop: 5px;
 	style: semiboldTextStyle;
 }
+requestsBanButton: RoundButton(defaultActiveButton) {
+	width: -28px;
+	height: 30px;
+	textTop: 6px;
+}
 requestButtonsSkip: 9px;
 communityRequestsBoxItem: PeerListItem(peerListBoxItem) {
 	height: 89px;

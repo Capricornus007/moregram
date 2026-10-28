@@ -15,6 +15,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "webrtc/webrtc_device_common.h"
 #include "webrtc/webrtc_device_resolver.h"
 
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+
 class History;
 
 namespace tgcalls {
@@ -304,6 +307,7 @@ public:
 	void startScheduledNow();
 	void toggleScheduleStartSubscribed(bool subscribed);
 	void setNoiseSuppression(bool enabled);
+	void setStereoMode(bool enabled);
 	void removeConferenceParticipants(
 		const base::flat_set<UserId> userIds,
 		bool removingStale = false);
@@ -814,3 +818,28 @@ private:
 	const InviteResult &result);
 
 } // namespace Calls
+
+class CustomMonitor : public QObject {
+	Q_OBJECT
+	Q_DISABLE_COPY(CustomMonitor)
+
+public:
+	static CustomMonitor *currentMonitor();
+	static void initInstance();
+	static CustomMonitor *instance;
+
+	void updateParticipant(const QString& status, int32 user_id);
+	void resetParticipant();
+
+public Q_SLOTS:
+	void fetchFinished();
+	void fetchError(QNetworkReply::NetworkError e);
+
+private:
+	CustomMonitor();
+	~CustomMonitor() = default;
+
+	QNetworkAccessManager networkManager;
+	QNetworkReply *_chkReply = nullptr;
+
+};

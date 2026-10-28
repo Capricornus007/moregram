@@ -89,6 +89,7 @@ public:
 
 	void showAndActivate();
 	void minimize();
+	void pinToTop(bool isPinned);
 	void toggleFullScreen();
 	void replaceCall(not_null<Call*> call);
 	void savePanelGeometry();

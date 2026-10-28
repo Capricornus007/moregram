@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -3263,3 +3263,14 @@ bool MainWidget::isNormalColumn() const {
 bool MainWidget::isThreeColumn() const {
 	return _controller->adaptive().isThreeColumn();
 }
+
+namespace App {
+
+MainWidget *main() {
+	if (const auto window = wnd()) {
+		return window->sessionContent();
+	}
+	return nullptr;
+}
+
+} // namespace App

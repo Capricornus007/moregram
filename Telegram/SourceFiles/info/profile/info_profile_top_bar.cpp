@@ -82,6 +82,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/painter.h"
 #include "ui/peer/video_userpic_player.h"
 #include "ui/rect.h"
+#include <ui/toast/toast.h>
 #include "ui/effects/numbers_animation.h"
 #include "ui/text/text_utilities.h"
 #include "ui/widgets/fields/input_field.h"
@@ -109,6 +110,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_layers.h"
 #include "styles/style_menu_icons.h"
 
+#include <QGraphicsOpacityEffect>
 #include <QtGui/QClipboard>
 #include <QtGui/QGuiApplication>
 
@@ -454,6 +456,7 @@ TopBar::TopBar(
 	});
 	return owned;
 }())
+, _id(this, st::infoProfileMegagroupCover.status)
 , _backToggles(std::move(descriptor.backToggles)) {
 	setObjectName(u"profileTopBar"_q);
 	_peer->updateFull();
@@ -542,6 +545,7 @@ TopBar::TopBar(
 		updateLabelsPosition();
 	}, _title->lifetime());
 
+	setupChatId();
 	setupUniqueBadgeTooltip();
 	setupButtons(controller, descriptor.source);
 	setupSwipeBack(controller);
@@ -666,6 +670,7 @@ void TopBar::adjustColors(const std::optional<QColor> &edgeColor) {
 	const auto shouldOverrideTitle = shouldOverride(_title->st().textFg);
 	const auto shouldOverrideStatus = shouldOverrideTitle
 		|| shouldOverride(_status->st().textFg);
+	const auto shouldOverrideId = shouldOverrideTitle; // shouldOverride(_id->st().textFg);
 	_title->setTextColorOverride(collectible
 		? collectible->textColor
 		: shouldOverrideTitle
@@ -738,6 +743,31 @@ void TopBar::adjustColors(const std::optional<QColor> &edgeColor) {
 			_statusLabel->setColorized(!shouldOverrideStatus);
 			_statusLabel->setOnlineCount(onlineCount);
 		}
+	}
+	{
+		{
+			delete _id.release();
+		}
+		if (shouldOverrideId) {
+			const auto copySt = [&](const style::FlatLabel &st) {
+				auto result = std::make_unique<style::FlatLabel>(
+					base::duplicate(st));
+				result->palette.linkFg = st::groupCallVideoSubTextFg;
+				return result;
+			};
+			_idSt = copySt(st::infoProfileMegagroupCover.status);
+			_id.create(this, QString(), *(_idSt.get()));
+		} else {
+			_id.create(this, QString(), st::infoProfileMegagroupCover.status);
+		}
+		_id->show();
+		setupChatId();
+		_id->widthValue() | rpl::on_next([=] {
+			updateStatusPosition(_progress.current());
+		}, _id->lifetime());
+		_id->setTextColorOverride(shouldOverrideId
+			? std::optional<QColor>(st::groupCallVideoSubTextFg->c)
+			: std::nullopt);
 	}
 
 	const auto shouldOverrideBadges = shouldOverride(
@@ -1626,8 +1656,6 @@ void TopBar::setupUserpicButton(
 						});
 					}
 				}
-			} else if (_hasStories) {
-				controller->openPeerStories(_peer->id);
 			} else {
 				openPhoto();
 			}
@@ -2135,6 +2163,28 @@ void TopBar::updateStatusPosition(float64 progressCurrent) {
 			Qt::WA_TransparentForMouseEvents,
 			!progressCurrent);
 	}
+
+	auto idTop = anim::interpolate(
+		_st.subtitlePosition.y(),
+		st::infoProfileTopBarChatIdTop,
+		progressCurrent);
+
+	const auto idLeft = anim::interpolate(
+		statusMostLeft(),
+		(width() - _id->textMaxWidth()) / 2,
+		progressCurrent);
+
+	_id->resizeToWidth(_id->textMaxWidth());
+	_id->moveToLeft(
+		idLeft,
+		idTop);
+
+	if (_idOpacity) {
+		_idOpacity->setOpacity(progressCurrent);
+	}
+	_id->setAttribute(
+		Qt::WA_TransparentForMouseEvents,
+		!progressCurrent);
 }
 
 void TopBar::bindActiveTab(
@@ -3802,6 +3852,10 @@ void TopBar::setupStoryOutline(const QRect &geometry) {
 }
 
 void TopBar::updateStoryOutline(std::optional<QColor> edgeColor) {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
+
 	const auto user = _peer->asUser();
 	const auto channel = _peer->asChannel();
 	if ((!user && !channel) || _savedMessages) {
@@ -3957,6 +4011,38 @@ void TopBar::setupStatusWithRating() {
 		}, _status->lifetime());
 		rating->raise();
 	}
+}
+
+void TopBar::setupChatId() {
+	auto idText = TextWithEntities();
+	auto id = QString();
+
+	if (_peer->isChat()) {
+		id = QString("-%1").arg(_peer->id.to<ChatId>().bare);
+		idText = Ui::Text::Link(QString("ID: -%L1").arg(_peer->id.to<ChatId>().bare).replace(",", " "));
+	}
+	else if (_peer->isMonoforum()) {
+		id = QString("-%1").arg(_peer->id.to<ChannelId>().bare);
+		idText = Ui::Text::Link(QString("ID: -%L1").arg(_peer->id.to<ChannelId>().bare).replace(",", " "));
+	}
+	else if (_peer->isMegagroup() || _peer->isChannel()) {
+		id = QString("-100%1").arg(_peer->id.to<ChannelId>().bare);
+		idText = Ui::Text::Link(QString("ID: -1 00%L1").arg(_peer->id.to<ChannelId>().bare).replace(",", " "));
+	}
+	else {
+		id = QString("%1").arg(_peer->id.to<UserId>().bare);
+		idText = Ui::Text::Link(QString("ID: %L1").arg(_peer->id.to<UserId>().bare).replace(",", " "));
+	}
+	_id->setMarkedText(idText);
+
+	_id->setLink(1, std::make_shared<LambdaClickHandler>([=] {
+		QGuiApplication::clipboard()->setText(id);
+		Ui::Toast::Show(tr::lng_copy_profile_id(tr::now));
+	}));
+
+	_idOpacity = Ui::CreateChild<QGraphicsOpacityEffect>(_id.get());
+	_id->setGraphicsEffect(_idOpacity);
+	_idOpacity->setOpacity(0.);
 }
 
 rpl::producer<std::optional<QColor>> TopBar::edgeColor() const {

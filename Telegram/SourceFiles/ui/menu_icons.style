@@ -312,3 +312,5 @@ mediaSpeedSuperFast: icon {{ "player/speed/audiospeed_menu_2.0", mediaviewMenuFg
 mediaSpeedSuperFastActive: icon {{ "player/speed/audiospeed_menu_2.0", mediaviewTextLinkFg }};
 
 menuIconChangeOrder: icon {{ "player/player_order", menuIconColor }};
+
+menuIcon64gJson: icon {{ "menu/64g_json", menuIconColor }};

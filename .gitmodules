@@ -15,13 +15,13 @@
 	url = https://github.com/desktop-app/lib_rpl.git
 [submodule "Telegram/lib_base"]
 	path = Telegram/lib_base
-	url = https://github.com/desktop-app/lib_base.git
+	url = https://github.com/TDesktop-x64/lib_base.git
 [submodule "Telegram/codegen"]
 	path = Telegram/codegen
 	url = https://github.com/desktop-app/codegen.git
 [submodule "Telegram/lib_ui"]
 	path = Telegram/lib_ui
-	url = https://github.com/desktop-app/lib_ui.git
+	url = https://github.com/TDesktop-x64/lib_ui.git
 [submodule "Telegram/lib_lottie"]
 	path = Telegram/lib_lottie
 	url = https://github.com/desktop-app/lib_lottie.git
@@ -33,10 +33,10 @@
 	url = https://github.com/desktop-app/lib_spellcheck
 [submodule "Telegram/lib_storage"]
 	path = Telegram/lib_storage
-	url = https://github.com/desktop-app/lib_storage.git
+	url = https://github.com/TDesktop-x64/lib_storage.git
 [submodule "cmake"]
 	path = cmake
-	url = https://github.com/desktop-app/cmake_helpers.git
+	url = https://github.com/TDesktop-x64/cmake_helpers.git
 [submodule "Telegram/ThirdParty/expected"]
 	path = Telegram/ThirdParty/expected
 	url = https://github.com/TartanLlama/expected
@@ -66,7 +66,7 @@
 	url = https://github.com/desktop-app/lib_webrtc.git
 [submodule "Telegram/ThirdParty/tgcalls"]
 	path = Telegram/ThirdParty/tgcalls
-	url = https://github.com/TelegramMessenger/tgcalls.git
+	url = https://github.com/TDesktop-x64/tgcalls.git
 [submodule "Telegram/lib_webview"]
 	path = Telegram/lib_webview
 	url = https://github.com/desktop-app/lib_webview.git

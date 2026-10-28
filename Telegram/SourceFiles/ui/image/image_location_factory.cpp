@@ -290,7 +290,7 @@ ImageWithLocation FromImageInMemory(
 	}
 	if (bytes.isEmpty()) {
 		auto buffer = QBuffer(&bytes);
-		image.save(&buffer, format);
+		image.save(&buffer, format, 100);
 	}
 	return ImageWithLocation{
 		.location = ImageLocation(

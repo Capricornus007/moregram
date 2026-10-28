@@ -500,7 +500,17 @@ void ApiWrap::toggleHistoryArchived(
 		if (archived) {
 			history->setFolder(_session->data().folder(archiveId));
 		} else {
-			history->clearFolder();
+			if (GetEnhancedBool("hide_all_chats")) {
+				if (const auto window = Core::App().activeWindow()) {
+					if (const auto controller = window->sessionController()) {
+						const auto filters = &_session->data().chatsFilters();
+						const auto lookup_id = filters->lookupId(controller->session().premium() ? 0 : 1);
+						controller->setActiveChatsFilter(lookup_id);
+					}
+				}
+			} else {
+				history->clearFolder();
+			}
 		}
 		if (const auto data = _historyArchivedRequests.take(history)) {
 			data->second();
@@ -768,6 +778,32 @@ void ApiWrap::finalizeMessageDataRequest(
 	}
 	for (const auto &callback : callbacks) {
 		callback();
+	}
+}
+
+void ApiWrap::exportMessageAsBase64(not_null<HistoryItem*> item, Fn<void(const QString&)> done, Fn<void()> fail) {
+	auto ids = QVector<MTPInputMessage>{ MTP_inputMessageID(MTP_int(item->id)) };
+	auto requestDone = [=](
+		const MTPmessages_Messages& result,
+		const MTP::Response& response) {
+			auto buffer = response.reply;
+			QByteArray byteArray(reinterpret_cast<const char*>(buffer.data()), buffer.size() * sizeof(mtpPrime));
+			QString base64String = byteArray.toBase64(QByteArray::Base64UrlEncoding);
+			done(base64String);
+		};
+	if (item->history()->peer->isChannel()) {
+		request(MTPchannels_GetMessages(
+			item->history()->peer->asChannel()->inputChannel(),
+			MTP_vector<MTPInputMessage>(ids)
+		)).done(requestDone).fail([=](const MTP::Error& error, mtpRequestId requestId) {
+			fail();
+		}).send();
+	} else {
+		request(MTPmessages_GetMessages(
+			MTP_vector<MTPInputMessage>(ids)
+		)).done(requestDone).fail([=](const MTP::Error& error, mtpRequestId requestId) {
+			fail();
+		}).send();
 	}
 }
 

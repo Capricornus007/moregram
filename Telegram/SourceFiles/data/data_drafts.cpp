@@ -166,6 +166,10 @@ void ApplyPeerCloudDraft(
 	cloudDraft->richMessage = richMessage;
 	cloudDraft->richMessageSummary = Iv::FlattenRichPageSummary(richMessage);
 
+	if (GetEnhancedBool("disable_cloud_draft_sync")) {
+		return;
+	}
+
 	history->setCloudDraft(std::move(cloudDraft));
 	history->applyCloudDraft(topicRootId, monoforumPeerId);
 }
@@ -178,6 +182,10 @@ void ClearPeerCloudDraft(
 		TimeId date) {
 	const auto history = session->data().history(peerId);
 	if (history->skipCloudDraftUpdate(topicRootId, monoforumPeerId, date)) {
+		return;
+	}
+
+	if (GetEnhancedBool("disable_cloud_draft_sync")) {
 		return;
 	}
 

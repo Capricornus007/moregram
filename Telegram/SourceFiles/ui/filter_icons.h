@@ -60,6 +60,7 @@ enum class FilterIcon : uchar {
 	// Poo,
 
 	Edit,
+	SavedMessage,
 };
 
 struct FilterIcons {

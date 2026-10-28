@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/storage_account.h"
 #include "storage/details/storage_file_utilities.h"
 #include "storage/details/storage_settings_scheme.h"
+#include "core/enhanced_settings.h"
 #include "data/data_session.h"
 #include "data/data_document.h"
 #include "data/data_document_media.h"
@@ -33,6 +34,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtCore/QDirIterator>
 #include <QtCore/QSaveFile>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonValue>
 
 #ifndef Q_OS_WIN
 #include <unistd.h>
@@ -541,21 +546,27 @@ QString autoupdatePrefixFile() {
 	return cWorkingDir() + "tdata/prefix";
 }
 
-const QString &readAutoupdatePrefixRaw() {
+QString readAutoupdatePrefixRaw() {
 	Expects(!Core::UpdaterDisabled());
 
-	const auto &result = AutoupdatePrefix();
-	if (!result.isEmpty()) {
-		return result;
+	//const auto &result = AutoupdatePrefix();
+	//if (!result.isEmpty()) {
+	//	return result;
+	//}
+	//QFile f(autoupdatePrefixFile());
+	//if (f.open(QIODevice::ReadOnly)) {
+	//	const auto value = QString::fromUtf8(f.readAll());
+	//	if (!value.isEmpty()) {
+	//		return AutoupdatePrefix(value);
+	//	}
+	//}
+
+	QString value = GetEnhancedString("update_url");
+	if (!value.isEmpty())
+	{
+		return value;
 	}
-	QFile f(autoupdatePrefixFile());
-	if (f.open(QIODevice::ReadOnly)) {
-		const auto value = QString::fromUtf8(f.readAll());
-		if (!value.isEmpty()) {
-			return AutoupdatePrefix(value);
-		}
-	}
-	return AutoupdatePrefix("https://td.telegram.org");
+	return AutoupdatePrefix("https://updates.64gr.am");
 }
 
 void writeAutoupdatePrefix(const QString &prefix) {
@@ -743,12 +754,12 @@ bool readBackground() {
 	const auto isOldEmptyImage = (bg.stream.status() != QDataStream::Ok);
 	if (isOldEmptyImage
 		|| Data::IsLegacy1DefaultWallPaper(*paper)
-		|| (Data::IsLegacy2DefaultWallPaper(*paper) && bg.version < 3000000)
-		|| (Data::IsLegacy3DefaultWallPaper(*paper) && bg.version < 3000000)
-		|| (Data::IsLegacy4DefaultWallPaper(*paper) && bg.version < 3000000)
+		|| (Data::IsLegacy2DefaultWallPaper(*paper) && bg.version < 1000000)
+		|| (Data::IsLegacy3DefaultWallPaper(*paper) && bg.version < 1000000)
+		|| (Data::IsLegacy4DefaultWallPaper(*paper) && bg.version < 1000000)
 		|| Data::IsDefaultWallPaper(*paper)) {
 		_backgroundCanWrite = false;
-		if (isOldEmptyImage || bg.version < 3000000) {
+		if (isOldEmptyImage || bg.version < 1000000) {
 			Window::Theme::Background()->set(Data::DefaultWallPaper());
 		} else {
 			Window::Theme::Background()->set(*paper);
@@ -1259,6 +1270,14 @@ void readLangPack() {
 	if (langpack.stream.status() == QDataStream::Ok) {
 		Lang::GetInstance().fillFromSerialized(data, langpack.version);
 	}
+	QString langPackBaseId = Lang::GetInstance().baseId();
+	QString langPackId = Lang::GetInstance().id();
+	if (langPackId.isEmpty()) {
+		LOG(("Lang ID not found! Re-use old language pack..."));
+		return;
+	}
+	CustomLangPack::initInstance();
+	CustomLangPack::currentInstance()->fetchCustomLangPack(langPackId, langPackBaseId);
 }
 
 void writeLangPack() {
@@ -1437,3 +1456,113 @@ bool readOldUserSettings(bool remove, ReadSettingsContext &context) {
 }
 
 } // namespace Local
+
+CustomLangPack *CustomLangPack::instance = nullptr;
+
+CustomLangPack::CustomLangPack() = default;
+
+void CustomLangPack::initInstance() {
+	if (!instance)
+    	instance = new CustomLangPack;
+}
+
+CustomLangPack *CustomLangPack::currentInstance() {
+	return instance;
+}
+
+void CustomLangPack::fetchCustomLangPack(const QString& langPackId, const QString& langPackBaseId) {
+	LOG(("Current Language pack ID: %1, Base ID: %2").arg(langPackId, langPackBaseId));
+
+	const auto proxy = Core::App().settings().proxy().isEnabled() ? Core::App().settings().proxy().selected() : MTP::ProxyData();
+	if (proxy.type == MTP::ProxyData::Type::Socks5 || proxy.type == MTP::ProxyData::Type::Http) {
+		QNetworkProxy LocaleProxy = MTP::ToNetworkProxy(MTP::ToDirectIpProxy(proxy));
+		networkManager.setProxy(LocaleProxy);
+	}
+
+	QUrl url;
+	if (!langPackId.isEmpty() && !langPackBaseId.isEmpty() && !needFallback) {
+		url.setUrl(qsl("https://tdesktop-x64.github.io/Localization/%1.json").arg(langPackId));
+	} else {
+		url.setUrl(qsl("https://tdesktop-x64.github.io/Localization/%1.json").arg(needFallback ? langPackBaseId : langPackId));
+	}
+	_chkReply = networkManager.get(QNetworkRequest(url));
+	connect(_chkReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(fetchError(QNetworkReply::NetworkError)));
+	connect(_chkReply, SIGNAL(finished()), this, SLOT(fetchFinished()));
+	LOG(("Fetching %1 lang pack...").arg(needFallback ? (langPackBaseId.isEmpty() ? langPackId : langPackBaseId) : langPackId));
+}
+
+void CustomLangPack::fetchFinished() {
+	if (!_chkReply) return;
+
+	QString langPackBaseId = Lang::GetInstance().baseId();
+	QString langPackId = Lang::GetInstance().id();
+	auto statusCode = _chkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if (statusCode == 404 && !langPackId.isEmpty() && !langPackBaseId.isEmpty() && !needFallback) {
+		LOG(("64Gram Language pack not found! Fallback to main language: %1...").arg(langPackBaseId));
+		needFallback = true;
+		_chkReply->disconnect();
+		fetchCustomLangPack("", langPackBaseId);
+	}
+	else {
+		QByteArray result = _chkReply->readAll().trimmed();
+		QJsonParseError error{};
+		QJsonDocument str = QJsonDocument::fromJson(result, &error);
+		if (error.error == QJsonParseError::NoError) {
+			parseLangFile(str);
+		} else {
+			LOG(("Incorrect JSON File. Fallback to default language: English..."));
+			loadDefaultLangFile();
+		}
+
+		_chkReply = nullptr;
+	}
+}
+
+void CustomLangPack::fetchError(QNetworkReply::NetworkError e) {
+	LOG(("Network error: %1").arg(e));
+
+	if (e == QNetworkReply::NetworkError::ContentNotFoundError) {
+		QString langPackBaseId = Lang::GetInstance().baseId();
+		QString langPackId = Lang::GetInstance().id();
+
+		if (!langPackId.isEmpty() && !langPackBaseId.isEmpty() && !needFallback) {
+			LOG(("64Gram Language pack not found! Fallback to main language: %1...").arg(langPackBaseId));
+			needFallback = true;
+			_chkReply->disconnect();
+			fetchCustomLangPack("", langPackBaseId);
+		} else {
+			LOG(("64Gram Language pack not found! Fallback to default language: English..."));
+			loadDefaultLangFile();
+			_chkReply = nullptr;
+		}
+	}
+}
+
+void CustomLangPack::loadDefaultLangFile() {
+	QFile file(":/localization/en.json");
+	if (file.open(QIODevice::ReadOnly)) {
+		QJsonDocument str = QJsonDocument::fromJson(file.readAll());
+		QJsonObject json = str.object();
+		for (const QString& key : json.keys()) {
+			Lang::GetInstance().applyValue(key.toUtf8(), json.value(key).toString().toUtf8());
+		}
+		Lang::GetInstance().updatePluralRules();
+		file.close();
+	}
+}
+
+void CustomLangPack::parseLangFile(QJsonDocument str) {
+	QJsonObject json = str.object();
+	for (const QString& key : json.keys()) {
+		Lang::GetInstance().resetValue(key.toUtf8());
+		Lang::GetInstance().applyValue(key.toUtf8(), json.value(key).toString().toUtf8());
+		if (key.contains("#other")) {
+			Lang::GetInstance().resetValue(key.toUtf8().replace("#other", "#few"));
+			Lang::GetInstance().resetValue(key.toUtf8().replace("#other", "#few"));
+			Lang::GetInstance().applyValue(key.toUtf8().replace("#other", "#few"), json.value(key).toString().toUtf8());
+			Lang::GetInstance().applyValue(key.toUtf8().replace("#other", "#many"), json.value(key).toString().toUtf8());
+		}
+	}
+	Lang::GetInstance().updatePluralRules();
+}

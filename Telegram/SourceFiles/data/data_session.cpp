@@ -421,7 +421,9 @@ Session::Session(not_null<Main::Session*> session)
 			}
 		}, _lifetime);
 
-		_stories->loadMore(Data::StorySourcesList::NotHidden);
+		if (!GetEnhancedBool("hide_stories")) {
+			_stories->loadMore(Data::StorySourcesList::NotHidden);
+		}
 	});
 
 	session->appConfig().ignoredRestrictionReasonsChanges(
@@ -792,8 +794,21 @@ not_null<UserData*> Session::processUser(const MTPUser &data) {
 					? PeerData::StoriesState::HasUnread
 					: PeerData::StoriesState::HasRead);
 			}
-			result->setUnavailableReasons(Data::UnavailableReason::Extract(
-				data.vrestriction_reason()));
+			if (const auto restriction = data.vrestriction_reason()) {
+				result->setUnavailableReasons(Data::UnavailableReason::Extract(
+					data.vrestriction_reason()));
+				QString reason;
+				for (const auto &v : restriction->v) {
+					reason += QString("%1-%2: %3\n").arg(v.c_restrictionReason().vreason().v.constData(),
+														 v.c_restrictionReason().vplatform().v.constData(),
+														 v.c_restrictionReason().vtext().v.constData());
+				}
+				result->restriction_reason = reason;
+			}
+			else {
+				result->setUnavailableReasons({});
+				result->restriction_reason = "";
+			}
 		}
 
 		if (const auto accessHash = data.vaccess_hash()) {
@@ -1086,8 +1101,21 @@ not_null<PeerData*> Session::processChat(const MTPChat &data) {
 				channel->setRestrictions(ChatRestrictionsInfo());
 			}
 			channel->date = data.vdate().v;
-			channel->setUnavailableReasons(Data::UnavailableReason::Extract(
-				data.vrestriction_reason()));
+			if (const auto restriction = data.vrestriction_reason()) {
+				channel->setUnavailableReasons(Data::UnavailableReason::Extract(
+					data.vrestriction_reason()));
+				QString reason;
+				for (const auto &v : restriction->v) {
+					reason += QString("%1-%2: %3\n").arg(v.c_restrictionReason().vreason().v.constData(),
+														 v.c_restrictionReason().vplatform().v.constData(),
+														 v.c_restrictionReason().vtext().v.constData());
+				}
+				channel->restriction_reason = reason;
+			}
+			else {
+				channel->setUnavailableReasons({});
+				channel->restriction_reason = "";
+			}
 		}
 
 		{

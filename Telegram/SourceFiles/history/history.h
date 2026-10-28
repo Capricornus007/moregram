@@ -152,10 +152,14 @@ public:
 
 	void destroyMessage(not_null<HistoryItem*> item);
 	void destroyMessagesByDates(TimeId minDate, TimeId maxDate);
+	void editHistoryMessages(PeerData* peer, bool isHide);
 	void destroyMessagesByTopic(MsgId topicRootId);
 	void destroyMessagesBySublist(not_null<PeerData*> sublistPeer);
+	void hideMessage(not_null<HistoryItem*> item);
+	void unhideMessage(not_null<HistoryItem*> item);
 
 	void unpinMessagesFor(MsgId topicRootId, PeerId monoforumPeerId);
+	void unpinAllMessages();
 
 	not_null<HistoryItem*> addNewMessage(
 		MsgId id,

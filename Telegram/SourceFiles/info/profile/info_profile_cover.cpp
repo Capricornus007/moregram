@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include <ui/toast/toast.h>
 #include "info/profile/info_profile_cover.h"
 
 #include "main/main_session.h"
@@ -20,6 +21,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/painter.h"
 #include "styles/style_info.h"
 #include "styles/style_dialogs.h"
+#include <QtGui/QGuiApplication>
+#include <QtGui/QClipboard>
 
 namespace Info::Profile {
 

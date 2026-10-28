@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -8,9 +8,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/history_view_top_bar_widget.h"
 
 #include "history/history.h"
+#include "history/admin_log/history_admin_log_section.h"
 #include "history/view/history_view_send_action.h"
 #include "boxes/add_contact_box.h"
 #include "ui/boxes/confirm_box.h"
+#include "boxes/peers/edit_participants_box.h"
 #include "info/info_memento.h"
 #include "info/info_controller.h"
 #include "info/profile/info_profile_values.h"
@@ -47,6 +49,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/stickers/data_custom_emoji.h"
 #include "data/data_peer_values.h"
 #include "data/data_group_call.h" // GroupCall::input.
+#include "data/data_chat_filters.h"
 #include "data/data_folder.h"
 #include "data/data_forum.h"
 #include "data/data_saved_messages.h"
@@ -119,14 +122,19 @@ TopBarWidget::TopBarWidget(
 , _controller(controller)
 , _primaryWindow(controller->isPrimary())
 , _clear(this, tr::lng_selected_clear(), st::topBarClearButton)
-, _forward(this, tr::lng_selected_forward(), st::defaultActiveButton)
+, _forward(this, GetEnhancedBool("show_emoji_button_as_text") ? tr::lng_selected_forward_text() : tr::lng_selected_forward_emoji(), st::defaultActiveButton)
 , _sendNow(this, tr::lng_selected_send_now(), st::defaultActiveButton)
-, _delete(this, tr::lng_selected_delete(), st::defaultActiveButton)
+, _delete(this, GetEnhancedBool("show_emoji_button_as_text") ? tr::lng_selected_delete_text() : tr::lng_selected_delete_emoji(), st::defaultActiveButton)
+, _forwardNoQuote(this, GetEnhancedBool("show_emoji_button_as_text") ? tr::lng_selected_forward_no_quote_text() : tr::lng_selected_forward_no_quote_emoji(), st::defaultActiveButton)
+, _savedMessages(this, GetEnhancedBool("show_emoji_button_as_text") ? tr::lng_forward_to_saved_message_text() : tr::lng_forward_to_saved_message_emoji(), st::defaultActiveButton)
+, _oldForward(this, GetEnhancedBool("show_emoji_button_as_text") ? tr::lng_selected_forward_text_classic() : tr::lng_selected_forward_emoji_classic(), st::defaultActiveButton)
 , _back(this, st::historyTopBarBack)
 , _cancelChoose(this, st::topBarCloseChoose)
 , _call(this, st::topBarCall)
 , _groupCall(this, st::topBarGroupCall)
 , _search(this, st::topBarSearch)
+, _recentActions(this, st::topBarRecentActions)
+, _admins(this, st::topBarAdmins)
 , _infoToggle(this, st::topBarInfo)
 , _menuToggle(this, st::topBarMenuToggle)
 , _titlePeerText(st::windowMinWidth / 3)
@@ -143,8 +151,14 @@ TopBarWidget::TopBarWidget(
 		refreshLang();
 	}, lifetime());
 
+	_oldForward->setClickedCallback([=] { _oldForwardSelection.fire({}); });
+	_oldForward->setWidthChangedCallback([=] { updateControlsGeometry(); });
 	_forward->setClickedCallback([=] { _forwardSelection.fire({}); });
 	_forward->setWidthChangedCallback([=] { updateControlsGeometry(); });
+	_forwardNoQuote->setClickedCallback([=] { _forwardNoQuoteSelection.fire({}); });
+	_forwardNoQuote->setWidthChangedCallback([=] { updateControlsGeometry(); });
+	_savedMessages->setClickedCallback([=] { _savedMessagesSelection.fire({}); });
+	_savedMessages->setWidthChangedCallback([=] { updateControlsGeometry(); });
 	_sendNow->setClickedCallback([=] { _sendNowSelection.fire({}); });
 	_sendNow->setWidthChangedCallback([=] { updateControlsGeometry(); });
 	_delete->setClickedCallback([=] { _deleteSelection.fire({}); });
@@ -160,6 +174,16 @@ TopBarWidget::TopBarWidget(
 	_groupCall->setClickedCallback([=] { groupCall(); });
 	_menuToggle->addClickHandler([=](auto) { showPeerMenu(); });
 	_menuToggle->setAcceptBoth(true, true);
+	_recentActions->setClickedCallback([=] {
+		const auto channel = _activeChat.key.peer()->asChannel();
+		_controller->showSection(std::make_shared<AdminLog::SectionMemento>(channel));
+	});
+	_admins->setClickedCallback([=] {
+		ParticipantsBoxController::Start(
+					controller,
+					_activeChat.key.peer(),
+					ParticipantsBoxController::Role::Admins);
+	});
 	_infoToggle->setClickedCallback([=] { toggleInfoSection(); });
 	_back->setAcceptBoth();
 	_back->addClickHandler([=](Qt::MouseButton) {
@@ -870,7 +894,13 @@ void TopBarWidget::infoClicked() {
 
 void TopBarWidget::backClicked() {
 	if (_activeChat.key.folder()) {
-		_controller->closeFolder();
+		if (GetEnhancedBool("hide_all_chats")) {
+			const auto filters = &_controller->session().data().chatsFilters();
+			const auto lookup_id = filters->lookupId(_controller->session().premium() ? 0 : 1);
+			_controller->setActiveChatsFilter(lookup_id);
+		} else {
+			_controller->closeFolder();
+		}
 	} else if (_activeChat.section == Section::ChatsList
 		&& _activeChat.key.history()
 		&& _activeChat.key.history()->isForum()) {
@@ -1162,15 +1192,40 @@ void TopBarWidget::updateControlsGeometry() {
 		width() - buttonsWidth,
 		-2 * st::defaultActiveButton.width);
 	auto buttonFullWidth = std::min(-(widthLeft / 2), 0);
+	if (!GetEnhancedBool("hide_classic_fwd") && _canForward) {
+		_oldForward->show();
+		_oldForward->setFullWidth(buttonFullWidth);
+	} else {
+		_oldForward->hide();
+	}
 	_forward->setFullWidth(buttonFullWidth);
+	_forwardNoQuote->setFullWidth(buttonFullWidth);
+	_savedMessages->setFullWidth(buttonFullWidth);
 	_sendNow->setFullWidth(buttonFullWidth);
 	_delete->setFullWidth(buttonFullWidth);
 
 	selectedButtonsTop += (height() - _forward->height()) / 2;
 
+	if (!GetEnhancedBool("hide_classic_fwd") && _canForward) {
+		_oldForward->moveToLeft(buttonsLeft, selectedButtonsTop);
+		if (!_oldForward->isHidden()) {
+			buttonsLeft += _oldForward->width() + st::topBarActionSkip;
+		}
+	}
+
 	_forward->moveToLeft(buttonsLeft, selectedButtonsTop);
 	if (!_forward->isHidden()) {
 		buttonsLeft += _forward->width() + st::topBarActionSkip;
+	}
+
+	_forwardNoQuote->moveToLeft(buttonsLeft, selectedButtonsTop);
+	if (!_forwardNoQuote->isHidden()) {
+		buttonsLeft += _forwardNoQuote->width() + st::topBarActionSkip;
+	}
+
+	_savedMessages->moveToLeft(buttonsLeft, selectedButtonsTop);
+	if (!_savedMessages->isHidden()) {
+		buttonsLeft += _savedMessages->width() + st::topBarActionSkip;
 	}
 
 	_sendNow->moveToLeft(buttonsLeft, selectedButtonsTop);
@@ -1294,6 +1349,14 @@ void TopBarWidget::updateControlsGeometry() {
 		_infoToggle->moveToRight(_rightTaken, otherButtonsTop);
 		_rightTaken += _infoToggle->width();
 	}
+	_admins->moveToRight(_rightTaken, otherButtonsTop);
+	if (!_admins->isHidden()) {
+		_rightTaken += _admins->width() + st::topBarSkip;
+	}
+	_recentActions->moveToRight(_rightTaken, otherButtonsTop);
+	if (!_recentActions->isHidden()) {
+		_rightTaken += _recentActions->width() + st::topBarSkip;
+	}
 	if (!_call->isHidden() || !_groupCall->isHidden()) {
 		_call->moveToRight(_rightTaken, otherButtonsTop);
 		_groupCall->moveToRight(_rightTaken, otherButtonsTop);
@@ -1333,6 +1396,8 @@ void TopBarWidget::updateControlsVisibility() {
 	const auto visible = showSelectedState() || _selectedShown.animating();
 	_clear->setVisible(visible);
 	_delete->setVisible(_canDelete && visible);
+	_forwardNoQuote->setVisible(_canForward);
+	_savedMessages->setVisible(_canForward);
 	_forward->setVisible(_canForward && visible);
 	_sendNow->setVisible(_canSendNow && visible);
 
@@ -1410,6 +1475,50 @@ void TopBarWidget::updateControlsVisibility() {
 		&& (_narrowRatio < 1.
 			|| (rootChatsListBar() && _activeChat.key.folder())));
 	_infoToggle->setVisible(hasInfo
+		&& !isOneColumn
+		&& _controller->canShowThirdSection()
+		&& !_chooseForReportReason);
+	const auto isAdmin = [&] {
+		if (_activeChat.section == Section::ChatsList) {
+			return false;
+		}
+		if (const auto peer = _activeChat.key.peer()) {
+			if (peer->isMonoforum()) {
+				return false;
+			}
+			if (peer->isMegagroup() || peer->isChannel()) {
+				const auto channel = peer->asChannel();
+				if (channel->hasAdminRights() || channel->amCreator()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}();
+	_recentActions->setVisible(isAdmin);
+	const auto needShow = [&] {
+		if (_activeChat.section == Section::ChatsList) {
+			return false;
+		}
+		if (const auto peer = _activeChat.key.peer()) {
+			if (peer->isMonoforum()) {
+				return false;
+			}
+			if (peer->isMegagroup()) {
+				return true;
+			} 
+			if (peer->isChannel()) {
+				const auto channel = peer->asChannel();
+				if (channel->hasAdminRights() || channel->amCreator()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}();
+	_admins->setVisible(needShow);
+	_infoToggle->setVisible(historyMode
+		&& !_activeChat.key.folder()
 		&& !isOneColumn
 		&& _controller->canShowThirdSection()
 		&& !_chooseForReportReason);
@@ -1513,11 +1622,21 @@ void TopBarWidget::showSelected(SelectedState state) {
 	_canSendNow = canSendNow;
 	const auto nowSelectedState = showSelectedState();
 	if (nowSelectedState) {
+		if (!GetEnhancedBool("hide_classic_fwd")) {
+			_oldForward->setNumbersText(_selectedCount);
+		}
 		_forward->setNumbersText(_selectedCount);
+		_forwardNoQuote->setNumbersText(_selectedCount);
+		_savedMessages->setNumbersText(_selectedCount);
 		_sendNow->setNumbersText(_selectedCount);
 		_delete->setNumbersText(_selectedCount);
 		if (!wasSelectedState) {
+			if (!GetEnhancedBool("hide_classic_fwd")) {
+				_oldForward->finishNumbersAnimation();
+			}
 			_forward->finishNumbersAnimation();
+			_forwardNoQuote->finishNumbersAnimation();
+			_savedMessages->finishNumbersAnimation();
 			_sendNow->finishNumbersAnimation();
 			_delete->finishNumbersAnimation();
 		}
@@ -1913,10 +2032,12 @@ void TopBarWidget::updateOnlineDisplay() {
 	if (!peer || _activeChat.key.topic()) {
 		return;
 	}
+	const auto isTopic = peer->forum();
 
 	QString text;
 	const auto now = base::unixtime::now();
 	bool titlePeerTextOnline = false;
+	bool delayUpdate = false;
 	if (const auto user = peer->asUser()) {
 		if (session().supportMode()
 			&& !session().supportHelper().infoCurrent(user).text.empty()) {
@@ -1967,32 +2088,34 @@ void TopBarWidget::updateOnlineDisplay() {
 		text = tr::lng_chat_status_direct(tr::now);
 	} else if (const auto channel = peer->asChannel()) {
 		if (channel->isMegagroup()
-			&& channel->canViewMembers()
-			&& (channel->membersCount() > 0)
-			&& (channel->membersCount()
-				<= channel->session().serverConfig().chatSizeMax)) {
-			if (channel->lastParticipantsRequestNeeded()) {
-				session().api().chatParticipants().requestLast(channel);
-			}
-			const auto self = session().user();
-			auto online = 0;
-			auto onlyMe = true;
-			for (auto &participant : std::as_const(channel->mgInfo->lastParticipants)) {
-				if (participant->lastseen().isOnline(now)) {
-					++online;
-					if (onlyMe && participant != self) {
-						onlyMe = false;
-					}
-				}
-			}
-			if (online && !onlyMe) {
-				auto membersCount = tr::lng_chat_status_members(tr::now, lt_count_decimal, channel->membersCount());
-				auto onlineCount = tr::lng_chat_status_online(tr::now, lt_count, online);
-				text = tr::lng_chat_status_members_online(tr::now, lt_members_count, membersCount, lt_online_count, onlineCount);
-			} else if (channel->membersCount() > 0) {
+			&& channel->membersCount() > 0) {
+			if (GetEnhancedBool("hide_counter")) {
 				text = tr::lng_chat_status_members(tr::now, lt_count_decimal, channel->membersCount());
 			} else {
-				text = tr::lng_group_status(tr::now);
+				QMutexLocker locker(&reqMutex);
+				if (!isTopic && lastChatRequest[QString::number(channel->id.value)].requestTime + 60 < now) { // Update every 60 seconds
+					delayUpdate = true;
+					_controller->session().api().request(MTPmessages_GetOnlines(
+							channel->input()
+					)).done([=](const MTPChatOnlines &result) {
+						const auto count = result.c_chatOnlines().vonlines().v;
+						lastChatRequest[QString::number(channel->id.value)].memberCount = count;
+						updateOnlineDisplayIn(crl::time(100)); // To slow down chat status update
+					}).fail([=](const MTP::Error &error) {
+						// if failed, then no any changes :)
+					}).send();
+					lastChatRequest[QString::number(channel->id.value)].requestTime = now;
+				}
+
+				if (channel->membersCount() > 0 && lastChatRequest[QString::number(channel->id.value)].memberCount > 0) {
+					const auto membersCount = tr::lng_chat_status_members(tr::now, lt_count_decimal, channel->membersCount());
+					const auto onlineCount = tr::lng_chat_status_online(tr::now, lt_count, lastChatRequest[QString::number(channel->id.value)].memberCount);
+					text = tr::lng_chat_status_members_online(tr::now, lt_members_count, membersCount, lt_online_count, onlineCount);
+				} else if (channel->membersCount() > 0) {
+					text = tr::lng_chat_status_members(tr::now, lt_count_decimal, channel->membersCount());
+				} else {
+					text = tr::lng_group_status(tr::now);
+				}
 			}
 		} else if (channel->membersCount() > 0) {
 			text = channel->isMegagroup()
@@ -2003,7 +2126,7 @@ void TopBarWidget::updateOnlineDisplay() {
 			text = channel->isMegagroup() ? tr::lng_group_status(tr::now) : tr::lng_channel_status(tr::now);
 		}
 	}
-	if (_titlePeerText.toString() != text) {
+	if (_titlePeerText.toString() != text && !delayUpdate) {
 		_titlePeerText.setText(st::dialogsTextStyle, text);
 		_titlePeerTextOnline = titlePeerTextOnline;
 		updateMembersShowArea();

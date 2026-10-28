@@ -253,7 +253,7 @@ constexpr auto kLogEntryPreviewLines = 2;
 		|| ((type == WebPageType::WallPaper)
 			&& webpage->document
 			&& webpage->document->isWallPaper())
-		|| (type == WebPageType::StickerSet)
+		// || (type == WebPageType::StickerSet)
 		|| (type == WebPageType::StoryAlbum)
 		|| (type == WebPageType::GiftCollection)
 		|| (type == WebPageType::ComposeAiTone)
@@ -334,22 +334,22 @@ void WebPage::setupAdditionalData() {
 			}
 		}
 	} else if (_data->stickerSet) {
-		_additionalData = std::make_unique<AdditionalData>(StickerSetData());
-		const auto raw = stickerSetData();
-		for (const auto &sticker : _data->stickerSet->items) {
-			if (!sticker->sticker()) {
-				continue;
-			}
-			raw->views.push_back(
-				std::make_unique<Sticker>(_parent, sticker, true));
-		}
-		const auto side = std::ceil(std::sqrt(raw->views.size()));
-		const auto box = UnitedLineHeight() * kStickerSetLines;
-		const auto single = box / side;
-		for (const auto &view : raw->views) {
-			view->setWebpagePart();
-			view->initSize(single);
-		}
+		//_additionalData = std::make_unique<AdditionalData>(StickerSetData());
+		//const auto raw = stickerSetData();
+		//for (const auto &sticker : _data->stickerSet->items) {
+		//	if (!sticker->sticker()) {
+		//		continue;
+		//	}
+		//	raw->views.push_back(
+		//		std::make_unique<Sticker>(_parent, sticker, true));
+		//}
+		//const auto side = std::ceil(std::sqrt(raw->views.size()));
+		//const auto box = UnitedLineHeight() * kStickerSetLines;
+		//const auto single = box / side;
+		//for (const auto &view : raw->views) {
+		//	view->setWebpagePart();
+		//	view->initSize(single);
+		//}
 	} else if (_data->type == WebPageType::ComposeAiTone
 			&& _data->composeToneEmojiId) {
 		if (const auto existing = stickerSetData()
@@ -417,7 +417,9 @@ QSize WebPage::countOptimalSize() {
 	// Detect _openButtonWidth before counting paddings.
 	const auto mediaEditor = (_parent->context() == Context::MediaEditor);
 	_openButton = Ui::Text::String();
-	if (!mediaEditor && HasButton(_data)) {
+	if (!mediaEditor
+		&& (_data->iv != nullptr || _data->siteName == "Ad")
+		&& HasButton(_data)) {
 		const auto context = Core::TextContext({
 			.session = &_data->session(),
 			.customEmojiLoopLimit = 1,
@@ -1102,7 +1104,8 @@ void WebPage::draw(Painter &p, const PaintContext &context) const {
 			}
 		}
 		paintw -= box;
-	} else if (asArticle()) {
+	}
+	if (asArticle()) {
 		ensurePhotoMediaCreated();
 
 		auto pix = QPixmap();
@@ -1622,7 +1625,7 @@ TextState WebPage::textState(QPoint point, StateRequest request) const {
 	} else if (sponsored && outer.contains(point)) {
 		result.link = sponsored->link;
 	}
-	if (!result.link && outer.contains(point)) {
+	if (_data->iv) {
 		result.link = _openl;
 	}
 	if (const auto hint = hintData()) {
@@ -1648,7 +1651,8 @@ ClickHandlerPtr WebPage::replaceAttachLink(
 		|| (_data->document
 			&& !_data->document->isWallPaper()
 			&& !_data->document->isTheme())
-		|| !_data->collage.items.empty()) {
+		|| !_data->collage.items.empty()
+		|| (_data->photo && !_data->displayedSiteName().contains("YouTube")) ) {
 		return link;
 	}
 	return _openl;

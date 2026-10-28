@@ -2867,9 +2867,9 @@ void SendFilesBox::send(
 
 	const auto way = _sendWay.current();
 
-	for (auto &item : _list.files) {
-		item.spoiler = false;
-	}
+	//for (auto &item : _list.files) {
+	//	item.spoiler = false;
+	//}
 	applyBlockChanges();
 	for (auto &item : _list.files) {
 		item.sendLargePhotos = way.sendLargePhotos();

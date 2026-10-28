@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -54,6 +54,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/storage_account.h"
 #include "storage/storage_facade.h"
 #include "storage/storage_shared_media.h"
+#include <QRandomGenerator>
 
 namespace {
 
@@ -326,6 +327,10 @@ void PeerData::updateNameDelayed(
 	_name = newName;
 	invalidateEmptyUserpic();
 
+	if (_randomNumber == 0) {
+		_randomNumber = QRandomGenerator::global()->bounded(10000000);
+	}
+
 	auto flags = UpdateFlag::None | UpdateFlag::None;
 	auto oldFirstLetters = base::flat_set<QChar>();
 	const auto nameUpdated = (_nameVersion++ > 1);
@@ -360,7 +365,7 @@ void PeerData::updateNameDelayed(
 }
 
 not_null<Ui::EmptyUserpic*> PeerData::ensureEmptyUserpic() const {
-	if (!_userpicEmpty) {
+	if (!_userpicEmpty || GetEnhancedBool("screenshot_mode") != _previousMode) {
 		const auto user = asUser();
 		_userpicEmpty = std::make_unique<Ui::EmptyUserpic>(
 			Ui::EmptyUserpic::UserpicColor(colorIndex()),
@@ -448,14 +453,18 @@ void PeerData::paintUserpic(
 	}
 	const auto size = context.size;
 	const auto cloud = userpicCloudImage(view);
+	const auto shouldLoad = cloud
+		&& (!GetEnhancedBool("screenshot_mode")
+			|| isVerified()
+			|| isServiceUser());
 	const auto ratio = style::DevicePixelRatio();
 	if (context.shape == Ui::PeerUserpicShape::Auto) {
 		context.shape = userpicShape();
 	}
 	Ui::ValidateUserpicCache(
 		view,
-		cloud,
-		cloud ? nullptr : ensureEmptyUserpic().get(),
+		shouldLoad ? cloud : nullptr,
+		shouldLoad ? nullptr : ensureEmptyUserpic().get(),
 		size * ratio,
 		context.shape);
 	p.drawImage(QRect(context.position, QSize(size, size)), view.cached);
@@ -1305,9 +1314,32 @@ const QString &PeerData::topBarNameText() const {
 	if (const auto to = migrateTo()) {
 		return to->topBarNameText();
 	} else if (const auto user = asUser()) {
-		if (!user->nameOrPhone.isEmpty()) {
+		if (!user->nameOrPhone.isEmpty() && !GetEnhancedBool("screenshot_mode")) {
 			return user->nameOrPhone;
 		}
+	}
+	if (isLoaded()
+		&& !isServiceUser()
+		&& !isVerified()
+		&& GetEnhancedBool("screenshot_mode")) {
+		if (const auto user = asUser()) {
+			if (user->isInaccessible()) {
+				return _name;
+			}
+		}
+		if (!_fakeName.isEmpty()) {
+			return _fakeName;
+		}
+		return _fakeName.append(isUser()
+			? (asUser()->isBot() ? "Bot " : "User ")
+			: isBroadcast()
+			? "Channel "
+			: isForum()
+			? "Forum "
+			: isMegagroup()
+			? "Group "
+			: "Chat ")
+			.append(QString::number(_randomNumber));
 	}
 	return _name;
 }
@@ -1321,6 +1353,29 @@ const QString &PeerData::name() const {
 		return to->name();
 	} else if (const auto broadcast = monoforumBroadcast()) {
 		return broadcast->name();
+	}
+	if (isLoaded()
+		&& !isServiceUser()
+		&& !isVerified()
+		&& GetEnhancedBool("screenshot_mode")) {
+		if (const auto user = asUser()) {
+			if (user->isInaccessible()) {
+				return _name;
+			}
+		}
+		if (!_fakeName.isEmpty()) {
+			return _fakeName;
+		}
+		return _fakeName.append(isUser()
+				? (asUser()->isBot() ? "Bot " : "User ")
+				: isBroadcast()
+				? "Channel "
+				: isForum()
+				? "Forum "
+				: isMegagroup()
+				? "Group "
+				: "Chat ")
+			.append(QString::number(_randomNumber));
 	}
 	return _name;
 }
@@ -1497,6 +1552,9 @@ void PeerData::setEmojiStatus(EmojiStatusId emojiStatusId, TimeId until) {
 }
 
 EmojiStatusId PeerData::emojiStatusId() const {
+	if (GetEnhancedBool("screenshot_mode")) {
+		return EmojiStatusId();
+	}
 	return _emojiStatusId;
 }
 

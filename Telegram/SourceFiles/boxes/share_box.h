@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -118,7 +118,9 @@ public:
 		std::shared_ptr<Ui::Show> show,
 		not_null<History*> history,
 		MessageIdsList msgIds,
-		std::optional<TimeId> videoTimestamp = {});
+		std::optional<TimeId> videoTimestamp = {},
+		bool no_quote = false,
+		FnMut<void()>&& successCallback = nullptr);
 
 	struct Descriptor {
 		not_null<Main::Session*> session;
@@ -130,6 +132,7 @@ public:
 		rpl::producer<QString> copyLinkText;
 		rpl::producer<QString> titleOverride;
 		ShareBoxStyleOverrides st;
+		rpl::producer<QString> title;
 		std::optional<TimeId> videoTimestamp;
 		struct {
 			int sendersCount = 0;
@@ -214,4 +217,5 @@ private:
 	Ui::Animations::Simple _scrollAnimation;
 	rpl::lifetime _submitLifetime;
 
+	rpl::producer<QString> header;
 };

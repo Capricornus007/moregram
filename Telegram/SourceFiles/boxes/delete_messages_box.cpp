@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -283,6 +283,9 @@ void DeleteMessagesBox::prepare() {
 			+ st::boxPadding.bottom();
 		if (_revoke) {
 			fullHeight += st::boxMediumSkip + _revoke->heightNoMargins();
+			if (GetEnhancedInt("always_delete_for") == 2 || GetEnhancedInt("always_delete_for") == 3) {
+				_revoke->setChecked(true);
+			}
 		}
 		if (_autoDeleteSettings) {
 			fullHeight += st::boxMediumSkip

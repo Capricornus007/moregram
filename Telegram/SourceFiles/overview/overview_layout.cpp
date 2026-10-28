@@ -1449,7 +1449,11 @@ void Document::paint(Painter &p, const QRect &clip, TextSelection selection, con
 
 	const auto cornerDownload = downloadInCorner();
 
-	_dataMedia->automaticLoad(parent()->fullId(), parent());
+	auto peerId = parent()->from() ? parent()->from()->id : PeerId(0);
+	auto user = parent()->history()->session().data().peerLoaded(parent()->from() ? parent()->from()->id : PeerId(0));
+	if (!blockExist(peerId.value) || (!GetEnhancedBool("blocked_user_spoiler_mode") && user && !user->isBlocked())) {
+		_dataMedia->automaticLoad(parent()->fullId(), parent());
+	}
 	const auto loaded = dataLoaded();
 	const auto displayLoading = externalLoading().has_value()
 		|| _data->displayLoading();

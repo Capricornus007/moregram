@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "base/integration.h"
 #include "ui/style/style_core.h"
+#include <QtCore/QJsonObject>
 
 #define DeclareReadSetting(Type, Name) extern Type g##Name; \
 inline const Type &c##Name() { \
@@ -137,4 +138,74 @@ inline void SetScaleChecked(int scale) {
 inline void ValidateScale() {
 	SetScaleChecked(cConfigScale());
 	style::SetScale(cEvalScale(cConfigScale()));
+}
+
+DeclareSetting(bool, EnhancedFirstRun);
+DeclareSetting(bool, VoiceChatPinned);
+DeclareSetting(QList<int64>, BlockList);
+typedef QHash<QString, QVariant> EnhancedSetting;
+DeclareSetting(EnhancedSetting, EnhancedOptions);
+
+DeclareSetting(int, NetRequestsCount);
+DeclareSetting(int, NetUploadSessionsCount);
+DeclareSetting(int, NetUploadRequestInterval);
+
+inline bool GetEnhancedBool(const QString& key) {
+	if (!gEnhancedOptions.contains(key)) {
+		return false;
+	}
+	return gEnhancedOptions[key].toBool();
+}
+
+inline int GetEnhancedInt(const QString& key) {
+	if (!gEnhancedOptions.contains(key)) {
+		return 0;
+	}
+	return gEnhancedOptions[key].toInt();
+}
+
+inline QString GetEnhancedString(const QString& key) {
+	if (!gEnhancedOptions.contains(key)) {
+		return {};
+	}
+	return gEnhancedOptions[key].toString();
+}
+
+inline void SetEnhancedValue(const QString& key, const QVariant& value) {
+	gEnhancedOptions.insert(key, value);
+}
+
+inline void SetNetworkBoost(int boost) {
+	if (boost < 0) {
+		gEnhancedOptions.insert("net_speed_boost", 0);
+	} else if (boost > 3) {
+		gEnhancedOptions.insert("net_speed_boost", 3);
+	} else {
+		gEnhancedOptions.insert("net_speed_boost", boost);
+	}
+
+	cSetNetRequestsCount(2 + (2 * GetEnhancedInt("net_speed_boost")));
+	cSetNetUploadSessionsCount(2 + (2 * GetEnhancedInt("net_speed_boost")));
+	cSetNetUploadRequestInterval(500 - (100 * GetEnhancedInt("net_speed_boost")));
+}
+
+inline bool blockExist(int64 id) {
+	if (cBlockList().contains(id)) {
+		return true;
+	}
+	return false;
+}
+
+inline void loadSettings(QJsonObject settings) {
+	for (const auto & key : settings.keys()) {
+		if (settings[key].type() == QJsonValue::Bool) {
+			gEnhancedOptions.insert(key, settings[key].toBool());
+		}
+		else if (settings[key].type() == QJsonValue::Double) {
+			gEnhancedOptions.insert(key, settings[key].toInt());
+		}
+		else if (settings[key].type() == QJsonValue::String) {
+			gEnhancedOptions.insert(key, settings[key].toString());
+		}
+	}
 }

@@ -617,7 +617,8 @@ bool Reply::isNameUpdated(
 		return true;
 	}
 	if (const auto from = sender(view, data)) {
-		if (_nameVersion < from->nameVersion()) {
+		if (_nameVersion < from->nameVersion() || GetEnhancedBool("screenshot_mode") != _previousMode) {
+			_previousMode = GetEnhancedBool("screenshot_mode");
 			updateName(view, data, from);
 			return true;
 		}
@@ -656,9 +657,10 @@ void Reply::updateName(
 		&& (forwarded->forwardOfForward()
 			|| (!message->showForwardsFromSender(forwarded)
 				&& !view->data()->Has<HistoryMessageForwarded>()));
-	const auto shorten = !viaBotUsername.isEmpty()
-		|| groupNameAdded
-		|| originalNameAdded;
+	const auto shorten = !GetEnhancedBool("screenshot_mode")
+		&& (!viaBotUsername.isEmpty()
+			|| groupNameAdded
+			|| originalNameAdded);
 	const auto name = sender
 		? senderName(sender, shorten)
 		: senderName(view, data, shorten);
@@ -881,7 +883,7 @@ void Reply::paint(
 	}
 	Ui::Text::ValidateQuotePaintCache(*cache, quoteSt);
 	Ui::Text::FillQuotePaint(p, rect, *cache, quoteSt);
-	if (backgroundEmojiData) {
+	if (!Ui::UncoloredQuoteEnabled() && backgroundEmojiData) {
 		ValidateBackgroundEmoji(
 			backgroundEmojiId,
 			colorCollectible,

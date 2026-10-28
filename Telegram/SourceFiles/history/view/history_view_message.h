@@ -533,6 +533,7 @@ private:
 	void refreshRightBadge();
 	[[nodiscard]] int rightBadgeWidth() const;
 	void validateFromNameText(PeerData *from) const;
+	void validateForwardedNameText(HistoryItem* item) const;
 	void ensureFromNameStatusLink(not_null<PeerData*> peer) const;
 
 	mutable std::unique_ptr<RightAction> _rightAction;
@@ -547,6 +548,7 @@ private:
 	mutable Ui::Text::String _fromName;
 	mutable std::unique_ptr<FromNameStatus> _fromNameStatus;
 	mutable std::unique_ptr<Ui::RoundCheckbox> _selectionRoundCheckbox;
+	mutable bool _previousMode = false;
 	mutable uint32 _fromNameVersion : 16 = 0;
 	uint32 _nonTextMaxWidth : 16 = 0;
 	mutable int _bubbleTextualWidthMinimum : 16 = -1;

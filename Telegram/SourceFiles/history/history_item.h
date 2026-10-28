@@ -680,6 +680,14 @@ public:
 	[[nodiscard]] int boostsApplied() const {
 		return _boostsApplied;
 	}
+	
+	[[nodiscard]] TextWithEntities getOriginalMessage() const {
+		return _originalMsg;
+	}
+
+	[[nodiscard]] TextWithEntities getBlockedMessage() const {
+		return _blockMsg;
+	}
 
 	[[nodiscard]] QString fromRank() const;
 
@@ -767,7 +775,7 @@ private:
 	static void FillForwardedInfo(
 		CreateConfig &config,
 		const MTPDmessageFwdHeader &data);
-	void createComponents(const MTPDmessage &data);
+	void createComponents(const MTPDmessage &data, bool blocked);
 	void setMedia(const MTPMessageMedia &media);
 	void applyServiceDateEdition(const MTPDmessageService &data);
 	void setReactions(const MTPMessageReactions *reactions);
@@ -826,6 +834,8 @@ private:
 	std::unique_ptr<Data::Media> _media;
 	std::unique_ptr<Data::MessageReactions> _reactions;
 	crl::time _reactionsLastRefreshed = 0;
+	TextWithEntities _blockMsg;
+	TextWithEntities _originalMsg;
 
 	TimeId _date = 0;
 	TimeId _ttlDestroyAt = 0;

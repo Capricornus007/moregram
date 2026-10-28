@@ -35,6 +35,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "chat_helpers/tabbed_panel.h"
 #include "dialogs/dialogs_entry.h"
 #include "dialogs/dialogs_widget.h"
+#include "dialogs/dialogs_inner_widget.h"
 #include "dialogs/ui/dialogs_layout.h"
 #include "ffmpeg/ffmpeg_utility.h"
 #include "history/history_item_components.h"
@@ -64,6 +65,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtCore/QJsonDocument>
 #include <QtGui/QGuiApplication>
+
+#include "ui/chat/chat_style.h"
 
 namespace Settings {
 namespace {

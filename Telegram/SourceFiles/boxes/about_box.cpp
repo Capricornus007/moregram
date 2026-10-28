@@ -36,9 +36,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 namespace {
 
 rpl::producer<TextWithEntities> Text1() {
-	return tr::lng_about_text1(
+	return tr::lng_about_text4(
 		lt_api_link,
-		tr::lng_about_text1_api(tr::url(u"https://core.telegram.org/api"_q)),
+		tr::lng_about_text4_api(tr::url(u"https://core.telegram.org/api"_q)),
 		tr::marked);
 }
 
@@ -47,11 +47,11 @@ rpl::producer<TextWithEntities> Text2() {
 		lt_gpl_link,
 		rpl::single(tr::link(
 			"GNU GPL",
-			"https://github.com/telegramdesktop/tdesktop/blob/master/LICENSE")),
+			"https://github.com/TDesktop-x64/tdesktop/blob/dev/LICENSE")),
 		lt_github_link,
 		rpl::single(tr::link(
 			"GitHub",
-			"https://github.com/telegramdesktop/tdesktop")),
+			"https://github.com/TDesktop-x64/tdesktop")),
 		tr::marked);
 }
 
@@ -65,7 +65,7 @@ rpl::producer<TextWithEntities> Text3() {
 } // namespace
 
 void AboutBox(not_null<Ui::GenericBox*> box) {
-	box->setTitle(u"Telegram Desktop"_q);
+	box->setTitle(u"64Gram Desktop"_q);
 
 	auto layout = box->verticalLayout();
 
@@ -166,6 +166,7 @@ namespace {
 	} else if (Platform::IsWindowsARM64()) {
 		result += " arm64";
 	}
+	result += QString("｜v%1").arg(UpstreamVersion);
 #ifdef _DEBUG
 	result += " DEBUG";
 #endif

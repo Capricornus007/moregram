@@ -336,7 +336,7 @@ void DedicatedLoader::startLoading() {
 }
 
 void DedicatedLoader::sendRequest() {
-	if (_requests.size() >= kRequestsCount || _offset >= _size) {
+	if (_requests.size() >= cNetRequestsCount() || _offset >= _size) {
 		return;
 	}
 	const auto offset = _offset;
@@ -352,7 +352,7 @@ void DedicatedLoader::sendRequest() {
 		MTP::updaterDcId(_dcId));
 	_offset += kChunkSize;
 
-	if (_requests.size() < kRequestsCount) {
+	if (_requests.size() < cNetRequestsCount()) {
 		base::call_delayed(kNextRequestDelay, this, [=] { sendRequest(); });
 	}
 }

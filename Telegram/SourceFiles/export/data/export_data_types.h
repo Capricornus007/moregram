@@ -502,6 +502,7 @@ struct Document {
 	int height = 0;
 
 	Utf8String stickerEmoji;
+	uint64 stickerSetId;
 	Utf8String songPerformer;
 	Utf8String songTitle;
 	int duration = 0;
@@ -1301,6 +1302,7 @@ struct Message {
 	std::vector<TextPart> text;
 	std::vector<Reaction> reactions;
 	Media media;
+	int64 media_group_id;
 	ServiceAction action;
 	bool out = false;
 	std::vector<std::vector<HistoryMessageMarkupButton>> inlineButtonRows;

@@ -572,12 +572,12 @@ void PeerListStories::process(not_null<PeerListRow*> row) {
 	const auto source = stories->source(user->id);
 	const auto count = source
 		? int(source->ids.size())
-		: user->hasActiveStories()
+		: !GetEnhancedBool("hide_stories") && user->hasActiveStories()
 		? 1
 		: 0;
 	const auto unread = source
 		? int(source->info().unreadCount)
-		: user->hasUnreadStories()
+		: !GetEnhancedBool("hide_stories") && user->hasUnreadStories()
 		? 1
 		: 0;
 	const auto videoStream = source
@@ -592,7 +592,7 @@ bool PeerListStories::handleClick(not_null<PeerData*> peer) {
 	if (point && point->x() < st.photoPosition.x() + st.photoSize) {
 		if (const auto window = peer->session().tryResolveWindow()) {
 			if (const auto user = peer->asUser()) {
-				if (user->hasActiveStories()) {
+				if (!GetEnhancedBool("hide_stories") && user->hasActiveStories()) {
 					window->openPeerStories(peer->id);
 					return true;
 				}

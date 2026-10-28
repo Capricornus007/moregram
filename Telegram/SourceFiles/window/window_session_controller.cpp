@@ -2053,6 +2053,35 @@ void SessionController::toggleFiltersMenu(bool enabled) {
 	_filtersMenuChanged.fire({});
 }
 
+void SessionController::reloadFiltersMenu() {
+	const auto enabled = !session().data().chatsFilters().list().empty();
+	if (enabled) {
+		auto previousFilter = activeChatsFilterCurrent();
+		rpl::single(
+			rpl::empty_value()
+		) | rpl::then(
+			filtersMenuChanged()
+		) | rpl::on_next([=] {
+			toggleFiltersMenu(true);
+			if (previousFilter) {
+				if (activeChatsFilterCurrent() != previousFilter) {
+					resetFakeUnreadWhileOpened();
+				}
+				_activeChatsFilter.force_assign(previousFilter);
+				if (previousFilter) {
+					closeFolder();
+				}
+			}
+		}, lifetime());
+
+		if (activeChatsFilterCurrent() != 0) {
+			resetFakeUnreadWhileOpened();
+		}
+		_activeChatsFilter.force_assign(0);
+		toggleFiltersMenu(false);
+	}
+}
+
 rpl::producer<> SessionController::filtersMenuChanged() const {
 	return _filtersMenuChanged.events();
 }
@@ -2077,7 +2106,9 @@ void SessionController::activateFirstChatsFilter() {
 		return;
 	}
 	_filtersActivated = true;
-	setActiveChatsFilter(session().data().chatsFilters().defaultId());
+	if (!GetEnhancedBool("hide_all_chats")) {
+		setActiveChatsFilter(session().data().chatsFilters().defaultId());
+	}
 }
 
 bool SessionController::uniqueChatsInSearchResults(
@@ -3341,7 +3372,7 @@ void SessionController::setActiveChatsFilter(
 		closeFolder();
 		closeCommunity();
 	}
-	if (adaptive().isOneColumn()) {
+	if (!GetEnhancedBool("hide_all_chats") && adaptive().isOneColumn()) {
 		clearSectionStack(params);
 	}
 }
@@ -3352,6 +3383,10 @@ void SessionController::showAddContact() {
 
 void SessionController::showNewGroup() {
 	_window->show(Box<GroupInfoBox>(this, GroupInfoBox::Type::Group));
+}
+
+void SessionController::showNewSupergroup() {
+	_window->show(Box<GroupInfoBox>(this, GroupInfoBox::Type::Megagroup));
 }
 
 void SessionController::showNewChannel() {

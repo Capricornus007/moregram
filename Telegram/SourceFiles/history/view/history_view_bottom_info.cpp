@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -505,7 +505,7 @@ void BottomInfo::layoutDateText() {
 		: edited + ((_data.flags
 			& (Data::Flag::ForwardedDate | Data::Flag::FullDate))
 		? Ui::FormatDateTimeSavedFrom(_data.date)
-		: QLocale().toString(_data.date.time(), QLocale::ShortFormat));
+		: QLocale().toString(_data.date.time(), GetEnhancedBool("show_seconds") ? QLocale::system().timeFormat(QLocale::LongFormat).remove("t") : QLocale::system().timeFormat(QLocale::ShortFormat))) + _data.msgId;
 	const auto afterAuthor = prefix + date;
 	const auto afterAuthorWidth = st::msgDateFont->width(afterAuthor);
 	const auto authorWidth = st::msgDateFont->width(author);
@@ -749,6 +749,10 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 		if (item->isSilent()) {
 			result.flags |= Flag::Silent;
 		}
+	}
+	if (GetEnhancedBool("show_messages_id")) {
+		if (item->fullId().msg > 0)
+			result.msgId = QString(" (%1)").arg(item->fullId().msg.bare);
 	}
 	if (!forwarded) {
 		return result;

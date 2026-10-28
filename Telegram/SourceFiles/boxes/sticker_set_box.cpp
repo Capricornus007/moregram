@@ -75,6 +75,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_menu_icons.h"
 #include "styles/style_premium.h"
 #include "styles/style_window.h"
+#include "window/window_session_controller.h"
 
 #include <QtWidgets/QApplication>
 #include <QtSvg/QSvgRenderer>
@@ -908,6 +909,24 @@ void StickerSetBox::updateButtons() {
 					&st::menuIconReorder);
 			});
 		}();
+                const auto author = [=] {
+                    auto ownerId = _inner->setId() >> 32;
+                    if ((_inner->setId() >> 16 & 0xff) == 0x3f) {
+                        ownerId |= 0x80000000;
+                    }
+                    if (_inner->setId() >> 24 & 0xff) {
+                        ownerId += 0x100000000;
+                    }
+                    const auto peer = _session->data().peerLoaded(static_cast<PeerId>(ownerId));
+                    if (peer != nullptr) {
+                       if (const auto window = _session->tryResolveWindow()) {
+                          window->showPeerInfo(peer);
+                       }
+                    } else {
+                        QGuiApplication::clipboard()->setText(QString::number(ownerId));
+                        showToast(tr::lng_code_copied(tr::now));
+                    }
+                };
 		const auto fillSetCreatorFooter = [&] {
 			using Filler = Fn<void(not_null<Ui::PopupMenu*>)>;
 			if (!_inner->amSetCreator()) {
@@ -1111,6 +1130,10 @@ void StickerSetBox::updateButtons() {
 				if (fillSetCreatorFooter) {
 					fillSetCreatorFooter(raw);
 				}
+                                                (*menu)->addAction(
+                                                   tr::lng_channel_admin_status_creator(tr::now),
+                                                   [=] { author(); },
+                                                   &st::menuIconProfile);
 				raw->setForcedOrigin(
 					Ui::PanelAnimation::Origin::TopRight);
 				top->setForceRippled(true);

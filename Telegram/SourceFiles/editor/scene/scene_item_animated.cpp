@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "editor/scene/scene_item_animated.h"
 
 #include "ui/painter.h"
+#include <QtMath>
 
 #include <QtMath>
 

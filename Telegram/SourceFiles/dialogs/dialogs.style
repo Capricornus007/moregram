@@ -330,7 +330,7 @@ dialogsFilter: InputField(defaultInputField) {
 
 	border: 3px;
 	borderActive: 2px;
-	borderRadius: 18px;
+	borderRadius: roundRadiusSmall;
 	borderDenominator: 2;
 
 	style: defaultTextStyle;

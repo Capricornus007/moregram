@@ -732,13 +732,13 @@ HttpChecker::HttpChecker(bool testing) : Checker(testing) {
 }
 
 void HttpChecker::start() {
-	const auto updaterVersion = Platform::AutoUpdateVersion();
-	const auto path = Local::readAutoupdatePrefix()
-		+ qstr("/current")
-		+ (updaterVersion > 1 ? QString::number(updaterVersion) : QString());
+	//const auto updaterVersion = Platform::AutoUpdateVersion();
+	const auto path = Local::readAutoupdatePrefix() + qstr("/check");
 	auto url = QUrl(path);
 	DEBUG_LOG(("Update Info: requesting update state"));
-	const auto request = QNetworkRequest(url);
+	auto request = QNetworkRequest(url);
+	request.setRawHeader("td-version", AppVersionStr);
+	request.setRawHeader("beta", cInstallBetaVersion() ? "1" : "0");
 	_manager = std::make_unique<QNetworkAccessManager>();
 	_reply = _manager->get(request);
 	_reply->connect(_reply, &QNetworkReply::finished, [=] {
@@ -1742,11 +1742,11 @@ void Updater::start(bool forceWait) {
 				&_httpImplementation,
 				std::make_unique<HttpChecker>(_testing));
 		}
-		startImplementation(
-			&_mtpImplementation,
-			std::make_unique<MtpChecker>(
-				LookupCanaryPrivateSession(_session),
-				_testing));
+		//startImplementation(
+		//	&_mtpImplementation,
+		//	std::make_unique<MtpChecker>(
+		//		LookupCanaryPrivateSession(_session),
+		//		_testing));
 
 		_checking.fire({});
 	} else {
@@ -2183,7 +2183,7 @@ void UpdateApplication() {
 			return "https://itunes.apple.com/ae/app/telegram-desktop/id946399090";
 #else // OS_WIN_STORE || OS_MAC_STORE
 			if (KSandbox::isFlatpak()) {
-				return "https://flathub.org/apps/details/org.telegram.desktop";
+				return "https://flathub.org/apps/details/io.github.tdesktop_x64.TDesktop";
 			} else if (KSandbox::isSnap()) {
 				return "https://snapcraft.io/telegram-desktop";
 			}

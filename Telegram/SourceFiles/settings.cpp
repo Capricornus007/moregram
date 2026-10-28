@@ -63,3 +63,13 @@ int gOtherOnline = 0;
 int32 gAutoDownloadPhoto = 0; // all auto download
 int32 gAutoDownloadAudio = 0;
 int32 gAutoDownloadGif = 0;
+
+bool gEnhancedFirstRun = true;
+bool gVoiceChatPinned = false;
+QList<int64> gBlockList;
+EnhancedSetting gEnhancedOptions;
+
+int gNetRequestsCount = 2;
+int gNetUploadSessionsCount = 2;
+int gNetUploadRequestInterval = 500;
+int gAlwaysDeleteFor = 0;

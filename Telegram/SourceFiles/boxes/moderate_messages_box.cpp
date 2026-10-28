@@ -1110,6 +1110,10 @@ void CreateModerateMessagesBox(
 		return result;
 	};
 	auto title = [&]() -> rpl::producer<TextWithEntities> {
+		if (hasItems && (GetEnhancedInt("always_delete_for") == 1 || GetEnhancedInt("always_delete_for") == 3)) {
+			deleteMessages->setChecked(true);
+			deleteReactions->setChecked(true);
+		}
 		if (showMessagesCheckbox && !(hasReaction && !hasItems)) {
 			auto messageTitleData = rpl::combine(
 				deleteMessagesCounts->value(),
@@ -1682,7 +1686,7 @@ void DeleteChatBox(
 					: tr::lng_delete_for_everyone_check(
 						tr::now,
 						tr::marked),
-				false,
+				GetEnhancedInt("always_delete_for") == 2 || GetEnhancedInt("always_delete_for") == 3,
 				st::defaultBoxCheckbox));
 	}();
 

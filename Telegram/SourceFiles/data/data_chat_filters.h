@@ -216,6 +216,11 @@ public:
 	[[nodiscard]] rpl::producer<bool> tagsEnabledChanges() const;
 	void requestToggleTags(bool value, Fn<void()> fail);
 
+	bool isEarlyStart() const
+	{
+		return _loadRequestId != 0;
+	}
+
 private:
 	struct MoreChatsData {
 		std::vector<not_null<PeerData*>> missing;

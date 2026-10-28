@@ -61,6 +61,7 @@ public:
 
 	[[nodiscard]] const std::vector<MTP::ProxyData> &list() const;
 	[[nodiscard]] std::vector<MTP::ProxyData> &list();
+	void removeProxyList();
 	void setList(std::vector<MTP::ProxyData> value);
 	void addToList(MTP::ProxyData value);
 	void insertToList(int index, MTP::ProxyData value);

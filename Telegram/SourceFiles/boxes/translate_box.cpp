@@ -33,6 +33,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/effects/loading_element.h"
 #include "ui/layers/generic_box.h"
 #include "ui/text/text_utilities.h"
+#include "GoogleAppTranslator.h"
 #include "ui/widgets/labels.h"
 #include "ui/widgets/multi_select.h"
 #include "ui/widgets/selecting_scroll.h"

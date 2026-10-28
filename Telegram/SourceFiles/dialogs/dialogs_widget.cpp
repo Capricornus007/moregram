@@ -102,6 +102,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_info.h"
 #include "styles/style_window.h"
 #include "base/qt/qt_common_adapters.h"
+#include "boxes/abstract_box.h"
 
 #include <QtCore/QMimeData>
 #include <QtGui/QTextBlock>
@@ -799,6 +800,7 @@ Widget::Widget(
 
 		setupMoreChatsBar();
 		setupDownloadBar();
+		setupShortcuts(controller);
 	}
 	setupSwipeBack();
 
@@ -1063,7 +1065,8 @@ void Widget::chosenRow(const ChosenRow &row) {
 			session().data().saveViewAsMessages(topic->forum(), false);
 			controller()->showThread(topic, row.message.fullId.msg, params);
 		}
-	} else if (history
+	} else if (!GetEnhancedBool("hide_stories")
+		&& history
 		&& row.userpicClick
 		&& (row.message.fullId.msg == ShowAtUnreadMsgId)
 		&& history->peer->hasActiveStories()
@@ -1155,7 +1158,7 @@ void Widget::chosenRow(const ChosenRow &row) {
 			hideChildList();
 		}
 	} else if (const auto folder = row.key.folder()) {
-		if (row.userpicClick) {
+		if (!GetEnhancedBool("hide_stories") && row.userpicClick) {
 			const auto list = Data::StorySourcesList::Hidden;
 			const auto &sources = session().data().stories().sources(list);
 			if (!sources.empty()) {
@@ -1624,6 +1627,34 @@ void Widget::setupDownloadBar() {
 	}, lifetime());
 }
 
+void Widget::setupShortcuts(not_null<Window::SessionController *> controller) {
+	Shortcuts::Requests(
+	) | rpl::filter([=] {
+		return isActiveWindow()
+		       && !controller->isLayerShown()
+		       && !controller->window().locked();
+	}) | rpl::on_next([=](not_null<Shortcuts::Request*> request) {
+		using Command = Shortcuts::Command;
+
+		request->check(Command::GlobalSearch) && request->handle([=] {
+			if (_openedFolder) {
+				controller->closeFolder();
+				setInnerFocus();
+				return true;
+			} else {
+				if (controller->adaptive().isOneColumn()) {
+					controller->clearSectionStack();
+					controller->showBackFromStack();
+				} else {
+					setInnerFocus();
+				}
+				return true;
+			}
+			return false;
+		});
+	}, lifetime());
+}
+
 void Widget::updateScrollUpVisibility() {
 	if (_scrollToAnimation.animating()) {
 		return;
@@ -1713,6 +1744,9 @@ void Widget::setupMainMenuToggle() {
 }
 
 void Widget::setupStories() {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
 	_stories->verticalScrollEvents(
 	) | rpl::on_next([=](not_null<QWheelEvent*> e) {
 		_scroll->viewportEvent(e);
@@ -1836,6 +1870,9 @@ void Widget::setupStories() {
 }
 
 void Widget::storiesToggleExplicitExpand(bool expand) {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
 	if (_storiesExplicitExpand == expand) {
 		if (!expand && _scroll->position().overscroll < 0) {
 			_scroll->setOverscrollDefaults(0, 0);
@@ -2351,7 +2388,7 @@ void Widget::changeOpenedFolder(Data::Folder *folder, anim::type animated) {
 		controller()->closeForum();
 		_openedFolder = folder;
 		_inner->changeOpenedFolder(folder);
-		if (_stories) {
+		if (!GetEnhancedBool("hide_stories") && _stories) {
 			_stories->setShowTitle(folder != nullptr);
 			storiesExplicitCollapse();
 		}
@@ -2764,7 +2801,7 @@ void Widget::raiseWithTooltip() {
 	raise();
 	if (_stories) {
 		Ui::PostponeCall(this, [=] {
-			_stories->raiseTooltip();
+			if (_stories) _stories->raiseTooltip();
 		});
 	}
 }
@@ -2888,6 +2925,10 @@ void Widget::stopWidthAnimation() {
 }
 
 void Widget::updateStoriesVisibility() {
+	if (GetEnhancedBool("hide_stories")) {
+		_stories = nullptr;
+	}
+	
 	updateLockUnlockVisibility(anim::type::normal);
 	if (!_stories) {
 		return;
@@ -3340,7 +3381,8 @@ bool Widget::search(bool inCache, SearchRequestDelay delay) {
 }
 
 bool Widget::peerSearchRequired() const {
-	return _searchState.filterChatsList() && !_openedForum;
+	return !GetEnhancedBool("disable_global_search")
+		&& _searchState.filterChatsList() && !_openedForum;
 }
 
 bool Widget::searchForTopicsRequired(const QString &query) const {

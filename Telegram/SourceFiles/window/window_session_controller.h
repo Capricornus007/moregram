@@ -584,6 +584,7 @@ public:
 
 	void showAddContact();
 	void showNewGroup();
+	void showNewSupergroup();
 	void showNewChannel();
 
 	void showPassportForm(const Passport::FormRequest &request);
@@ -662,6 +663,7 @@ public:
 
 	void toggleFiltersMenu(bool enabled);
 	[[nodiscard]] rpl::producer<> filtersMenuChanged() const;
+	void reloadFiltersMenu();
 
 	[[nodiscard]] auto defaultChatTheme() const
 	-> const std::shared_ptr<Ui::ChatTheme> & {

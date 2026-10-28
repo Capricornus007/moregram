@@ -81,6 +81,12 @@ void CopyPostLink(
 	FullMsgId itemId,
 	Context context,
 	std::optional<TimeId> videoTimestamp = {});
+void ViewAsJSON(
+	not_null<Window::SessionController*> controller,
+	FullMsgId itemId);
+void ViewAsJSON(
+	std::shared_ptr<Main::SessionShow> show,
+	FullMsgId itemId);
 void CopyStoryLink(
 	std::shared_ptr<Main::SessionShow> show,
 	FullStoryId storyId);
@@ -168,6 +174,10 @@ void AddSelectRestrictionAction(
 	not_null<Ui::PopupMenu*> menu,
 	not_null<HistoryItem*> item,
 	bool addIcon);
+void AddStickerSetOwnerActions(
+	not_null<Ui::PopupMenu*> menu,
+	not_null<DocumentData*> document,
+	HistoryItem* item);	
 void AddEphemeralMessageActions(
 	not_null<Ui::PopupMenu*> menu,
 	std::shared_ptr<Ui::Show> show,

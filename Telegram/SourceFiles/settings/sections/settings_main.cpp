@@ -1,4 +1,4 @@
-/*
+﻿/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -57,6 +57,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/sections/settings_credits.h"
 #include "settings/sections/settings_folders.h"
 #include "settings/sections/settings_information.h"
+#include "settings/settings_enhanced.h"
 #include "settings/sections/settings_notifications.h"
 #include "settings/settings_power_saving.h"
 #include "settings/sections/settings_premium.h"
@@ -263,8 +264,12 @@ void Cover::initViewers() {
 	Info::Profile::PhoneValue(
 		_user
 	) | rpl::on_next([=](const TextWithEntities &value) {
-		_phoneText = value.text;
-		updatePhoneText();
+		if (GetEnhancedBool("show_phone_number")) {
+			_phone->setText(value.text);
+		} else {
+			_phone->setText(tr::lng_info_mobile_hidden(tr::now));
+		}
+		refreshPhoneGeometry(width());
 	}, lifetime());
 
 	_user->session().settings().phoneNumberHiddenValue(
@@ -444,6 +449,13 @@ void BuildSectionButtons(SectionBuilder &builder) {
 		.targetSection = CallsId(),
 		.icon = { &st::menuIconUnmute },
 		.keywords = { u"sessions"_q, u"calls"_q },
+	});
+
+	builder.addSectionButton({
+		.title = tr::lng_settings_enhanced(),
+		.targetSection = Enhanced::Id(),
+		.icon = { &st::menuIconManage },
+		.keywords = { u"enhanced"_q },
 	});
 
 	builder.addButton({

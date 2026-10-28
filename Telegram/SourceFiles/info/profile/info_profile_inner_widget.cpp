@@ -7,6 +7,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/profile/info_profile_inner_widget.h"
 
+#include <rpl/combine.h>
+#include <rpl/combine_previous.h>
+#include <rpl/flatten_latest.h>
 #include "info/info_controller.h"
 #include "info/info_memento.h"
 #include "info/info_wrap_widget.h"

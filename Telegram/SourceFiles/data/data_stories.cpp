@@ -238,6 +238,9 @@ Main::Session &Stories::session() const {
 }
 
 void Stories::apply(const MTPDupdateStory &data) {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
 	const auto peerId = peerFromMTP(data.vpeer());
 	const auto peer = _owner->peer(peerId);
 	const auto now = base::unixtime::now();
@@ -287,6 +290,9 @@ void Stories::apply(const MTPDupdateStory &data) {
 }
 
 void Stories::apply(const MTPDupdateReadStories &data) {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
 	bumpReadTill(peerFromMTP(data.vpeer()), data.vmax_id().v);
 }
 
@@ -299,6 +305,9 @@ void Stories::apply(const MTPStoriesStealthMode &stealthMode) {
 }
 
 void Stories::apply(not_null<PeerData*> peer, const MTPPeerStories *data) {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
 	if (!data) {
 		applyDeletedFromSources(peer->id, StorySourcesList::NotHidden);
 		applyDeletedFromSources(peer->id, StorySourcesList::Hidden);
@@ -311,6 +320,9 @@ void Stories::apply(not_null<PeerData*> peer, const MTPPeerStories *data) {
 }
 
 Story *Stories::applySingle(PeerId peerId, const MTPstoryItem &story) {
+	if (GetEnhancedBool("hide_stories")) {
+		return nullptr;
+	}
 	const auto idDates = parseAndApply(
 		_owner->peer(peerId),
 		story,
@@ -1765,6 +1777,9 @@ bool Stories::albumIdsCountKnown(PeerId peerId, int albumId) const {
 }
 
 void Stories::albumIdsLoadMore(PeerId peerId, int albumId) {
+	if (GetEnhancedBool("hide_stories")) {
+		return;
+	}
 	albumIdsLoadMore(peerId, albumId, false);
 }
 

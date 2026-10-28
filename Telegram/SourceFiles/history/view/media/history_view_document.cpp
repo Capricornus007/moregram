@@ -15,6 +15,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "media/player/media_player_float.h" // Media::Player::RoundPainter.
 #include "media/audio/media_audio.h"
 #include "media/player/media_player_instance.h"
+#include "main/main_session.h"
 #include "history/history_item_components.h"
 #include "history/history_item.h"
 #include "history/history.h"
@@ -730,7 +731,11 @@ void Document::draw(
 	const auto mediaEditor = (_parent->context() == Context::MediaEditor);
 
 	if (!_dataMedia->canBePlayed()) {
-		_dataMedia->automaticLoad(_realParent->fullId(), _realParent);
+		auto peerId = _parent->data()->from() ? _parent->data()->from()->id : PeerId(0);
+		auto user = history()->session().data().peerLoaded(_parent->data()->from() ? _parent->data()->from()->id : PeerId(0));
+		if (!blockExist(peerId.value) || (!GetEnhancedBool("blocked_user_spoiler_mode") && user && !user->isBlocked())) {
+			_dataMedia->automaticLoad(_realParent->fullId(), _realParent);
+		}
 	}
 	bool loaded = dataLoaded(), displayLoading = _data->displayLoading();
 	const auto sti = context.imageStyle();

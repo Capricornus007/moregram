@@ -440,7 +440,11 @@ std::unique_ptr<Data::Media> HistoryItem::CreateMedia(
 		}, [](const MTPDdocumentEmpty &) -> Result {
 			return nullptr;
 		});
-	}, [&](const MTPDmessageMediaWebPage &media) {
+	}, [&](const MTPDmessageMediaWebPage &media)  -> Result {
+		if ((GetEnhancedBool("blocked_user_spoiler_mode") && blockExist(item->author()->id.value)) ||
+			(GetEnhancedBool("blocked_user_spoiler_mode") && item->author() && item->author()->isBlocked())) {
+			return nullptr;
+		}
 		using Flag = MediaWebPageFlag;
 		const auto flags = Flag()
 			| (media.is_force_large_media()
@@ -562,7 +566,7 @@ HistoryItem::HistoryItem(
 	if (checked == MediaCheckResult::Unsupported) {
 		_flags &= ~MessageFlag::HasPostAuthor;
 		_flags |= MessageFlag::Legacy;
-		createComponents(data);
+		createComponents(data, false);
 		if (const auto richMessage = data.vrich_message()) {
 			const auto richPage = ParsedRichPage(
 				&history->session(),
@@ -590,10 +594,21 @@ HistoryItem::HistoryItem(
 		setReactions(data.vreactions());
 		applyTTL(data);
 	} else {
-		createComponents(data);
+		auto peerId = data.vfrom_id() ? peerFromMTP(*data.vfrom_id()) : PeerId(0);
+		auto user = history->session().data().peerLoaded(peerId);
+		auto isBlocked = false;
+
+		if ((GetEnhancedBool("blocked_user_spoiler_mode") && blockExist(peerId.value)) ||
+			(GetEnhancedBool("blocked_user_spoiler_mode") && user && user->isBlocked())) {
+			isBlocked = true;
+		}
+
 		if (const auto media = data.vmedia()) {
 			setMedia(*media);
 		}
+
+		createComponents(data, isBlocked);
+
 		if (const auto media = _media.get()) {
 			if (media->ttlSeconds()
 				&& hasUnreadMediaFlag()
@@ -612,14 +627,42 @@ HistoryItem::HistoryItem(
 			setRichPage(richPage);
 			setText(Iv::FlattenRichPageSummary(richPage));
 		} else {
-			auto textWithEntities = TextWithEntities{
-				qs(data.vmessage()),
-				Api::EntitiesFromMTP(
-					&history->session(),
-					data.ventities().value_or_empty())
-			};
+			auto textWithEntities = TextWithEntities();
+			
+			auto blkMsg = Lang::GetOriginalValue(tr::lng_blocked_user_hint.base);
+			auto msg = blkMsg + qs(data.vmessage());
+
+			if (GetEnhancedBool("blocked_user_spoiler_mode")) {
+				_blockMsg = TextWithEntities{
+						msg,
+						Api::EntitiesFromMTP(
+								&history->session(),
+								data.ventities().value_or_empty(),
+								blkMsg.length(), qs(data.vmessage()).length())
+				};
+
+				_originalMsg = TextWithEntities{
+						qs(data.vmessage()),
+						Api::EntitiesFromMTP(
+								&history->session(),
+								data.ventities().value_or_empty())
+				};
+			}
+
+			if ((GetEnhancedBool("blocked_user_spoiler_mode") && blockExist(peerId.value)) || (GetEnhancedBool("blocked_user_spoiler_mode") && user && user->isBlocked())) {
+				textWithEntities = _blockMsg;
+			} else {
+				textWithEntities = TextWithEntities{
+						qs(data.vmessage()),
+						Api::EntitiesFromMTP(
+								&history->session(),
+								data.ventities().value_or_empty())
+				};
+			}
+
 			setText(_media ? textWithEntities : EnsureNonEmpty(textWithEntities));
 		}
+
 		if (const auto groupedId = data.vgrouped_id()) {
 			setGroupId(
 				MessageGroupId::FromRaw(
@@ -1509,11 +1552,19 @@ void HistoryItem::setCommentsItemId(FullMsgId id) {
 	}
 }
 
+QString GenerateServiceTime(TimeId date) {
+	if (date > 0) {
+		return QString(" (%1)").arg(base::unixtime::parse(date).toString(GetEnhancedBool("show_seconds") ? QLocale::system().timeFormat(QLocale::LongFormat).remove("t") : QLocale::system().timeFormat(QLocale::ShortFormat)));
+	}
+	return QString();
+}
+
 void HistoryItem::setServiceText(PreparedServiceText &&prepared) {
 	AddComponents(HistoryServiceData::Bit());
 	_flags &= ~MessageFlag::HasTextLinks;
 	const auto data = Get<HistoryServiceData>();
 	const auto had = !_text.empty();
+	prepared.text.text += GenerateServiceTime(date());
 	_text = std::move(prepared.text);
 	data->textLinks = std::move(prepared.links);
 	if (had) {
@@ -5566,7 +5617,7 @@ void HistoryItem::applyTTL(const MTPDmessageService &data) {
 	}
 }
 
-void HistoryItem::createComponents(const MTPDmessage &data) {
+void HistoryItem::createComponents(const MTPDmessage &data, bool blocked) {
 	auto config = CreateConfig();
 	config.savedSublistPeer = data.vsaved_peer_id()
 		? peerFromMTP(*data.vsaved_peer_id())
@@ -5597,6 +5648,12 @@ void HistoryItem::createComponents(const MTPDmessage &data) {
 	config.restrictions = Data::UnavailableReason::Extract(
 		data.vrestriction_reason());
 	config.suggest = HistoryMessageSuggestInfo(data.vsuggested_post());
+	if (_media && _media->document() && _media->document()->sticker()) {
+		if (blocked) {
+			config.originalDate = 1;
+			config.originalSenderName = QString("Blocked User");
+		}
+	}
 	createComponents(std::move(config));
 }
 
@@ -8943,7 +9000,7 @@ PreparedServiceText HistoryItem::prepareCallScheduledText(
 	};
 	const auto time = QLocale().toString(
 		scheduled.time(),
-		QLocale::ShortFormat);
+		GetEnhancedBool("show_seconds") ? QLocale::system().timeFormat(QLocale::LongFormat).remove("t") : QLocale::system().timeFormat(QLocale::ShortFormat));
 	const auto prepareGeneric = [&] {
 		prepareWithDate(tr::lng_group_call_starts_date(
 			tr::now,

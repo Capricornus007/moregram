@@ -190,6 +190,8 @@ public:
 		std::optional<TimeId> videoTimestamp = {});
 	QString exportDirectStoryLink(not_null<Data::Story*> item);
 
+	void exportMessageAsBase64(not_null<HistoryItem*> item, Fn<void(const QString&)> done, Fn<void()> fail);
+
 	void requestContacts();
 	void requestDialogs(Data::Folder *folder = nullptr);
 	void requestPinnedDialogs(Data::Folder *folder = nullptr);

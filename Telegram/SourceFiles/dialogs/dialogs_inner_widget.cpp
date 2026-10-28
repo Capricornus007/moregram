@@ -127,6 +127,14 @@ constexpr auto kPreviewPostsLimit = 3;
 	return uint64(reinterpret_cast<quintptr>(entry));
 }
 
+base::options::toggle CtrlClickChatNewWindow({
+	.id = kOptionCtrlClickChatNewWindow,
+	.name = "New chat window by Ctrl+Click",
+	.description = "Open chat in a new window by Ctrl+Click "
+	"(Cmd+Click on macOS).",
+});
+
+
 [[nodiscard]] InnerWidget::ChatsFilterTagsKey SerializeFilterTagsKey(
 		FilterId filterId,
 		uint8 more,
@@ -259,6 +267,8 @@ constexpr auto kPreviewPostsLimit = 3;
 }
 
 } // namespace
+
+const char kOptionCtrlClickChatNewWindow[] = "ctrl-click-chat-new-window";
 
 struct InnerWidget::CollapsedRow {
 	CollapsedRow(Data::Folder *folder) : folder(folder) {
@@ -1809,6 +1819,8 @@ Ui::VideoUserpic *InnerWidget::validateVideoUserpic(
 	if (!peer->isPremium()
 		|| peer->userpicPhotoUnknown()
 		|| !peer->userpicHasVideo()
+		|| GetEnhancedBool("disable_premium_animation")
+		|| GetEnhancedBool("screenshot_mode")
 		|| peer->isSelf()
 		|| peer->isRepliesChat()) {
 		_videoUserpics.remove(peer);
@@ -6000,7 +6012,9 @@ bool InnerWidget::chooseRow(
 	const auto modifyChosenRow = [&](
 			ChosenRow row,
 			Qt::KeyboardModifiers modifiers) {
-		row.newWindow = (modifiers & Qt::ControlModifier);
+		if (CtrlClickChatNewWindow.value()) {
+			row.newWindow = (modifiers & Qt::ControlModifier);
+		}
 		row.userpicClick = isUserpicPressOnWide();
 		row.communityBadgeClick = isCommunityBadgePressOnNarrow();
 		return row;
@@ -6522,6 +6536,9 @@ RowDescriptor InnerWidget::computeJump(
 			|| (skip == JumpSkip::NextOrOriginal);
 		const auto needSkip = [&] {
 			return (result.key.folder() != nullptr)
+				|| (GetEnhancedBool("skip_to_next")
+					&& !result.key.entry()->chatListUnreadState().messages
+					&& !result.key.entry()->chatListUnreadState().marks)
 				|| (session().supportMode()
 					&& !result.key.entry()->chatListBadgesState().unread);
 		};

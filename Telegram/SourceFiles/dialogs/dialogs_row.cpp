@@ -469,7 +469,9 @@ void Row::updateCornerBadgeShown(
 	const auto now = user ? base::unixtime::now() : TimeId();
 	const auto channel = user ? nullptr : peer->asChannel();
 	const auto nextLayer = [&] {
-		if (hasUnreadBadgesAbove) {
+		if (GetEnhancedBool("screenshot_mode")) {
+			return kNoneLayer;
+		} else if (hasUnreadBadgesAbove) {
 			return kNoneLayer;
 		} else if (user
 			&& (Data::IsUserOnline(user, now)
@@ -480,6 +482,8 @@ void Row::updateCornerBadgeShown(
 				|| Data::ChannelHasSubscriptionUntilDate(channel)
 				|| (!insideCommunity && channel->linkedCommunityId()))) {
 			return kTopLayer;
+		} else if (!peer->isForum() && (peer->isChat() || peer->isMegagroup()) && GetEnhancedBool("show_group_sender_avatar")){
+			return kTopLayer;
 		} else if (hidden) {
 			return kHiddenLayer;
 		} else if (peer->messagesTTL()) {
@@ -487,6 +491,7 @@ void Row::updateCornerBadgeShown(
 		}
 		return kNoneLayer;
 	}();
+	const_cast<Row*>(this)->_hasVideoCall = peer->isChannel() && Data::ChannelHasActiveCall(peer->asChannel());
 	setCornerBadgeShown(nextLayer, std::move(updateCallback));
 	if ((nextLayer == kTopLayer) && user) {
 		peer->owner().watchForOffline(user, now);
@@ -739,7 +744,7 @@ void Row::paintUserpic(
 		? ((peer->isUser() || peer->isChannel()) ? peer : nullptr)
 		: nullptr;
 	const auto storiesFolder = peer ? nullptr : _id.folder();
-	const auto storiesHas = storiesPeer
+	const auto storiesHas = GetEnhancedBool("hide_stories") ? false : storiesPeer
 		? storiesPeer->hasActiveStories()
 		: storiesFolder
 		? (storiesFolder->storiesCount() > 0)
@@ -869,13 +874,17 @@ void Row::paintUserpic(
 	p.setOpacity(
 		_cornerBadgeUserpic->layersManager.progressForLayer(kTopLayer));
 	p.translate(context.st->padding.left(), context.st->padding.top());
-	actionPainter->paintSpeaking(
-		p,
-		context.st->photoSize - skip.x() - size,
-		context.st->photoSize - skip.y() - size,
-		context.width,
-		bg,
-		context.now);
+	if(_hasVideoCall){
+		actionPainter->paintSpeaking(
+			p,
+			context.st->photoSize - skip.x() - size,
+			context.st->photoSize - skip.y() - size,
+			context.width,
+			bg,
+			context.now);
+	} else if (const auto lastMessage = history->lastMessage()) {
+		lastMessage->from()->paintUserpic(p, userpicCornerView(), context.st->photoSize - skip.x() - size, context.st->photoSize - skip.y() - size, size);
+	}
 	p.translate(-context.st->padding.left(), -context.st->padding.top());
 	p.setOpacity(1.);
 }

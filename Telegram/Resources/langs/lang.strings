@@ -1,5 +1,5 @@
 /*
-This file is part of Telegram Desktop,
+This file is part of 64Gram Desktop,
 the official desktop application for the Telegram messaging service.
 
 For license and copyright information please follow this link:
@@ -300,7 +300,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_flood_error" = "Too many tries. Please try again later.";
 "lng_edit_error" = "You can't edit this message.";
 "lng_error_phone_flood" = "Sorry, you have deleted and re-created your account too many times recently. Please wait for a few days before signing up again.";
-"lng_error_start_minimized_passcoded" = "You have set a local passcode, so Telegram Desktop can't be launched minimized; it will ask you to enter your passcode before it can start working.";
+"lng_error_start_minimized_passcoded" = "You have set a local passcode, so 64Gram can't be launched minimized; it will ask you to enter your passcode before it can start working.";
 "lng_error_public_groups_denied" = "Unfortunately, you are banned from participating in public groups.\n{more_info}";
 "lng_error_cant_add_member" = "Sorry, you can't add the bot to this group. Ask a group admin to do it.";
 "lng_error_cant_add_bot" = "Sorry, this bot can't be added to groups.";
@@ -344,7 +344,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_proxy_box_username" = "Username";
 "lng_proxy_box_password" = "Password";
 "lng_proxy_invalid" = "The proxy link is invalid.";
-"lng_proxy_unsupported" = "Your Telegram Desktop version doesn't support this proxy type or the proxy link is invalid. Please update Telegram Desktop to the latest version.";
+"lng_proxy_unsupported" = "Your 64Gram Desktop version doesn't support this proxy type or the proxy link is invalid. Please update 64Gram Desktop to the latest version.";
 "lng_proxy_incorrect_secret" = "This proxy link uses invalid **secret** parameter. Please contact the proxy provider and ask him to update MTProxy source code and configure it with a correct **secret** value. Then let him provide a new link.";
 "lng_proxy_check_ip_warning_title" = "Warning";
 "lng_proxy_check_ip_warning" = "This will expose your IP address to the admin of the proxy server.";
@@ -391,7 +391,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_edit_caption_attach" = "Sorry, you can't attach new media while editing a message.";
 "lng_edit_caption_voice" = "Sorry, you can't edit messages when you have an unsent voice message.";
 
-"lng_intro_about" = "Welcome to the official Telegram Desktop app.\nIt's fast and secure.";
+"lng_intro_about" = "Welcome to the Official 64Gram Desktop app.\nIt's fast and secure.";
 "lng_start_msgs" = "Start Messaging";
 
 "lng_intro_next" = "Next";
@@ -1121,7 +1121,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_theme_reverting#other" = "Reverting to the old theme in {count} seconds.";
 "lng_theme_keep_changes" = "Keep changes";
 "lng_theme_revert" = "Revert";
-"lng_theme_no_desktop" = "Sorry, this theme doesn't include a version for Telegram Desktop.";
+"lng_theme_no_desktop" = "Sorry, this theme doesn't include a version for 64Gram Desktop.";
 "lng_theme_share" = "Share";
 "lng_theme_edit" = "Edit";
 "lng_theme_delete" = "Delete";
@@ -1217,7 +1217,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_passcode_enter_first" = "Enter a passcode";
 "lng_passcode_enter_new" = "Enter new passcode";
 "lng_passcode_confirm_new" = "Re-enter new passcode";
-"lng_passcode_about" = "When a local passcode is set, a lock icon appears at the top of your chat list. Click it to lock Telegram Desktop.\n\nNote: if you forget your local passcode, you'll need to log out of Telegram Desktop and log in again.";
+"lng_passcode_about" = "When a local passcode is set, a lock icon appears at the top of your chat list. Click it to lock 64Gram.\n\nNote: if you forget your local passcode, you'll need to log out of 64Gram and log in again.";
 "lng_passcode_about1" = "When a local passcode is set, a lock icon appears at the top of your chat list.";
 "lng_passcode_about2" = "Click it to lock Telegram Desktop.";
 "lng_passcode_about3" = "Note: if you forget your passcode, you'll need to log out of Telegram Desktop and log in again.";
@@ -2574,7 +2574,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_sure_delete_selected_days#other" = "{count} selected days";
 
 "lng_message_empty" = "Empty Message";
-"lng_message_unsupported" = "This message is not supported by your version of Telegram. Please update to the latest version in Settings > Advanced, or install it from {link}. If you are already using the latest version, this message might depend on a feature that is not yet implemented.";
+"lng_message_unsupported" = "This message is not supported by your version of 64Gram. Please update to the latest version in Settings > Advanced, or install it from {link}. If you are already using the latest version, this message might depend on a feature that is not yet implemented.";
 "lng_unsupported_message_title" = "Unsupported Message";
 "lng_unsupported_message_text" = "Update Telegram to view this message";
 "lng_unsupported_message_update" = "Update";
@@ -3017,6 +3017,14 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_ttl_period_hint" = "Choose how long the media will be kept after opening.";
 "lng_ttl_no_schedule" = "Self-destructing media can't be scheduled.";
 
+"lng_profile_migrate_button" = "Upgrade to supergroup";
+"lng_profile_convert_title" = "Convert to supergroup";
+"lng_profile_convert_feature1" = "— New members see the full message history";
+"lng_profile_convert_feature2" = "— Messages are deleted for all members";
+"lng_profile_convert_feature3" = "— Admins can pin important messages";
+"lng_profile_convert_feature4" = "— Creator can set a public link for the group";
+"lng_profile_convert_warning" = "{bold_start}Note:{bold_end} This action can not be undone";
+"lng_profile_convert_confirm" = "Convert";
 "lng_profile_add_more_after_create" = "You will be able to add more members after you create the group.";
 "lng_profile_camera_title" = "Capture yourself";
 
@@ -3210,7 +3218,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_cancel_edit_post_yes" = "Yes";
 "lng_cancel_edit_post_no" = "No";
 
-"lng_bot_share_location_unavailable" = "Sorry, location sharing is currently unavailable in Telegram Desktop.";
+"lng_bot_share_location_unavailable" = "Sorry, location sharing is currently unavailable in 64Gram Desktop.";
 "lng_bot_share_phone" = "Do you want to share your phone number with this bot?";
 "lng_bot_share_phone_confirm" = "Share";
 "lng_bot_allow_write_title" = "Allow messaging";
@@ -5157,6 +5165,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_restart_button" = "Restart";
 "lng_channel_mute" = "Mute";
 "lng_channel_unmute" = "Unmute";
+"lng_channel_discuss" = "Discuss";
 "lng_saved_messages" = "Saved Messages";
 "lng_saved_short" = "Save";
 "lng_saved_forward_here" = "Forward messages here for quick access";
@@ -5543,7 +5552,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_context_add_factcheck" = "Add Fact Check";
 "lng_context_edit_factcheck" = "Edit Fact Check";
 "lng_context_add_offer" = "Add Offer";
-"lng_context_forward_msg" = "Forward";
 "lng_context_send_now_msg" = "Send Now";
 "lng_context_reschedule" = "Reschedule";
 "lng_context_delete_msg" = "Delete";
@@ -6071,6 +6079,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_about_version" = "version {version}";
 "lng_about_text1" = "Official free messaging app based on {api_link}\nfor speed and security.";
 "lng_about_text1_api" = "Telegram API";
+"lng_about_text4" = "Unofficial free messaging app based on {api_link}\nfor speed and security.";
+"lng_about_text4_api" = "Telegram API";
 "lng_about_text2" = "This software is licensed under {gpl_link} version 3.\nSource code is available on {github_link}.";
 "lng_about_text3" = "Visit the {faq_link} for more info.";
 "lng_about_text3_faq" = "Telegram FAQ";
@@ -6269,6 +6279,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_theme_preview_users#other" = "{count} people are using this theme";
 
 "lng_new_version_wrap" = "Telegram Desktop was updated to version {version}\n\n{changes}\n\nFull version history is available here:\n{link}";
+"lng_new_version_wrap2" = "64Gram Desktop was updated to version {version}\n\n{changes}\n\nFull version history is available here:\n{link}";
 "lng_new_version_minor" = "— Bug fixes and other minor improvements";
 
 "lng_menu_insert_unicode" = "Insert Unicode control character";
@@ -6664,7 +6675,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_group_call_context_ban_from_call" = "Ban from call";
 "lng_group_call_remove_channel" = "Remove {channel} from the video chat and ban them?";
 "lng_group_call_remove_channel_from_channel" = "Remove {channel} from the live stream?";
-"lng_group_call_mac_access" = "Telegram Desktop does not have access to system wide keyboard input required for Push to Talk.";
+"lng_group_call_mac_access" = "64Gram Desktop does not have access to system wide keyboard input required for Push to Talk.";
 "lng_group_call_mac_input" = "Please allow **Input Monitoring** for Telegram in Privacy Settings.";
 "lng_group_call_mac_accessibility" = "Please allow **Accessibility** for Telegram in Privacy Settings.\n\nYou may need to restart the app.";
 "lng_group_call_mac_screencast_access" = "Telegram Desktop does not have access to screen recording required for Screen Sharing.";
@@ -7599,7 +7610,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_language_not_found" = "Sorry, this language pack doesn't exist.";
 "lng_language_already" = "You're already using this language pack. You can change your language back at any time in Settings.";
 "lng_language_not_ready_title" = "Insufficient data";
-"lng_language_not_ready_about" = "Unfortunately, this custom language pack ({lang_name}) doesn't contain data for Telegram Desktop. You can contribute to this language pack using the {link}.";
+"lng_language_not_ready_about" = "Unfortunately, this custom language pack ({lang_name}) doesn't contain data for 64Gram Desktop. You can contribute to this language pack using the {link}.";
 "lng_language_not_ready_link" = "translation platform";
 
 "lng_translate_box_error" = "Translate failed.";
@@ -7871,8 +7882,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 "lng_outdated_title" = "PLEASE UPDATE YOUR OPERATING SYSTEM.";
 "lng_outdated_title_bits" = "PLEASE SWITCH TO A 64-BIT OPERATING SYSTEM.";
-"lng_outdated_soon" = "Otherwise, Telegram Desktop will stop updating on {date}.";
-"lng_outdated_now" = "So Telegram Desktop can update to newer versions.";
+"lng_outdated_soon" = "Otherwise, 64Gram will stop updating on {date}.";
+"lng_outdated_now" = "So 64Gram can update to newer versions.";
 
 "lng_screen_reader_bar_text" = "Telegram is working in Screen Reader mode.";
 "lng_screen_reader_bar_disable" = "Disable";
@@ -9324,4 +9335,146 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_passcode_strength_advice_variety" = "Make it longer and mix in more kinds of characters.";
 "lng_passcode_strength_advice_fine" = "This passcode is hard to guess.";
 
+"lng_intro_about2" = "Welcome to the 64Gram Desktop app.\nIt's fast and secure.";
+
+"lng_settings_enhanced" = "Enhanced Settings";
+"lng_settings_network" = "Network";
+"lng_settings_net_upload_speed_boost" = "Upload speed boost";
+"lng_settings_show_message_id" = "Show message ID";
+"lng_settings_button" = "Button";
+"lng_settings_show_emoji_button_as_text" = "Show emoji button as text";
+"lng_settings_show_repeater_option" = "Show repeater option";
+"lng_settings_repeater_reply_to_orig_msg" = "Reply to original message";
+"lng_settings_disable_cloud_draft_sync" = "Stop syncing drafts from cloud";
+"lng_settings_hide_classic_forward" = "Hide Classic Forward";
+"lng_settings_show_phone_number" = "Show Phone Number";
+"lng_settings_show_scheduled_button" = "Always show scheduled button";
+"lng_settings_voice_chat" = "Voice Chat";
+"lng_settings_stereo_mode" = "Enable Stereo Mode";
+"lng_settings_pin_voice_chat" = "Pin To Top";
+"lng_settings_unpin_voice_chat" = "Unpin";
+"lng_settings_radio_controller" = "Radio controller";
+"lng_settings_auto_unmute" = "Auto unmute";
+"lng_settings_other" = "Other";
+"lng_settings_hide_all_chats" = "Hide \"All chats\" folder";
+"lng_settings_replace_edit_button" = "Replace \"Edit\" button by Saved Messages";
+"lng_settings_disable_link_warning" = "Disable open link warning";
+"lng_settings_hide_messages" = "Hide messages from blocked user";
+"lng_settings_disable_premium_animation" = "Disable Premium Animation";
+"lng_settings_disable_global_search" = "Disable global search";
+"lng_settings_show_group_sender_avatar" = "Show sender's avatar in groups";
+"lng_settings_show_seconds" = "Time with seconds";
+"lng_settings_show_view_as_json" = "Show View As JSON";
+"lng_settings_hide_counter" = "Hide online users counter";
+"lng_settings_hide_stories" = "Hide Stories";
+"lng_settings_translate_to_tc" = "使用正體中文翻譯訊息";
+"lng_settings_screen_shot_mode" = "Screenshot Mode";
+"lng_settings_restart_hint" = "WARNING: Changing options that are colored in red will take effect only after the app restarts.";
+
+"lng_settings_skip_message" = "Skip to next unread chat";
+"lng_settings_skip_message_desc" = "Note: Allow ALT+↑/↓ shortcut to skip to next unread chat";
+
+"lng_settings_always_delete_for" = "Always select delete for";
+"lng_settings_delete_disabled" = "Disabled";
+"lng_settings_delete_for_group" = "Group";
+"lng_settings_delete_for_person" = "Person";
+"lng_settings_delete_for_both" = "Why not both?";
+
+"lng_net_speed_boost_title" = "Network speed boost";
+"lng_net_speed_boost_desc" = "Warning: changing this parameter to high values on slow networks can make it even worse. Use it at your own risk.";
+
+"lng_net_speed_boost_default" = "Disabled";
+"lng_net_speed_boost_slight" = "Slight";
+"lng_net_speed_boost_medium" = "Medium";
+"lng_net_speed_boost_big" = "Big";
+
+"lng_net_boost_restart_desc" = "You'll need to restart app to change network boost.\n\nRestart now?";
+"lng_show_messages_id_desc" = "Warning: the changes will take effect immediately with restart.";
+"lng_show_emoji_button_as_text_desc" = "Note: If you can't see an emoji button, please turn on this option.";
+"lng_stereo_mode_hint" = "Stereo mode is enabled! Re-join a voice chat if you're already joined.";
+"lng_radio_controller_desc" = "Note: Radio controller is an experimental bot for controlling your music streaming session.";
+"lng_auto_unmute_desc" = "Note: Auto unmute when you've joined the voice chat.";
+"lng_settings_hide_messages_desc" = "Note: IT IS NOT REALLY HIDE! Messages are still available to view, but text will be converted to Spoiler and media won't auto download.";
+
+"lng_settings_enable_hd_video" = "Higher video bitrate";
+"lng_hd_video_hint" = "Video bitrate is changed! Rejoin a voice chat if you've already joined.";
+
+"lng_bitrate_controller" = "Audio bitrate";
+"lng_bitrate_controller_desc" = "Warning: changing this parameter to high values may affect user on slow networks.";
+"lng_bitrate_controller_hint" = "Audio bitrate is changed! Rejoin a voice chat if you've already joined.";
+
+"lng_bitrate_controller_default" = "Default (32 Kbps)";
+"lng_bitrate_controller_64k" = "64 Kbps";
+"lng_bitrate_controller_96k" = "96 Kbps";
+"lng_bitrate_controller_128k" = "128 Kbps";
+"lng_bitrate_controller_160k" = "160 Kbps";
+"lng_bitrate_controller_192k" = "192 Kbps";
+"lng_bitrate_controller_256k" = "256 Kbps";
+"lng_bitrate_controller_320k" = "320 Kbps";
+
+"lng_chat_restriction_reason" = "Restriction Reason";
+"lng_copy_restriction_reason" = "Copy Restriction Reason";
+
+"lng_context_copy_callback_data" = "Copy Callback Data";
+"lng_context_forward_selected_no_quote" = "Forward Selected (w/o quote)";
+"lng_selected_forward_no_quote" = "Forward (w/o quote)";
+"lng_context_forward_msg_old_selected" = "Forward Selected (Classic)";
+
+"lng_message_id" = "Message ID: ";
+
+"lng_selected_forward_emoji_classic" = "📠(Classic)";
+"lng_selected_forward_emoji" = "📠";
+"lng_selected_forward_no_quote_emoji" = "🖨️";
+"lng_forward_to_saved_message_emoji" = "💾";
+"lng_selected_delete_emoji" = "🗑️";
+
+"lng_selected_forward_text_classic" = "F(Classic)";
+"lng_selected_forward_text" = "F";
+"lng_selected_forward_no_quote_text" = "C";
+"lng_forward_to_saved_message_text" = "S";
+"lng_selected_delete_text" = "D";
+
+"lng_admin_log_banned_send_stickers2" = "Send stickers";
+"lng_admin_log_banned_send_gifs" = "Send GIFs";
+"lng_admin_log_banned_send_games" = "Send Games";
+"lng_admin_log_banned_use_inline" = "Use Inline Bots";
+"lng_rights_chat_send_stickers2" = "Send stickers";
+"lng_rights_chat_send_gifs" = "Send GIFs";
+"lng_rights_chat_send_games" = "Send Games";
+"lng_rights_chat_use_inline" = "Use Inline Bots";
+
+
+"lng_create_supergroup_title" = "New Supergroup";
+"lng_action_group_migrate" = "The group was upgraded to a supergroup";
+"lng_sure_upgrade_group" = "Are you sure you want to upgrade this group to supergroup?";
+"lng_chat_upgrade_warning" = "Note: This action can not be undone";
+
+"lng_user_not_found" = "404 - User not found.\nNote: You must have \"seen\" the user before opening this link.";
+
+"lng_title_forward_as_copy" = "Copy to...";
+"lng_title_multiple_forward" = "Forward to...";
+
+"lng_context_forward_msg" = "Multi-Forward";
+"lng_context_forward_msg_old" = "Single Forward";
+"lng_context_show_messages_from" = "Msgs From User";
+"lng_context_repeat_msg" = "Repeat as Forward";
+"lng_context_repeat_msg_no_fwd" = "Repeat as copy";
+"lng_context_forward_msg_no_quote" = "Forward as copy";
+"lng_forward_to_saved_message" = "Forward to Saved";
+"lng_context_repeater" = "Repeater";
+"lng_context_forward" = "Forward";
+"lng_context_view_as_json" = "View As JSON";
+
+"lng_pinned_message_show" = "Show pinned message";
+"lng_pinned_message_hide" = "Hide pinned message";
+"lng_pinned_message_view" = "View pinned message";
+"lng_go_to_first_message" = "Go to first message";
+
+"lng_proxy_remove_all" = "Remove all proxies";
+
+"lng_copy_profile_id" = "ID copied to clipboard.";
+
+"lng_group_requests_ban" = "Ban";
+
+"lng_blocked_user_hint" = "[Blocked User Message]\n";
 // Keys finished

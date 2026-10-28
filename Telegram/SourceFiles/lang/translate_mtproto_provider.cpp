@@ -111,23 +111,28 @@ public:
 			//}).fail([=](const MTP::Error &) {
 			//	failAll();
 			//}).send();
-			// moregram 沒有 64Gram 的 translate_to_tc 設定；目標語言一律照請求。
-			try {
-				auto result = GoogleAppTranslator::instance()->translate(
-					requests[0].text.text,
-					"auto",
-					to.twoLetterCode());
-				auto text = QVector<MTPTextWithEntities>();
-				text.push_back(MTP_textWithEntities(
-					MTP_string(result.translation),
-					Api::EntitiesToMTP(
-						_session,
-						TextWithEntities().entities,
-						Api::ConvertOption::SkipLocal)));
-				doneFromList(text);
-			} catch (...) {
-				failAll();
-			}
+
+			crl::async([=] {
+				try {
+					auto toTC = GetEnhancedBool("translate_to_tc"); // Override translate setting :)
+					auto result = GoogleAppTranslator::instance()->translate(requests[0].text.text, "auto", toTC ? "zh-Hant" : to.twoLetterCode());
+					crl::on_main([=] {
+						auto text = QVector<MTPTextWithEntities>();
+						text.push_back(MTP_textWithEntities(
+							MTP_string(result.translation),
+							Api::EntitiesToMTP(
+								_session,
+								TextWithEntities().entities,
+								Api::ConvertOption::SkipLocal)));
+						doneFromList(text);
+					});
+				}
+				catch (...) {
+					crl::on_main([=] {
+						failAll();
+					});
+				}
+			});
 			return;
 		}
 
@@ -167,24 +172,27 @@ public:
 		//	failAll();
 		//}).send();
 
-		// moregram 沒有 64Gram 的 translate_to_tc 設定；目標語言一律照請求。
-		try {
-			auto result = GoogleAppTranslator::instance()->translate(
-				requests[0].text.text,
-				"auto",
-				to.twoLetterCode());
-			auto text = QVector<MTPTextWithEntities>();
-			text.push_back(MTP_textWithEntities(
-				MTP_string(result.translation),
-				Api::EntitiesToMTP(
-				_session,
-				TextWithEntities().entities,
-				Api::ConvertOption::SkipLocal)));
-			doneFromList(text);
-		}
-		catch (...) {
-			failAll();
-		}
+		crl::async([=] {
+			try {
+				auto toTC = GetEnhancedBool("translate_to_tc"); // Override translate setting :)
+				auto result = GoogleAppTranslator::instance()->translate(requests[0].text.text, "auto", toTC ? "zh-Hant" : to.twoLetterCode());
+				crl::on_main([=] {
+					auto text = QVector<MTPTextWithEntities>();
+					text.push_back(MTP_textWithEntities(
+						MTP_string(result.translation),
+						Api::EntitiesToMTP(
+							_session,
+							TextWithEntities().entities,
+							Api::ConvertOption::SkipLocal)));
+					doneFromList(text);
+				});
+			}
+			catch (...) {
+				crl::on_main([=] {
+					failAll();
+				});
+			}
+		});
 	}
 
 private:

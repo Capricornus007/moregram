@@ -54,6 +54,8 @@ struct InfoPeerBadge;
 struct FlatLabel;
 } //namespace style
 
+class QGraphicsOpacityEffect;
+
 namespace Ui {
 class AnimatedString;
 class FlatLabel;
@@ -240,6 +242,7 @@ private:
 	[[nodiscard]] TopBarActionButtonStyle mapActionStyle(
 		std::optional<QColor> c) const;
 	[[nodiscard]] std::optional<QColor> buttonsColorOverride() const;
+	void setupChatId();
 	void updateButtonsColorOverride();
 
 	[[nodiscard]] rpl::producer<QString> nameValue() const;
@@ -312,8 +315,11 @@ private:
 	rpl::producer<TextWithEntities> _customStatus;
 	object_ptr<Ui::FadeWrap<Ui::RoundButton>> _showLastSeen = { nullptr };
 	object_ptr<Ui::RoundButton> _forumButton = { nullptr };
+	object_ptr<Ui::FlatLabel> _id;
+	QGraphicsOpacityEffect *_idOpacity = nullptr;
 
 	std::shared_ptr<style::FlatLabel> _statusSt;
+	std::shared_ptr<style::FlatLabel> _idSt;
 	std::shared_ptr<style::InfoPeerBadge> _botVerifySt;
 	std::shared_ptr<style::InfoPeerBadge> _badgeSt;
 	std::shared_ptr<style::InfoPeerBadge> _verifiedSt;

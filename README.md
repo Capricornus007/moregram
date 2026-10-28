@@ -1,45 +1,46 @@
-# [Telegram Desktop][telegram_desktop] – Official Messenger
-
-This is the complete source code and the build instructions for the official [Telegram][telegram] messenger desktop client, based on the [Telegram API][telegram_api] and the [MTProto][telegram_proto] secure protocol.
-
-[![Version](https://badge.fury.io/gh/telegramdesktop%2Ftdesktop.svg)](https://github.com/telegramdesktop/tdesktop/releases)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Windows./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/MacOS./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Linux./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Built with Depot](https://img.shields.io/badge/Built%20with-Depot.dev-46A75A)](https://depot.dev)
-
-[![Preview of Telegram Desktop][preview_image]][preview_image_url]
+﻿# 64Gram – Based on [Telegram Desktop](https://github.com/telegramdesktop/tdesktop)
 
 The source code is published under GPLv3 with OpenSSL exception, the license is available [here][license].
 
+[![Preview of 64Gram][preview_image]][preview_image_url]
+
+## Project Goal
+
+Provide Windows 64bit build with some enhancements.
+
+~~Cause official Telegram Desktop do not provide Windows 64bit build, so [Project TDesktop x64](https://github.com/TDesktop-x64) is aimed at provide Windows native x64 build(with few enhancements) to everybody.~~
+
+## Roadmap
+
+No Roadmap? Yes.
+
+## [Features](features.md)
+
 ## Supported systems
 
-The latest version is available for
+Windows 7 and above
 
-* [Windows 7 and above (64 bit)](https://telegram.org/dl/desktop/win64) ([portable](https://telegram.org/dl/desktop/win64_portable))
-* [Windows 7 and above (32 bit)](https://telegram.org/dl/desktop/win) ([portable](https://telegram.org/dl/desktop/win_portable))
-* [macOS 10.13 and above](https://telegram.org/dl/desktop/mac)
-* [Linux static build for 64 bit](https://telegram.org/dl/desktop/linux)
-* [Snap](https://snapcraft.io/telegram-desktop)
-* [Flatpak](https://flathub.org/apps/details/org.telegram.desktop)
+Linux 64 bit
 
-## Old system versions
+macOS > 10.12 and above
 
-Version **4.9.9** was the last that supports older systems
+The latest version is available on the [Release](https://github.com/TDesktop-x64/tdesktop/releases) page.
 
-* [macOS 10.12](https://updates.tdesktop.com/tmac/tsetup.4.9.9.dmg)
-* [Linux with glibc < 2.28 static build](https://updates.tdesktop.com/tlinux/tsetup.4.9.9.tar.xz)
+## Localization
 
-Version **2.4.4** was the last that supports older systems
+If you want to translate this project, **Just Do It!**
 
-* [OS X 10.10 and 10.11](https://updates.tdesktop.com/tosx/tsetup-osx.2.4.4.dmg)
-* [Linux static build for 32 bit](https://updates.tdesktop.com/tlinux32/tsetup32.2.4.4.tar.xz)
+Create a Pull Request: [Localization Repo](https://github.com/TDesktop-x64/Localization).
 
-Version **1.8.15** was the last that supports older systems
+**Here is a project [translation template](https://github.com/TDesktop-x64/Localization/blob/master/en.json).**
 
-* [Windows XP and Vista](https://updates.tdesktop.com/tsetup/tsetup.1.8.15.exe) ([portable](https://updates.tdesktop.com/tsetup/tportable.1.8.15.zip))
-* [OS X 10.8 and 10.9](https://updates.tdesktop.com/tmac/tsetup.1.8.15.dmg)
-* [OS X 10.6 and 10.7](https://updates.tdesktop.com/tmac32/tsetup32.1.8.15.dmg)
+You can find a language ID on Telegram's log.txt
+
+For example: `[2022.04.23 10:37:45] Current Language pack ID: de, Base ID: `
+
+Then your language translation filename is `de.json` or something like that.
+
+***Note: Ignore base ID(base ID translation - Work in progress)***
 
 ## Third-party
 
@@ -75,27 +76,15 @@ Version **1.8.15** was the last that supports older systems
 * [macOS][mac]
 * [GNU/Linux using Docker][linux]
 
+## Links
+
+* [Official Telegram Channel](https://t.me/tg_x64)
+* [Official discussion group](https://t.me/tg_x64_chat)
+
 [//]: # (LINKS)
-[telegram]: https://telegram.org
-[telegram_desktop]: https://desktop.telegram.org
-[telegram_api]: https://core.telegram.org
-[telegram_proto]: https://core.telegram.org/mtproto
 [license]: LICENSE
 [win]: docs/building-win.md
 [mac]: docs/building-mac.md
 [linux]: docs/building-linux.md
-[preview_image]: https://github.com/telegramdesktop/tdesktop/blob/dev/docs/assets/preview.png "Preview of Telegram Desktop"
-[preview_image_url]: https://raw.githubusercontent.com/telegramdesktop/tdesktop/dev/docs/assets/preview.png
-
-## Thanks to
-
-<a href="https://depot.dev">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://depot.dev/assets/brand/1693758816/depot-logo-horizontal-on-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://depot.dev/assets/brand/1693758816/depot-logo-horizontal-on-light.svg">
-    <img alt="Depot" src="https://depot.dev/assets/brand/1693758816/depot-logo-horizontal-on-light.svg" width="150">
-  </picture>
-</a>
-
-CI infrastructure sponsored by [Depot](https://depot.dev) — fast GitHub Actions runners.
-
+[preview_image]: https://github.com/TDesktop-x64/tdesktop/blob/dev/docs/assets/preview.png "Preview of 64Gram Desktop"
+[preview_image_url]: https://raw.githubusercontent.com/TDesktop-x64/tdesktop/dev/docs/assets/preview.png

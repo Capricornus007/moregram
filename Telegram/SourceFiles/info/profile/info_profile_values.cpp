@@ -97,6 +97,10 @@ void StripExternalLinks(
 
 } // namespace
 
+rpl::producer<TextWithEntities> StringValue(QString text) {
+	return rpl::single(QString("%1").arg(text)) | rpl::map(tr::marked);
+}
+
 rpl::producer<QString> NameValue(not_null<PeerData*> peer) {
 	if (const auto broadcast = peer->monoforumBroadcast()) {
 		return NameValue(broadcast);

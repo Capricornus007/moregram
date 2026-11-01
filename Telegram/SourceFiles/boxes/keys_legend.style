@@ -7,15 +7,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 using "boxes/boxes.style";
 
-keysLegendMenuSkip: 6px;
-keysLegendMenu: PopupMenu(defaultPopupMenu) {
-	scrollPadding: margins(0px, 4px, 0px, 4px);
-	menu: Menu(defaultMenu) {
-		widthMin: 220px;
-		widthMax: 600px;
-		itemPadding: margins(14px, 8px, 14px, 8px);
-	}
-}
 keysLegendPanelPadding: 24px;
 keysLegendOuterMargin: 32px;
 keysLegendCompactWidth: 520px;

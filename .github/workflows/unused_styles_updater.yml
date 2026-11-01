@@ -10,7 +10,14 @@ on:
 jobs:
   Unused-styles:
     runs-on: ubuntu-latest
+    # WHY: 倉庫預設的 workflow token 是唯讀，這個 action 要推分支＋開 PR，
+    # 沒給 write 就會 403 denied to github-actions[bot]（user_agent_updater 踩過）。
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: desktop-app/action_code_updater@master
+      # upstream action 不釘版，simple-git 4.0.0 拿掉了 default export →
+      # 「does not provide an export named 'default'」直接崩（run #1）。改用本倉 fork。
+      - uses: Capricornus007/action_code_updater@master
         with:
           type: "unused-styles"

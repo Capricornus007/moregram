@@ -10,6 +10,11 @@ on:
 jobs:
   User-agent:
     runs-on: ubuntu-latest
+    # WHY: the repo's default workflow token is read-only, and this action pushes a
+    # branch plus opens a PR — without write it dies with 403 denied to github-actions[bot].
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       # upstream action installs simple-git unpinned; 4.0.0 dropped its default export
       - uses: Capricornus007/action_code_updater@master

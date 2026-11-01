@@ -11,6 +11,7 @@ jobs:
   User-agent:
     runs-on: ubuntu-latest
     steps:
-      - uses: desktop-app/action_code_updater@master
+      # upstream action installs simple-git unpinned; 4.0.0 dropped its default export
+      - uses: Capricornus007/action_code_updater@master
         with:
           type: "user-agent"

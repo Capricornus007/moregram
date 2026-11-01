@@ -7,7 +7,15 @@ on:
 jobs:
   User-agent:
     runs-on: ubuntu-slim
+    # WHY: 倉庫預設 workflow token 是唯讀，本 action 要推分支／開 commit，
+    # 沒給 write 會 403 denied to github-actions[bot]（user_agent_updater 踩過）。
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: desktop-app/action_code_updater@master
+      # upstream action 不釘 simple-git 版，4.0.0 拿掉了 default export →
+      # 「does not provide an export named 'default'」直接崩（unused_styles_updater
+      # run #1 實測）。改用本倉 fork（具名 import），與 user_agent_updater 一致。
+      - uses: Capricornus007/action_code_updater@master
         with:
           type: "dev-to-master"

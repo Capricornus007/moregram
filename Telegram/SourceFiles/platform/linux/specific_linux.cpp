@@ -468,6 +468,7 @@ void MigrateLegacyLauncherFiles() {
 		u"appimagekit_*.desktop"_q,
 		u"org.telegram.desktop*.desktop"_q,
 		kDesktopFileName + u"._*.desktop"_q,
+		u"userapp-Telegram Desktop-*.desktop"_q,
 	};
 	const auto migrate = [&](
 			const QString &path,

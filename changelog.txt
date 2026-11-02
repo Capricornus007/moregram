@@ -11,6 +11,7 @@
 - Fix menu translation on macOS.
 - Fix several other crashes.
 - Add DESKTOP_APP_DISABLE_PRIVATE_QT_API build option. (allows to build tdesktop without the need to rebuild on Qt updates at the price of feature degradation and KWindowSystem dependency)
+- Remove stale XFCE-created Telegram handlers when they point to moregram.
 
 7.3.2 (20.10.26)
 

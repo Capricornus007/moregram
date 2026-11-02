@@ -1,16 +1,12 @@
-# [Telegram Desktop][telegram_desktop] – Official Messenger
+# Moregram
 
-This is the complete source code and the build instructions for the official [Telegram][telegram] messenger desktop client, based on the [Telegram API][telegram_api] and the [MTProto][telegram_proto] secure protocol.
+Moregram is an independent Telegram desktop client based on
+[Telegram Desktop][telegram_desktop]. It keeps MTProto compatibility while adding the
+enhanced settings and desktop integrations maintained in this repository.
 
-[![Version](https://badge.fury.io/gh/telegramdesktop%2Ftdesktop.svg)](https://github.com/telegramdesktop/tdesktop/releases)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Windows./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/MacOS./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Linux./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Built with Depot](https://img.shields.io/badge/Built%20with-Depot.dev-46A75A)](https://depot.dev)
-
-[![Preview of Telegram Desktop][preview_image]][preview_image_url]
-
-The source code is published under GPLv3 with OpenSSL exception, the license is available [here][license].
+Moregram is not the official Telegram Desktop application and is not affiliated with
+Telegram FZ-LLC. Source code is distributed under GPLv3 with the OpenSSL exception;
+see [LICENSE][license] and [LEGAL](LEGAL).
 
 ## Supported systems
 

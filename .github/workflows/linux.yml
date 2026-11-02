@@ -135,9 +135,11 @@ jobs:
 
       - name: Telegram Desktop build.
         if: env.ONLY_CACHE == 'false'
+        # Telegram's Snap API credentials are public and explicitly allowed for Linux
+        # redistribution; Arch's official telegram-desktop package uses the same pair.
         env:
-          TDESKTOP_API_ID: ${{ secrets.CANARY_API_ID }}
-          TDESKTOP_API_HASH: ${{ secrets.CANARY_API_HASH }}
+          TDESKTOP_API_ID: '611335'
+          TDESKTOP_API_HASH: d524b414d21f4d37f08684c1df41ac9c
         run: |
           test -n "$TDESKTOP_API_ID" && test -n "$TDESKTOP_API_HASH" || {
             echo '::error::Production Telegram API credentials are not configured; refusing to publish a test-only binary.'

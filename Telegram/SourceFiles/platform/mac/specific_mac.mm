@@ -247,8 +247,8 @@ void ShowTranslocationError() {
 
 	NSAlert *alert = [[NSAlert alloc] init];
 	alert.alertStyle = NSAlertStyleCritical;
-	alert.messageText = @"Moregram can't start from here";
-	alert.informativeText = @"macOS started this copy of Moregram "
+	alert.messageText = @"moregram can't start from here";
+	alert.informativeText = @"macOS started this copy of moregram "
 		@"from a read-only temporary location (App Translocation), so it "
 		@"can't use its own folder. Please reinstall the app and launch it "
 		@"again.";

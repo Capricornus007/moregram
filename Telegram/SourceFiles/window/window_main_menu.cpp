@@ -388,7 +388,7 @@ MainMenu::MainMenu(
 	parentResized();
 
 	_telegram->setMarkedText(tr::link(
-		u"Moregram"_q,
+		u"moregram"_q,
 		u"https://github.com/Capricornus007/moregram"_q));
 	_telegram->setLinksTrusted();
 	// The canary version is too long for the "Version {version}" form.

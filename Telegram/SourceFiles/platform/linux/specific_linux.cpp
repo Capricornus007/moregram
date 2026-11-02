@@ -352,13 +352,13 @@ bool GenerateDesktopFile(
 		}
 	}
 
-	target.set_string("Desktop Entry", "Name", "Moregram");
+	target.set_string("Desktop Entry", "Name", "moregram");
 	target.set_string(
 		"Desktop Entry",
 		"Icon",
 		ApplicationIconName().toStdString());
 	if (target.has_group("Desktop Action quit")) {
-		target.set_string("Desktop Action quit", "Name", "Quit Moregram");
+		target.set_string("Desktop Action quit", "Name", "Quit moregram");
 	}
 
 	if (!args.isEmpty()) {
@@ -513,7 +513,7 @@ void MigrateLegacyLauncherFiles() {
 						: ExecutablePathForShortcuts();
 					entry.set_string(group, "Exec", KShell::joinArgs(args)
 						.replace('\\', qstr("\\\\")).toStdString());
-					entry.set_string(group, "Name", "Moregram");
+					entry.set_string(group, "Name", "moregram");
 					entry.set_string(group, "Icon", ApplicationIconName().toStdString());
 					if (entry.has_key(group, "TryExec", nullptr)) {
 						entry.set_string(group, "TryExec", args.front().toStdString());
@@ -526,10 +526,10 @@ void MigrateLegacyLauncherFiles() {
 				}
 			}
 			if (QFile::remove(file)) {
-				DEBUG_LOG(("App Info: removed legacy Moregram launcher %1").arg(file));
+				DEBUG_LOG(("App Info: removed legacy moregram launcher %1").arg(file));
 				removed = true;
 			} else {
-				LOG(("App Error: Could not remove legacy Moregram launcher %1").arg(file));
+				LOG(("App Error: Could not remove legacy moregram launcher %1").arg(file));
 			}
 		}
 		return removed;

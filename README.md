@@ -1,10 +1,10 @@
-# Moregram
+# moregram
 
-Moregram is an independent Telegram desktop client based on
+moregram is an independent Telegram desktop client based on
 [Telegram Desktop][telegram_desktop]. It keeps MTProto compatibility while adding the
 enhanced settings and desktop integrations maintained in this repository.
 
-Moregram is not the official Telegram Desktop application and is not affiliated with
+moregram is not the official Telegram Desktop application and is not affiliated with
 Telegram FZ-LLC. Source code is distributed under GPLv3 with the OpenSSL exception;
 see [LICENSE][license] and [LEGAL](LEGAL).
 

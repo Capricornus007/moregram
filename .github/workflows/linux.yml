@@ -135,7 +135,14 @@ jobs:
 
       - name: Telegram Desktop build.
         if: env.ONLY_CACHE == 'false'
+        env:
+          TDESKTOP_API_ID: ${{ secrets.CANARY_API_ID }}
+          TDESKTOP_API_HASH: ${{ secrets.CANARY_API_HASH }}
         run: |
+          test -n "$TDESKTOP_API_ID" && test -n "$TDESKTOP_API_HASH" || {
+            echo '::error::Production Telegram API credentials are not configured; refusing to publish a test-only binary.'
+            exit 1
+          }
           DEFINE=""
           if [ -n "${{ matrix.defines }}" ]; then
             DEFINE="-D ${{ matrix.defines }}=ON"
@@ -151,16 +158,16 @@ jobs:
           -u $(id -u) \
           -v $PWD:/usr/src/tdesktop \
           -v ${{ env.CCACHE_DIR }}:/var/cache/ccache \
-          -e CONFIG=Debug \
+          -e CONFIG=Release \
           -e CCACHE_SLOPPINESS=pch_defines,time_macros \
           $IMAGE_TAG \
           env -u CCACHE_DISABLE /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh \
-          -D CMAKE_CONFIGURATION_TYPES=Debug \
-          -D CMAKE_C_FLAGS_DEBUG="-O0 -fpch-preprocess" \
-          -D CMAKE_CXX_FLAGS_DEBUG="-O0 -fpch-preprocess" \
+          -D CMAKE_CONFIGURATION_TYPES=Release \
           -D CMAKE_COMPILE_WARNING_AS_ERROR=ON \
-          -D TDESKTOP_API_TEST=ON \
-          -D DESKTOP_APP_DISABLE_AUTOUPDATE=ON \
+          -D TDESKTOP_API_TEST=OFF \
+          -D TDESKTOP_API_ID="$TDESKTOP_API_ID" \
+          -D TDESKTOP_API_HASH="$TDESKTOP_API_HASH" \
+          -D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF \
           -D DESKTOP_APP_DISABLE_CRASH_REPORTS=OFF \
           $DEFINE
 
@@ -193,7 +200,7 @@ jobs:
       - name: Check.
         if: env.ONLY_CACHE == 'false'
         run: |
-          filePath="out/Debug/Telegram"
+          filePath="out/Release/Telegram"
           if test -f "$filePath"; then
             echo "Build successfully done! :)"
 
@@ -207,7 +214,7 @@ jobs:
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
-          cd out/Debug
+          cd out/Release
           mkdir artifact
           # 自動更新關掉時 Linux 不會產 Updater，只搬實際存在的產物
           mv Telegram artifact/
@@ -217,7 +224,7 @@ jobs:
         name: Upload artifact.
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: out/Debug/artifact/
+          path: out/Release/artifact/
           retention-days: 1
       - name: Expose artifact name to job outputs.
         id: artifact_name

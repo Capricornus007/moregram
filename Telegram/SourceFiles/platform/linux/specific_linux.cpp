@@ -53,6 +53,27 @@ using namespace gi::repository;
 namespace GObject = gi::repository::GObject;
 using namespace Platform;
 
+const auto kDesktopFileName = u"io.github.capricornus007.moregram"_q;
+
+bool IsPackaged() {
+	static const auto Result = [] {
+		if (qEnvironmentVariable("MOREGRAM_PACKAGED") == u"1"_q) {
+			return true;
+		}
+		// Old shortcuts may still launch the packaged binary without its wrapper.
+		const auto binary = QFileInfo(cExeDir() + cExeName()).canonicalFilePath();
+		return !binary.isEmpty()
+			&& binary == QFileInfo(u"/opt/moregram/Telegram"_q).canonicalFilePath()
+			&& QFile::exists(u"/usr/share/applications/"_q
+				+ kDesktopFileName + u".desktop"_q);
+	}();
+	return Result;
+}
+
+bool HasPackagedLauncher() {
+	return IsPackaged() && !Core::Launcher::Instance().customWorkingDir();
+}
+
 void PortalAutostart(bool enabled, Fn<void(bool)> done) {
 	const auto executable = ExecutablePathForShortcuts();
 	if (executable.isEmpty()) {
@@ -225,7 +246,9 @@ bool GenerateDesktopFile(
 		const QStringList &args = {},
 		bool onlyMainGroup = false,
 		bool silent = false) {
-	const auto executable = ExecutablePathForShortcuts();
+	const auto executable = IsPackaged()
+		? u"/usr/bin/moregram"_q
+		: ExecutablePathForShortcuts();
 	if (targetPath.isEmpty() || executable.isEmpty()) {
 		return false;
 	}
@@ -329,6 +352,15 @@ bool GenerateDesktopFile(
 		}
 	}
 
+	target.set_string("Desktop Entry", "Name", "Moregram");
+	target.set_string(
+		"Desktop Entry",
+		"Icon",
+		ApplicationIconName().toStdString());
+	if (target.has_group("Desktop Action quit")) {
+		target.set_string("Desktop Action quit", "Name", "Quit Moregram");
+	}
+
 	if (!args.isEmpty()) {
 		target.remove_key("Desktop Entry", "DBusActivatable");
 	}
@@ -348,51 +380,32 @@ bool GenerateDesktopFile(
 			| QFileDevice::ExeGroup
 			| QFileDevice::ExeOther);
 
-	if (!Core::UpdaterDisabled()) {
-		DEBUG_LOG(("App Info: removing old .desktop files"));
-		QFile::remove(u"%1telegram.desktop"_q.arg(targetPath));
-		QFile::remove(u"%1telegramdesktop.desktop"_q.arg(targetPath));
-
-		const auto appimagePath = u"file://%1%2"_q.arg(
-			cExeDir(),
-			cExeName()).toUtf8();
-
-		char md5Hash[33] = { 0 };
-		hashMd5Hex(
-			appimagePath.constData(),
-			appimagePath.size(),
-			md5Hash);
-
-		QFile::remove(u"%1appimagekit_%2-%3.desktop"_q.arg(
-			targetPath,
-			md5Hash,
-			AppName.utf16().replace(' ', '_')));
-
-		const auto d = QFile::encodeName(QDir(cWorkingDir()).absolutePath());
-		hashMd5Hex(d.constData(), d.size(), md5Hash);
-
-		if (!Core::Launcher::Instance().customWorkingDir()) {
-			QFile::remove(
-				u"%1io.github.capricornus007.moregram._%2.desktop"_q.arg(
-					targetPath,
-					md5Hash));
-
-			const auto exePath = QFile::encodeName(
-				cExeDir() + cExeName());
-			hashMd5Hex(exePath.constData(), exePath.size(), md5Hash);
-		}
-
-		QFile::remove(
-			u"%1io.github.capricornus007.moregram.%2.desktop"_q.arg(
-				targetPath,
-				md5Hash));
-	}
 
 	return true;
 }
 
+void ReloadDBusConfig() {
+	XdgDBus::DBusProxy::new_for_bus(
+		Gio::BusType::SESSION_,
+		Gio::DBusProxyFlags::NONE_,
+		base::Platform::DBus::kService,
+		base::Platform::DBus::kObjectPath,
+		[=](GObject::Object, Gio::AsyncResult res) {
+			auto interface = XdgDBus::DBus(
+				XdgDBus::DBusProxy::new_for_bus_finish(res, nullptr));
+
+			if (!interface) {
+				return;
+			}
+
+			interface.call_reload_config(nullptr);
+		});
+}
+
 bool GenerateServiceFile(bool silent = false) {
-	const auto executable = ExecutablePathForShortcuts();
+	const auto executable = IsPackaged()
+		? u"/usr/bin/moregram"_q
+		: ExecutablePathForShortcuts();
 	if (executable.isEmpty()) {
 		return false;
 	}
@@ -434,42 +447,113 @@ bool GenerateServiceFile(bool silent = false) {
 		return false;
 	}
 
-	if (!Core::UpdaterDisabled()
-			&& !Core::Launcher::Instance().customWorkingDir()) {
-		DEBUG_LOG(("App Info: removing old D-Bus service files"));
-
-		char md5Hash[33] = { 0 };
-		const auto d = QFile::encodeName(QDir(cWorkingDir()).absolutePath());
-		hashMd5Hex(d.constData(), d.size(), md5Hash);
-
-		QFile::remove(
-			u"%1io.github.capricornus007.moregram._%2.service"_q.arg(
-				targetPath,
-				md5Hash));
-	}
-
-	XdgDBus::DBusProxy::new_for_bus(
-		Gio::BusType::SESSION_,
-		Gio::DBusProxyFlags::NONE_,
-		base::Platform::DBus::kService,
-		base::Platform::DBus::kObjectPath,
-		[=](GObject::Object, Gio::AsyncResult res) {
-			auto interface = XdgDBus::DBus(
-				XdgDBus::DBusProxy::new_for_bus_finish(res, nullptr));
-
-			if (!interface) {
-				return;
-			}
-
-			interface.call_reload_config(nullptr);
-		});
+	ReloadDBusConfig();
 
 	return true;
+}
+
+void MigrateLegacyLauncherFiles() {
+	if (KSandbox::isInside()
+			|| Core::Launcher::Instance().customWorkingDir()) {
+		return;
+	}
+
+	const auto executable = QFileInfo(cExeDir() + cExeName()).canonicalFilePath();
+	if (executable.isEmpty()) {
+		return;
+	}
+	const auto desktopName = QGuiApplication::desktopFileName() + u".desktop"_q;
+	const auto desktopFilters = QStringList{
+		u"telegram.desktop"_q,
+		u"telegramdesktop.desktop"_q,
+		u"appimagekit_*.desktop"_q,
+		u"org.telegram.desktop*.desktop"_q,
+		kDesktopFileName + u"._*.desktop"_q,
+	};
+	const auto migrate = [&](
+			const QString &path,
+			const QStringList &filters,
+			bool service,
+			bool autostart) {
+		auto removed = false;
+		const auto directory = QDir(path);
+		for (const auto &name : directory.entryList(filters, QDir::Files)) {
+			if (!service && name == desktopName) {
+				continue;
+			}
+			const auto file = directory.filePath(name);
+			auto entry = GLib::KeyFile::new_();
+			const auto loaded = entry.load_from_file(
+				file.toStdString(),
+				GLib::KeyFileFlags::KEEP_COMMENTS_
+					| GLib::KeyFileFlags::KEEP_TRANSLATIONS_);
+			const auto group = service ? "D-BUS Service" : "Desktop Entry";
+			if (!loaded || !entry.has_key(group, "Exec", nullptr)) {
+				continue;
+			}
+			auto command = QString::fromStdString(
+				entry.get_string(group, "Exec", nullptr));
+			if (!service) {
+				command.replace(qstr("\\\\"), qstr("\\"));
+			}
+			auto args = KShell::splitArgs(command);
+			if (args.isEmpty() || args.contains(u"-workdir"_q)) {
+				continue;
+			}
+			const auto binary = QFileInfo(args.front()).isAbsolute()
+				? args.front()
+				: QStandardPaths::findExecutable(args.front());
+			if (QFileInfo(binary).canonicalFilePath() != executable) {
+				continue;
+			}
+			if (autostart) {
+				const auto destination = directory.filePath(desktopName);
+				if (!QFile::exists(destination)) {
+					args.front() = IsPackaged()
+						? u"/usr/bin/moregram"_q
+						: ExecutablePathForShortcuts();
+					entry.set_string(group, "Exec", KShell::joinArgs(args)
+						.replace('\\', qstr("\\\\")).toStdString());
+					entry.set_string(group, "Name", "Moregram");
+					entry.set_string(group, "Icon", ApplicationIconName().toStdString());
+					if (entry.has_key(group, "TryExec", nullptr)) {
+						entry.set_string(group, "TryExec", args.front().toStdString());
+					}
+					const auto saved = entry.save_to_file(destination.toStdString());
+					if (!saved) {
+						LOG(("App Error: %1").arg(saved.error().message_().c_str()));
+						continue;
+					}
+				}
+			}
+			if (QFile::remove(file)) {
+				DEBUG_LOG(("App Info: removed legacy Moregram launcher %1").arg(file));
+				removed = true;
+			} else {
+				LOG(("App Error: Could not remove legacy Moregram launcher %1").arg(file));
+			}
+		}
+		return removed;
+	};
+	const auto dataPath = QStandardPaths::writableLocation(
+		QStandardPaths::GenericDataLocation);
+	migrate(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation),
+		desktopFilters, false, false);
+	migrate(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+		+ u"/autostart"_q, desktopFilters, false, true);
+	if (migrate(dataPath + u"/dbus-1/services"_q,
+			{ u"org.telegram.desktop*.service"_q,
+				kDesktopFileName + u"._*.service"_q }, true, false)) {
+		ReloadDBusConfig();
+	}
 }
 
 void InstallLauncher() {
 	static const auto DisabledByEnv = !qEnvironmentVariableIsEmpty(
 		"DESKTOPINTEGRATION");
+	if (!DisabledByEnv) {
+		MigrateLegacyLauncherFiles();
+	}
 
 	// don't update desktop file for alpha version or if updater is disabled
 	if (cAlphaVersion()
@@ -482,8 +566,10 @@ void InstallLauncher() {
 	const auto applicationsPath = QStandardPaths::writableLocation(
 		QStandardPaths::ApplicationsLocation) + '/';
 
-	GenerateDesktopFile(applicationsPath);
-	GenerateServiceFile();
+	if (!HasPackagedLauncher()) {
+		GenerateDesktopFile(applicationsPath);
+		GenerateServiceFile();
+	}
 
 	const auto icons = QStandardPaths::writableLocation(
 		QStandardPaths::GenericDataLocation) + u"/icons/"_q;
@@ -493,7 +579,6 @@ void InstallLauncher() {
 
 	const auto icon = appIcons + ApplicationIconName() + u".png"_q;
 	QFile::remove(icon);
-	QFile::remove(icons + u"telegram.png"_q);
 	if (QFile::copy(u":/gui/art/logo_256.png"_q, icon)) {
 		DEBUG_LOG(("App Info: Icon copied to '%1'").arg(icon));
 	}
@@ -740,12 +825,21 @@ void start() {
 				+ cExeName();
 		}
 
-		if (!Core::UpdaterDisabled()) {
-			return u"io.github.capricornus007.moregram._%1"_q.arg(
+		if (Core::Launcher::Instance().customWorkingDir()) {
+			return u"org.telegram.desktop._%1"_q.arg(
 				Core::Launcher::Instance().instanceHash().constData());
 		}
 
-		return u"io.github.capricornus007.moregram"_q;
+		if (HasPackagedLauncher()) {
+			return kDesktopFileName;
+		}
+
+		if (!Core::UpdaterDisabled()) {
+			return kDesktopFileName + u"._%1"_q.arg(
+				Core::Launcher::Instance().instanceHash().constData());
+		}
+
+		return kDesktopFileName;
 	}());
 
 	LOG(("App ID: %1").arg(QGuiApplication::desktopFileName()));

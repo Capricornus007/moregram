@@ -78,6 +78,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # checkout 的 shallow fetch 實測不會留下 tag refs；版本 tag 在 75 筆內但
+          # `git describe` 仍報 No names found。顯式取 tag refs，既不拉完整 2.7 萬筆歷史，
+          # 又能和上面的 256 深度提交鏈相交。
+          git fetch --force --no-recurse-submodules origin '+refs/tags/v*:refs/tags/v*'
           _describe="$(git describe --tags --long --match 'v[0-9]*' --abbrev=8)"
           case "$_describe" in
             v*-*-g*) ;;

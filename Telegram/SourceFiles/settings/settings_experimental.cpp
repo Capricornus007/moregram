@@ -44,6 +44,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "info/profile/info_profile_actions.h"
 #include "info/profile/tabs/adapters/info_profile_tab_media.h"
 #include "info/profile/tabs/info_profile_tabs_host.h"
+#include "lang/lang_instance.h"
 #include "lang/lang_keys.h"
 #include "mainwindow.h"
 #include "mainwidget.h"
@@ -192,6 +193,39 @@ void SetupCopyDeepLink(
 	return button;
 }
 
+// Option titles and descriptions live in the `base::options` declarations as
+// English constants. Look a Moregram translation up by option id instead, so
+// that the experimental page can be localized without touching every option.
+// The keys are `lng_settings_experimental_<id>` and `..._desc`, where the id
+// gets its dashes replaced by underscores because lang keys must be valid C++
+// identifiers. Anything missing falls back to the original text: a new option
+// must never disappear or show an empty row just because nobody translated it.
+[[nodiscard]] QString TrOptionById(
+		const QString &key,
+		const QString &fallback) {
+	const auto translated = Lang::GetInstance().getNonDefaultValue(
+		key.toUtf8());
+	return translated.trimmed().isEmpty() ? fallback : translated;
+}
+
+[[nodiscard]] QString OptionLangKey(const QString &id) {
+	auto result = u"lng_settings_experimental_"_q + id;
+	result.replace(QLatin1Char('-'), QLatin1Char('_'));
+	return result;
+}
+
+[[nodiscard]] QString TrOptionName(const QString &id, const QString &name) {
+	return TrOptionById(OptionLangKey(id), name.isEmpty() ? id : name);
+}
+
+[[nodiscard]] QString TrOptionDescription(
+		const QString &id,
+		const QString &description) {
+	return TrOptionById(
+		OptionLangKey(id) + u"_desc"_q,
+		description);
+}
+
 QString AddOption(
 		not_null<Window::Controller*> window,
 		not_null<Ui::VerticalLayout*> container,
@@ -200,8 +234,11 @@ QString AddOption(
 		rpl::producer<> reloadOptionsRequests,
 		rpl::producer<QString> query,
 		Fn<void(const QString&, not_null<QWidget*>)> registerHighlight) {
-	const auto name = option.name().isEmpty() ? option.id() : option.name();
-	const auto &description = option.description();
+	const auto optionId = option.id();
+	const auto name = TrOptionName(optionId, option.name());
+	const auto description = TrOptionDescription(
+		optionId,
+		option.description());
 
 	const auto wrap = container->add(
 		object_ptr<Ui::SlideWrap<Ui::VerticalLayout>>(
@@ -284,10 +321,11 @@ QString AddFavoriteLinkButton(
 		Fn<void(const QString&, not_null<QWidget*>)> registerHighlight) {
 	const auto option = &base::options::lookup<QString>(
 		Window::kOptionFolderFavoriteLink);
-	const auto name = option->name().isEmpty()
-		? option->id()
-		: option->name();
-	const auto &description = option->description();
+	const auto optionId = option->id();
+	const auto name = TrOptionName(optionId, option->name());
+	const auto description = TrOptionDescription(
+		optionId,
+		option->description());
 
 	const auto wrap = container->add(
 		object_ptr<Ui::SlideWrap<Ui::VerticalLayout>>(

@@ -128,10 +128,10 @@ void SetupCopyDeepLink(
 		*menu = base::make_unique_q<Ui::PopupMenu>(
 			button,
 			st::popupMenuWithIcons);
-		(*menu)->addAction(u"Copy deep link"_q, [=] {
+		(*menu)->addAction(tr::lng_settings_experimental_copy_deep_link(tr::now), [=] {
 			TextUtilities::SetClipboardText({ link });
 			window->showToast({
-				.text = { u"Deep link copied to clipboard."_q },
+				.text = { tr::lng_settings_experimental_toast_deep_link(tr::now) },
 				.iconLottie = u"toast/voip_invite"_q,
 				.iconLottieSize = st::toastLottieIconSize,
 			});
@@ -387,7 +387,7 @@ void SetupExperimental(
 	};
 	const auto categories = std::vector<Category>{
 		{
-			u"Chats"_q,
+			tr::lng_settings_experimental_chats(tr::now),
 			{
 				Dialogs::kOptionForumHideChatsList,
 				Dialogs::kOptionDialogsUnreadOnTop,
@@ -399,7 +399,7 @@ void SetupExperimental(
 			}
 		},
 		{
-			u"Messages"_q,
+			tr::lng_settings_experimental_messages(tr::now),
 			{
 				Ui::kOptionUseSmallMsgBubbleRadius,
 				HistoryView::kOptionUnlimitedMessageWidth,
@@ -410,7 +410,7 @@ void SetupExperimental(
 			}
 		},
 		{
-			u"Profile"_q,
+			tr::lng_settings_experimental_profile(tr::now),
 			{
 				Window::kOptionViewProfileInChatsListContextMenu,
 				Info::Profile::kOptionShowPeerIdBelowAbout,
@@ -420,14 +420,14 @@ void SetupExperimental(
 			}
 		},
 		{
-			u"Stickers and emoji"_q,
+			tr::lng_settings_experimental_stickers(tr::now),
 			{
 				ChatHelpers::kOptionTabbedPanelShowOnClick,
 				ChatHelpers::kOptionUnlimitedRecentStickers,
 			}
 		},
 		{
-			u"Media"_q,
+			tr::lng_settings_experimental_media(tr::now),
 			{
 				Media::Player::kOptionDisableAutoplayNext,
 				Window::kOptionExternalMediaViewer,
@@ -435,7 +435,7 @@ void SetupExperimental(
 			}
 		},
 		{
-			u"Notifications"_q,
+			tr::lng_settings_experimental_notifications(tr::now),
 			{
 				Window::Notifications::kOptionHideReplyButton,
 				Window::Notifications::kOptionCustomNotification,
@@ -444,7 +444,7 @@ void SetupExperimental(
 			}
 		},
 		{
-			u"Interface"_q,
+			tr::lng_settings_experimental_interface(tr::now),
 			{
 				Core::kOptionFractionalScalingEnabled,
 				Core::kOptionHighDpiDownscale,
@@ -460,7 +460,7 @@ void SetupExperimental(
 			}
 		},
 		{
-			u"System"_q,
+			tr::lng_settings_experimental_system(tr::now),
 			{
 				MTP::details::kOptionPreferIPv6,
 				Core::kOptionSkipUrlSchemeRegister,
@@ -526,7 +526,7 @@ void SetupExperimental(
 		});
 	}
 
-	addCategory(u"Other"_q, [&](
+	addCategory(tr::lng_settings_experimental_other(tr::now), [&](
 			not_null<Ui::VerticalLayout*> inner,
 			std::vector<QString> &searchable) {
 		if (base::options::lookup<bool>(kOptionFastButtonsMode).value()) {
@@ -558,12 +558,12 @@ rpl::producer<QString> Experimental::title() {
 void Experimental::fillTopBarMenu(const Ui::Menu::MenuCallback &addAction) {
 	const auto window = &controller()->window();
 	addAction(
-		u"Export"_q,
+		tr::lng_settings_experimental_export(tr::now),
 		[=] {
 			TextUtilities::SetClipboardText(
 				{ EncodeOptionsToText(base::options::serialize()) });
 			window->showToast({
-				.text = { u"Experimental settings code copied to clipboard."_q },
+				.text = { tr::lng_settings_experimental_toast_export(tr::now) },
 				.iconLottie = u"toast/copy"_q,
 				.iconLottieSize = st::toastLottieIconSize,
 			});
@@ -573,23 +573,23 @@ void Experimental::fillTopBarMenu(const Ui::Menu::MenuCallback &addAction) {
 		return;
 	}
 	addAction(
-		u"Import"_q,
+		tr::lng_settings_experimental_import(tr::now),
 		[=] {
 			const auto decoded = DecodeOptionsFromText(
 				QGuiApplication::clipboard()->text());
 			if (!decoded.ok) {
-				window->showToast(u"Clipboard does not contain "
-					"a valid experimental settings code."_q);
+				window->showToast(
+					tr::lng_settings_experimental_toast_import_invalid(tr::now));
 				return;
 			}
 			if (!base::options::deserialize(decoded.json)) {
-				window->showToast(u"Experimental settings code is valid"
-					", but data format is not supported."_q);
+				window->showToast(
+					tr::lng_settings_experimental_toast_import_unsupported(tr::now));
 				return;
 			}
 			_reloadOptionsRequests.fire({});
-			window->showToast(u"Experimental settings imported "
-				"from code in clipboard."_q);
+			window->showToast(
+				tr::lng_settings_experimental_toast_import_success(tr::now));
 		},
 		&st::menuIconImportTheme);
 }

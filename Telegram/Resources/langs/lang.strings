@@ -707,6 +707,34 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_experimental_about" = "Warning! These are experimental settings. Some may not work. Others may break the app. Any of them may disappear in the next version without a trace. Use at your own risk.";
 "lng_settings_experimental_restore" = "Restore default values";
 "lng_settings_experimental_irrelevant" = "This option isn't relevant for your system.";
+"lng_settings_experimental_material_appearance" = "Material appearance";
+"lng_settings_experimental_appearance_corners" = "Appearance corners";
+"lng_settings_experimental_appearance_density" = "Appearance density";
+"lng_settings_experimental_appearance_capsule_buttons" = "Capsule buttons";
+"lng_settings_experimental_appearance_capsule_sidebar" = "Capsule sidebar";
+"lng_settings_experimental_appearance_bubble_tails" = "Bubble tails";
+"lng_settings_experimental_appearance_large_emoji_outline" = "Large emoji outline";
+"lng_settings_experimental_font_exact_size" = "Exact font size";
+"lng_settings_experimental_font_avoid_synthetic_bold" = "Avoid synthetic bold";
+"lng_settings_experimental_font_weight" = "Font weight";
+"lng_settings_experimental_net_speed_boost" = "Net speed boost";
+"lng_settings_experimental_hide_proxy_icon_when_connected" = "Hide proxy icon when connected";
+
+"lng_settings_enhanced_appearance" = "Enhanced appearance";
+"lng_settings_enhanced_network" = "Enhanced network";
+"lng_settings_enhanced_messages" = "Enhanced messages";
+"lng_settings_enhanced_button" = "Enhanced button";
+"lng_settings_enhanced_voice_chat" = "Enhanced voice chat";
+"lng_settings_enhanced_others" = "Enhanced others";
+"lng_settings_experimental_chats" = "Chats";
+"lng_settings_experimental_messages" = "Messages";
+"lng_settings_experimental_profile" = "Profile";
+"lng_settings_experimental_stickers" = "Stickers and emoji";
+"lng_settings_experimental_media" = "Media";
+"lng_settings_experimental_notifications" = "Notifications";
+"lng_settings_experimental_interface" = "Interface";
+"lng_settings_experimental_system" = "System";
+"lng_settings_experimental_other" = "Other";
 
 "lng_settings_section_chat_settings" = "Chat Settings";
 "lng_settings_replace_emojis" = "Replace emoji automatically";
@@ -9543,4 +9571,19 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_group_requests_ban" = "Ban";
 
 "lng_blocked_user_hint" = "[Blocked User Message]\n";
+
+"lng_settings_enhanced_restart_in_seconds" = "Restart in 3 seconds!";
+"lng_settings_enhanced_blocklist_save_failed" = "Failed to save blocklist.";
+"lng_settings_enhanced_blocklist_fetching" = "Please wait a moment, fetching blocklist...";
+"lng_settings_experimental_toast_export" = "Experimental settings code copied to clipboard.";
+"lng_settings_experimental_toast_import_invalid" = "Clipboard does not contain a valid experimental settings code.";
+"lng_settings_experimental_toast_import_unsupported" = "Experimental settings code is valid, but data format is not supported.";
+"lng_settings_experimental_toast_import_success" = "Experimental settings imported from code in clipboard.";
+"lng_settings_experimental_toast_deep_link" = "Deep link copied to clipboard.";
+
+
+"lng_settings_experimental_copy_deep_link" = "Copy deep link";
+"lng_settings_experimental_export" = "Export";
+"lng_settings_experimental_import" = "Import";
+
 // Keys finished

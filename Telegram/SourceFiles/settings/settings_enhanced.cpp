@@ -199,10 +199,10 @@ namespace Settings {
 			auto doc = QJsonDocument(toArray());
 			file.write(doc.toJson(QJsonDocument::Compact));
 			file.close();
-			Ui::Toast::Show("Restart in 3 seconds!");
+			Ui::Toast::Show(tr::lng_settings_enhanced_restart_in_seconds(tr::now));
 			QTimer::singleShot(3 * 1000, []{ Core::Restart(); });
 		} else {
-			Ui::Toast::Show("Failed to save blocklist.");
+			Ui::Toast::Show(tr::lng_settings_enhanced_blocklist_save_failed(tr::now));
 		}
 	}
 
@@ -483,7 +483,7 @@ namespace Settings {
 			SetEnhancedValue("blocked_user_spoiler_mode", toggled);
 			EnhancedSettings::Write();
 			if (toggled) {
-				Ui::Toast::Show("Please wait a moment, fetching blocklist...");
+				Ui::Toast::Show(tr::lng_settings_enhanced_blocklist_fetching(tr::now));
 
 				App::wnd()->sessionController()->session().api().blockedPeers().slice() | rpl::take(
 					1

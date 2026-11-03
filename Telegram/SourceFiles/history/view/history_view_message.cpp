@@ -18,6 +18,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/update_checker.h"
 #include "history/view/history_view_cursor_state.h"
 #include "history/history_item_components.h"
+#include "core/appearance_policy.h"
 #include "history/history_item_helpers.h"
 #include "history/view/media/history_view_media_generic.h"
 #include "history/view/media/history_view_web_page.h"
@@ -6648,6 +6649,7 @@ Ui::BubbleRounding Message::countMessageRounding() const {
 			&& (rich->article.edgeBlocks().bottom == Block::VisualMedia);
 	};
 	const auto skipTail = smallBottom
+		|| !Appearance::Current().bubbleTails
 		|| (media && media->skipBubbleTail())
 		|| (rich && richMediaAtBottom())
 		|| (keyboard != nullptr)

@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "data/stickers/data_custom_emoji.h"
+#include "core/appearance_policy.h"
 
 #include "boxes/peers/edit_forum_topic_box.h" // MakeTopicIconEmoji.
 #include "chat_helpers/stickers_emoji_pack.h"
@@ -84,7 +85,7 @@ private:
 	case SizeTag::Normal: return Ui::Emoji::GetSizeNormal();
 	case SizeTag::Large: return Ui::Emoji::GetSizeLarge();
 	case SizeTag::Isolated:
-		return (st::largeEmojiSize + 2 * st::largeEmojiOutline)
+		return (st::largeEmojiSize + 2 * Appearance::LargeEmojiOutline())
 			* style::DevicePixelRatio();
 	case SizeTag::SetIcon:
 		return int(style::ConvertScale(18 * 7 / 6., style::Scale()))

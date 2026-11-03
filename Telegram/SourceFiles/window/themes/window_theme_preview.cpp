@@ -20,6 +20,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/chat/chat_theme.h"
 #include "ui/chat/chat_style.h"
 #include "ui/chat/message_bubble.h"
+#include "core/appearance_policy.h"
 #include "styles/style_chat_style.h"
 #include "styles/style_widgets.h"
 #include "styles/style_media_view.h"
@@ -878,7 +879,7 @@ void Generator::paintBubble(const Bubble &bubble) {
 		}
 		if (bubble.attachToBottom) {
 			rounding.bottomRight = Corner::Small;
-		} else if (bubble.tail) {
+		} else if (bubble.tail && Appearance::Current().bubbleTails) {
 			rounding.bottomRight = Corner::Tail;
 		}
 	} else {
@@ -887,7 +888,7 @@ void Generator::paintBubble(const Bubble &bubble) {
 		}
 		if (bubble.attachToBottom) {
 			rounding.bottomLeft = Corner::Small;
-		} else if (bubble.tail) {
+		} else if (bubble.tail && Appearance::Current().bubbleTails) {
 			rounding.bottomLeft = Corner::Tail;
 		}
 	}

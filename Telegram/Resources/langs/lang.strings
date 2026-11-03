@@ -9385,7 +9385,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_screen_shot_mode_desc" = "Anonymizes names, usernames, bios, avatars and identity badges in the app UI for safer screenshots. It does not capture screenshots. Restart is automatic.";
 "lng_settings_personalization" = "Personalization";
 "lng_settings_material_appearance" = "Material appearance";
-"lng_settings_material_appearance_about" = "Optional Material-inspired radii and capsules. Upstream appearance remains the default; Material Day and Material Dark are available in Chat Settings with the existing accent selector.";
+"lng_settings_material_appearance_about" = "Optional Material-inspired radii. Capsule, density and chat-detail policies remain independent. Upstream appearance remains the default; Material Day and Material Dark are available in Chat Settings with the existing accent selector.";
 "lng_settings_appearance_corners" = "Corner policy";
 "lng_settings_appearance_density" = "Control density";
 "lng_settings_capsule_buttons" = "Capsule buttons";

@@ -87,3 +87,25 @@ private:
 	std::shared_ptr<Ui::RadiobuttonGroup> _bitrateGroup;
 
 };
+
+class AppearanceOptionBox : public Ui::BoxContent {
+public:
+	enum class Type {
+		Corners,
+		Density,
+		FontWeight,
+	};
+
+	AppearanceOptionBox(QWidget *parent, Type type);
+
+	[[nodiscard]] static QString Label(Type type, int value);
+
+protected:
+	void prepare() override;
+
+private:
+	void save();
+
+	Type _type;
+	std::shared_ptr<Ui::RadiobuttonGroup> _group;
+};

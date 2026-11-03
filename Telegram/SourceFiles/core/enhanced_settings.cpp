@@ -318,6 +318,17 @@ namespace EnhancedSettings {
 		settings.insert(qsl("translate_to_tc"), false);
 		settings.insert(qsl("hide_stories"), false);
 		settings.insert(qsl("screenshot_mode"), false);
+		settings.insert(qsl("material_appearance"), false);
+		settings.insert(qsl("appearance_corner_policy"), 0);
+		settings.insert(qsl("appearance_density"), 0);
+		settings.insert(qsl("appearance_capsule_buttons"), false);
+		settings.insert(qsl("appearance_capsule_sidebar"), false);
+		settings.insert(qsl("appearance_bubble_tails"), true);
+		settings.insert(qsl("appearance_large_emoji_outline"), true);
+		settings.insert(qsl("font_exact_size"), false);
+		settings.insert(qsl("font_avoid_synthetic_bold"), false);
+		settings.insert(qsl("font_normal_weight"), 0);
+		settings.insert(qsl("hide_proxy_icon_when_connected"), false);
 		settings.insert(qsl("update_url"), "");
 
 		auto document = QJsonDocument();
@@ -373,6 +384,17 @@ namespace EnhancedSettings {
 		settings.insert(qsl("translate_to_tc"), GetEnhancedBool("translate_to_tc"));
 		settings.insert(qsl("hide_stories"), GetEnhancedBool("hide_stories"));
 		settings.insert(qsl("screenshot_mode"), GetEnhancedBool("screenshot_mode"));
+		settings.insert(qsl("material_appearance"), GetEnhancedBool("material_appearance"));
+		settings.insert(qsl("appearance_corner_policy"), GetEnhancedInt("appearance_corner_policy"));
+		settings.insert(qsl("appearance_density"), GetEnhancedInt("appearance_density"));
+		settings.insert(qsl("appearance_capsule_buttons"), GetEnhancedBool("appearance_capsule_buttons"));
+		settings.insert(qsl("appearance_capsule_sidebar"), GetEnhancedBool("appearance_capsule_sidebar"));
+		settings.insert(qsl("appearance_bubble_tails"), GetEnhancedBool("appearance_bubble_tails"));
+		settings.insert(qsl("appearance_large_emoji_outline"), GetEnhancedBool("appearance_large_emoji_outline"));
+		settings.insert(qsl("font_exact_size"), GetEnhancedBool("font_exact_size"));
+		settings.insert(qsl("font_avoid_synthetic_bold"), GetEnhancedBool("font_avoid_synthetic_bold"));
+		settings.insert(qsl("font_normal_weight"), GetEnhancedInt("font_normal_weight"));
+		settings.insert(qsl("hide_proxy_icon_when_connected"), GetEnhancedBool("hide_proxy_icon_when_connected"));
 		settings.insert(qsl("update_url"), GetEnhancedString("update_url"));
 
 		auto document = QJsonDocument();

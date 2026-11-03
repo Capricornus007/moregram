@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/media/history_view_media_unwrapped.h"
+#include "core/appearance_policy.h"
 
 #include "data/data_session.h"
 #include "history/history.h"
@@ -86,7 +87,7 @@ QSize UnwrappedMedia::countCurrentSize(int newWidth) {
 	if (_parent->hasRightLayout()) {
 		const auto infoHeight = bottomInfoHeight();
 		const auto minimal = std::min(
-			st::largeEmojiSize + 2 * st::largeEmojiOutline,
+			st::largeEmojiSize + 2 * Appearance::LargeEmojiOutline(),
 			_contentSize.height());
 		accumulate_max(
 			newHeight,

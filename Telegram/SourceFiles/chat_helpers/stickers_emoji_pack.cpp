@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "chat_helpers/stickers_emoji_pack.h"
 
 #include "chat_helpers/stickers_emoji_image_loader.h"
+#include "core/appearance_policy.h"
 #include "history/view/history_view_element.h"
 #include "history/history_item.h"
 #include "history/history.h"
@@ -55,7 +56,7 @@ constexpr auto kPremiumCachesCount = 8;
 
 [[nodiscard]] QSize SingleSize() {
 	const auto single = st::largeEmojiSize;
-	const auto outline = st::largeEmojiOutline;
+	const auto outline = Appearance::LargeEmojiOutline();
 	return Size(2 * outline + single) * style::DevicePixelRatio();
 }
 

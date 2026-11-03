@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/application.h"
+#include "core/appearance_policy.h"
 
 #include "core/enhanced_settings.h"
 #include "data/data_abstract_structure.h"
@@ -313,6 +314,7 @@ Application::~Application() {
 
 void Application::run() {
 	EnhancedSettings::Start();
+	Appearance::ApplyStartupPolicy();
 	// Depends on OpenSSL on macOS, so on ThirdParty::start().
 	// Depends on notifications settings.
 	_notifications = std::make_unique<Window::Notifications::System>();

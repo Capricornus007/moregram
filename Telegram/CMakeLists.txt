@@ -570,6 +570,8 @@ PRIVATE
     chat_helpers/tabbed_selector.h
     chat_helpers/ttl_media_layer_widget.cpp
     chat_helpers/ttl_media_layer_widget.h
+    core/appearance_policy.cpp
+    core/appearance_policy.h
     core/application.cpp
     core/application.h
     core/proxy_rotation_manager.cpp
@@ -2075,6 +2077,8 @@ PRIVATE
     test/test_agent.h
     test/test_animation_clock.cpp
     test/test_animation_clock.h
+    test/test_appearance_policy.cpp
+    test/test_appearance_policy.h
     test/test_box_button.cpp
     test/test_box_button.h
     test/test_capture.cpp

@@ -65,3 +65,10 @@
 61. Support sending and viewing location
 62. Sticker pack owner info
 63. Manual protected-content copy resend (default off): explicitly reconstructs supported text, photo, document/video, voice, round-video, album, sticker, caption and rich-message content through the normal send pipeline while leaving Forward, Save and Copy restrictions intact
+64. Optional Material personalization (default off): GPLv3 Material Day/Dark palette-only presets with accent selection, Material/minimal corner policy, capsule buttons/sidebar, compact/comfortable control density, bubble-tail and large-emoji-outline controls
+65. Font rendering policies (default off, restart required): exact selected-font size, synthetic-bold avoidance and validated normal weight; `TELEGRAM_DESKTOP_UI_FONT_WEIGHT` is parsed once at startup and takes precedence. Exact sizing uses the selected face's own Latin/CJK metrics, so CJK baselines are not paired with normalized Open Sans metrics
+66. Animated chat-list avatars obey Interface Animations in Power Saving
+67. Optional hide-connected proxy icon; connecting and retry states remain visible
+68. Existing Uncolored Quote option is exposed under Experimental → Messages; existing URL-scheme registration option, wallet integration and safe file opener remain the sole implementations
+
+Material icon replacement and Google Sans embedding are intentionally omitted: complete normal/hover/active/disabled/high-DPI icon coverage and a clear redistributable font license were not proven. Moregram branding is unchanged, and the existing custom-font picker is the supported font path. Materialgram noise/ripple allocation, forced 110% scale, JPEG/bitrate constants and global throttling changes are not included.

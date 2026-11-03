@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/dev/LEGAL
 #include <QJsonArray>
 #include <QJsonDocument>
 #include "settings/settings_enhanced.h"
+#include <algorithm>
 
 #include "settings/settings_common.h"
 #include <ui/vertical_list.h>
@@ -42,6 +43,105 @@ https://github.com/telegramdesktop/tdesktop/blob/dev/LEGAL
 
 namespace Settings {
 
+	void Enhanced::SetupEnhancedAppearance(
+			not_null<Ui::VerticalLayout*> container) {
+		AddDivider(container);
+		AddSkip(container);
+		AddSubsectionTitle(container, tr::lng_settings_personalization());
+		const auto wrap = container->add(
+			object_ptr<Ui::SlideWrap<Ui::VerticalLayout>>(
+				container,
+				object_ptr<Ui::VerticalLayout>(container)));
+		const auto inner = wrap->entity();
+		const auto addRestartToggle = [=](
+				const char *key,
+				rpl::producer<QString> title,
+				bool fallback = false) {
+			const auto name = QString::fromLatin1(key);
+			const auto value = gEnhancedOptions.contains(name)
+				? GetEnhancedBool(name)
+				: fallback;
+			const auto button = AddButtonWithIcon(
+				inner,
+				std::move(title),
+				st::settingsButtonNoIcon);
+			button->setColorOverride(QColor(255, 0, 0));
+			button->toggleOn(
+				rpl::single(value)
+			)->toggledChanges(
+			) | rpl::filter([=](bool enabled) {
+				return enabled != GetEnhancedBool(name);
+			}) | rpl::on_next([=](bool enabled) {
+				SetEnhancedValue(name, enabled);
+				EnhancedSettings::Write();
+			}, container->lifetime());
+		};
+
+		addRestartToggle(
+			"material_appearance",
+			tr::lng_settings_material_appearance());
+		AddDividerText(inner, tr::lng_settings_material_appearance_about());
+
+		const auto addChoice = [=](
+				AppearanceOptionBox::Type type,
+				const char *key,
+				rpl::producer<QString> title) {
+			const auto limit = (type == AppearanceOptionBox::Type::FontWeight)
+				? 4
+				: 2;
+			const auto value = std::clamp(
+				GetEnhancedInt(QString::fromLatin1(key)),
+				0,
+				limit);
+			const auto button = AddButtonWithLabel(
+				inner,
+				std::move(title),
+				rpl::single(AppearanceOptionBox::Label(type, value)),
+				st::settingsButtonNoIcon);
+			button->setColorOverride(QColor(255, 0, 0));
+			button->addClickHandler([=] {
+				Ui::show(Box<AppearanceOptionBox>(type));
+			});
+		};
+		addChoice(
+			AppearanceOptionBox::Type::Corners,
+			"appearance_corner_policy",
+			tr::lng_settings_appearance_corners());
+		addChoice(
+			AppearanceOptionBox::Type::Density,
+			"appearance_density",
+			tr::lng_settings_appearance_density());
+		addRestartToggle(
+			"appearance_capsule_buttons",
+			tr::lng_settings_capsule_buttons());
+		addRestartToggle(
+			"appearance_capsule_sidebar",
+			tr::lng_settings_capsule_sidebar());
+		addRestartToggle(
+			"appearance_bubble_tails",
+			tr::lng_settings_bubble_tails(),
+			true);
+		addRestartToggle(
+			"appearance_large_emoji_outline",
+			tr::lng_settings_large_emoji_outline(),
+			true);
+
+		AddSkip(inner);
+		AddSubsectionTitle(inner, tr::lng_settings_font_family());
+		addRestartToggle(
+			"font_exact_size",
+			tr::lng_settings_font_exact_size());
+		addRestartToggle(
+			"font_avoid_synthetic_bold",
+			tr::lng_settings_font_avoid_synthetic_bold());
+		addChoice(
+			AppearanceOptionBox::Type::FontWeight,
+			"font_normal_weight",
+			tr::lng_settings_font_weight());
+		AddDividerText(inner, tr::lng_settings_font_policy_about());
+		AddDividerText(inner, tr::lng_settings_restart_hint());
+	}
+
 	void Enhanced::SetupEnhancedNetwork(not_null<Ui::VerticalLayout *> container) {
 		const auto wrap = container->add(
 				object_ptr<Ui::SlideWrap<Ui::VerticalLayout>>(
@@ -63,6 +163,25 @@ namespace Settings {
 		uploadBoostBtn->addClickHandler([=] {
 			Ui::show(Box<NetBoostBox>());
 		});
+
+		const auto hideConnectedProxy = AddButtonWithIcon(
+			inner,
+			tr::lng_settings_hide_proxy_icon_connected(),
+			st::settingsButtonNoIcon);
+		hideConnectedProxy->setColorOverride(QColor(255, 0, 0));
+		hideConnectedProxy->toggleOn(
+			rpl::single(GetEnhancedBool("hide_proxy_icon_when_connected"))
+		)->toggledChanges(
+		) | rpl::filter([](bool enabled) {
+			return enabled != GetEnhancedBool(
+				"hide_proxy_icon_when_connected");
+		}) | rpl::on_next([=](bool enabled) {
+			SetEnhancedValue("hide_proxy_icon_when_connected", enabled);
+			EnhancedSettings::Write();
+		}, container->lifetime());
+		AddDividerText(
+			inner,
+			tr::lng_settings_hide_proxy_icon_connected_about());
 
 		AddSkip(container);
 	}
@@ -621,6 +740,7 @@ namespace Settings {
 	void Enhanced::setupContent(not_null<Window::SessionController *> controller) {
 		const auto content = Ui::CreateChild<Ui::VerticalLayout>(this);
 
+		SetupEnhancedAppearance(content);
 		SetupEnhancedNetwork(content);
 		SetupEnhancedMessages(content);
 		SetupEnhancedButton(content);

@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "window/window_connecting_widget.h"
+#include "settings.h"
 
 #include "ui/widgets/buttons.h"
 #include "ui/effects/radial_animation.h"
@@ -441,8 +442,12 @@ auto ConnectionState::computeLayout(const State &state) const -> Layout {
 	auto result = Layout();
 	result.proxyEnabled = state.useProxy;
 	result.progressShown = (state.type != State::Type::Connected);
+	const auto connectedProxyHidden = state.useProxy
+		&& state.type == State::Type::Connected
+		&& GetEnhancedBool("hide_proxy_icon_when_connected");
 	result.visible = state.exposed
 		&& !state.updateReady
+		&& !connectedProxyHidden
 		&& (state.useProxy
 			|| state.type == State::Type::Connecting
 			|| state.type == State::Type::Waiting);

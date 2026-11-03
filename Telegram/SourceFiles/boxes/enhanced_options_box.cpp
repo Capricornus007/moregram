@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <facades.h>
 #include <ui/toast/toast.h>
 #include "boxes/enhanced_options_box.h"
+#include <algorithm>
 
 #include "lang/lang_keys.h"
 #include "ui/widgets/checkbox.h"
@@ -230,5 +231,82 @@ void BitrateController::save() {
 	SetEnhancedValue("bitrate", _bitrateGroup->current());
 	EnhancedSettings::Write();
 	Ui::Toast::Show(tr::lng_bitrate_controller_hint(tr::now));
+	closeBox();
+}
+
+AppearanceOptionBox::AppearanceOptionBox(QWidget *parent, Type type)
+: _type(type) {
+}
+
+QString AppearanceOptionBox::Label(Type type, int value) {
+	switch (type) {
+	case Type::Corners:
+		switch (value) {
+		case 0: return tr::lng_appearance_policy_upstream(tr::now);
+		case 1: return tr::lng_appearance_policy_material(tr::now);
+		case 2: return tr::lng_appearance_policy_square(tr::now);
+		}
+		break;
+	case Type::Density:
+		switch (value) {
+		case 0: return tr::lng_appearance_density_upstream(tr::now);
+		case 1: return tr::lng_appearance_density_compact(tr::now);
+		case 2: return tr::lng_appearance_density_comfortable(tr::now);
+		}
+		break;
+	case Type::FontWeight:
+		switch (value) {
+		case 0: return tr::lng_font_weight_default(tr::now);
+		case 1: return tr::lng_font_weight_light(tr::now);
+		case 2: return tr::lng_font_weight_normal(tr::now);
+		case 3: return tr::lng_font_weight_medium(tr::now);
+		case 4: return tr::lng_font_weight_demibold(tr::now);
+		}
+		break;
+	}
+	Unexpected("Value in AppearanceOptionBox::Label.");
+}
+
+void AppearanceOptionBox::prepare() {
+	const auto key = (_type == Type::Corners)
+		? "appearance_corner_policy"
+		: (_type == Type::Density)
+		? "appearance_density"
+		: "font_normal_weight";
+	const auto title = (_type == Type::Corners)
+		? tr::lng_settings_appearance_corners()
+		: (_type == Type::Density)
+		? tr::lng_settings_appearance_density()
+		: tr::lng_settings_font_weight();
+	const auto count = (_type == Type::FontWeight) ? 5 : 3;
+	setTitle(title);
+	addButton(tr::lng_settings_save(), [=] { save(); });
+	addButton(tr::lng_cancel(), [=] { closeBox(); });
+	auto y = st::boxOptionListPadding.top();
+	_group = std::make_shared<Ui::RadiobuttonGroup>(std::clamp(
+		GetEnhancedInt(key),
+		0,
+		count - 1));
+	for (auto i = 0; i != count; ++i) {
+		const auto button = Ui::CreateChild<Ui::Radiobutton>(
+			this,
+			_group,
+			i,
+			Label(_type, i),
+			st::autolockButton);
+		button->moveToLeft(st::boxPadding.left(), y);
+		y += button->heightNoMargins() + st::boxOptionListSkip;
+	}
+	setDimensions(st::boxWidth, y);
+}
+
+void AppearanceOptionBox::save() {
+	const auto key = (_type == Type::Corners)
+		? "appearance_corner_policy"
+		: (_type == Type::Density)
+		? "appearance_density"
+		: "font_normal_weight";
+	SetEnhancedValue(key, _group->current());
+	EnhancedSettings::Write();
 	closeBox();
 }

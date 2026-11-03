@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "chat_helpers/stickers_emoji_image_loader.h"
+#include "core/appearance_policy.h"
 
 #include "styles/style_chat.h"
 
@@ -31,28 +32,32 @@ void EmojiImageLoader::init(
 QImage EmojiImageLoader::prepare(EmojiPtr emoji) const {
 	const auto loaded = _images->ensureLoaded();
 	const auto factor = style::DevicePixelRatio();
-	const auto side = st::largeEmojiSize + 2 * st::largeEmojiOutline;
-	auto tinted = QImage(
-		QSize(st::largeEmojiSize, st::largeEmojiSize) * factor,
-		QImage::Format_ARGB32_Premultiplied);
-	tinted.fill(Qt::white);
-	if (loaded) {
-		QPainter p(&tinted);
-		p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-		_images->draw(
-			p,
-			emoji,
-			st::largeEmojiSize * factor,
-			0,
-			0);
-	}
+	const auto outline = Appearance::LargeEmojiOutline();
+	const auto delta = outline * factor;
+	const auto side = st::largeEmojiSize + 2 * outline;
 	auto result = QImage(
 		QSize(side, side) * factor,
 		QImage::Format_ARGB32_Premultiplied);
 	result.fill(Qt::transparent);
-	if (loaded) {
-		QPainter p(&result);
-		const auto delta = st::largeEmojiOutline * factor;
+	if (!loaded) {
+		return result;
+	}
+	auto p = QPainter(&result);
+	if (outline) {
+		auto tinted = QImage(
+			QSize(st::largeEmojiSize, st::largeEmojiSize) * factor,
+			QImage::Format_ARGB32_Premultiplied);
+		tinted.fill(Qt::white);
+		{
+			auto q = QPainter(&tinted);
+			q.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+			_images->draw(
+				q,
+				emoji,
+				st::largeEmojiSize * factor,
+				0,
+				0);
+		}
 		const auto planar = std::array<QPoint, 4>{ {
 			{ 0, -1 },
 			{ -1, 0 },
@@ -76,13 +81,13 @@ QImage EmojiImageLoader::prepare(EmojiPtr emoji) const {
 				p.drawImage(QPoint(delta, delta) + shift * (i + 1), tinted);
 			}
 		}
-		_images->draw(
-			p,
-			emoji,
-			st::largeEmojiSize * factor,
-			delta,
-			delta);
 	}
+	_images->draw(
+		p,
+		emoji,
+		st::largeEmojiSize * factor,
+		delta,
+		delta);
 	return result;
 }
 

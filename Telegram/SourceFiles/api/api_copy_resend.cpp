@@ -29,6 +29,7 @@ https://github.com/telegramdesktop/tdesktop/blob/dev/LEGAL
 #include "main/main_session.h"
 #include "storage/localimageloader.h"
 #include "storage/storage_account.h"
+#include "storage/storage_media_prepare.h"
 #include "ui/chat/attach/attach_prepare.h"
 #include "ui/layers/show.h"
 #include "ui/toast/toast.h"
@@ -38,6 +39,7 @@ https://github.com/telegramdesktop/tdesktop/blob/dev/LEGAL
 #include "ui/widgets/labels.h"
 #include "styles/style_boxes.h"
 #include "styles/style_chat.h"
+#include "styles/style_layers.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QFile>

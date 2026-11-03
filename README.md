@@ -58,6 +58,7 @@ Then your language translation filename is `de.json` or something like that.
 * Range-v3 ([Boost License](https://github.com/ericniebler/range-v3/blob/master/LICENSE.txt))
 * Open Sans font ([Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html))
 * Vazirmatn font ([SIL Open Font License 1.1](https://github.com/rastikerdar/vazirmatn/blob/master/OFL.txt))
+* Materialgram Material Day/Dark palette sources ([GPLv3](https://github.com/kukuruzka165/materialgram/blob/da5b3440b310a82443c2265a118b73e1a80934f1/LICENSE)); Moregram packages only `colors.tdesktop-theme`, without the upstream wallpaper assets
 * Emoji alpha codes ([MIT License](https://github.com/emojione/emojione/blob/master/extras/alpha-codes/LICENSE.md))
 * xxHash ([BSD License](https://github.com/Cyan4973/xxHash/blob/dev/LICENSE))
 * QR Code generator ([MIT License](https://github.com/nayuki/QR-Code-generator#license))

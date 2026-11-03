@@ -26,7 +26,7 @@ namespace Window {
 namespace Theme {
 namespace {
 
-constexpr auto kMaxAccentColors = 4;
+constexpr auto kMaxAccentColors = 6;
 constexpr auto kDayBaseFile = ":/gui/day-custom-base.tdesktop-theme"_cs;
 constexpr auto kNightBaseFile = ":/gui/night-custom-base.tdesktop-theme"_cs;
 
@@ -234,9 +234,15 @@ style::colorizer ColorizerFrom(
 		&result.was.value);
 	switch (scheme.type) {
 	case EmbeddedType::Default:
+	case EmbeddedType::DayBlue:
 		result.lightnessMax = 160;
 		break;
-	case EmbeddedType::DayBlue:
+	case EmbeddedType::MaterialDay:
+		result.keepContrast = base::flat_map<QLatin1String, Pair>{ {
+			{ qstr("activeButtonFg"), Pair{ cColor("57651a"), cColor("fffcf5") } },
+			{ qstr("profileVerifiedCheckFg"), Pair{ cColor("57651a"), cColor("fffcf5") } },
+			{ qstr("overviewCheckFgActive"), Pair{ cColor("57651a"), cColor("fffcf5") } },
+		} };
 		result.lightnessMax = 160;
 		break;
 	case EmbeddedType::Night:
@@ -253,6 +259,14 @@ style::colorizer ColorizerFrom(
 			{ qstr("historyFileOutIconFgSelected"), Pair{ cColor("58abf3"), cColor("2e70a5") } }, // msgFileOutBgSelected, msgOutBgSelected
 			{ qstr("historyFileOutRadialFg"), Pair{ cColor("4c9ce2"), cColor("2b5278") } }, // msgFileOutBg, msgOutBg
 			{ qstr("historyFileOutRadialFgSelected"), Pair{ cColor("58abf3"), cColor("2e70a5") } }, // msgFileOutBgSelected, msgOutBgSelected
+		} };
+		result.lightnessMin = 64;
+		break;
+	case EmbeddedType::MaterialDark:
+		result.keepContrast = base::flat_map<QLatin1String, Pair>{ {
+			{ qstr("activeButtonFg"), Pair{ cColor("b9cf7a"), cColor("1b1c17") } },
+			{ qstr("profileVerifiedCheckFg"), Pair{ cColor("b9cf7a"), cColor("1b1c17") } },
+			{ qstr("overviewCheckFgActive"), Pair{ cColor("b9cf7a"), cColor("1b1c17") } },
 		} };
 		result.lightnessMin = 64;
 		break;
@@ -396,6 +410,28 @@ std::vector<EmbeddedScheme> EmbeddedThemes() {
 			":/gui/night-green.tdesktop-theme",
 			qColor("3fc1b0")
 		},
+		EmbeddedScheme{
+			EmbeddedType::MaterialDay,
+			qColor("f3f3e7"),
+			qColor("dfe6c4"),
+			qColor("f3f3e7"),
+			qColor("dfe6c4"),
+			qColor("f3f3e7"),
+			name(tr::lng_settings_theme_material_day),
+			":/gui/material-day.tdesktop-theme",
+			qColor("57651a")
+		},
+		EmbeddedScheme{
+			EmbeddedType::MaterialDark,
+			qColor("23251a"),
+			qColor("45483d"),
+			qColor("30312b"),
+			qColor("45483d"),
+			qColor("30312b"),
+			name(tr::lng_settings_theme_material_dark),
+			":/gui/material-dark.tdesktop-theme",
+			qColor("b9cf7a")
+		},
 	};
 }
 
@@ -447,6 +483,28 @@ std::vector<QColor> DefaultAccentColors(EmbeddedType type) {
 			qColor("d27570"),
 			qColor("7b8799"),
 			qColor("cbac67"),
+		};
+	case EmbeddedType::MaterialDay:
+		return {
+			qColor("57651a"),
+			qColor("386a20"),
+			qColor("984061"),
+			qColor("825500"),
+			qColor("6750a4"),
+			qColor("ba1a1a"),
+			qColor("46617a"),
+			qColor("6b5e00"),
+		};
+	case EmbeddedType::MaterialDark:
+		return {
+			qColor("b9cf7a"),
+			qColor("9dd67d"),
+			qColor("ffb0c8"),
+			qColor("ffba47"),
+			qColor("d0bcff"),
+			qColor("ffb4ab"),
+			qColor("9fcaff"),
+			qColor("d8c76a"),
 		};
 	}
 	Unexpected("Type in Window::Theme::AccentColors.");
@@ -753,6 +811,8 @@ bool AccentColors::setFromSerialized(const QByteArray &serialized) {
 		case EmbeddedType::DayBlue:
 		case EmbeddedType::Night:
 		case EmbeddedType::NightGreen:
+		case EmbeddedType::MaterialDay:
+		case EmbeddedType::MaterialDark:
 			data.emplace(uncheckedType, color);
 			break;
 		default:

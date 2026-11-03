@@ -151,6 +151,10 @@ PRIVATE
     api/api_compose_with_ai.cpp
     api/api_compose_with_ai.h
     api/api_credits.cpp
+    api/api_copy_resend.cpp
+    api/api_copy_resend.h
+    api/api_copy_resend_plan.cpp
+    api/api_copy_resend_plan.h
     api/api_credits.h
     api/api_credits_history_entry.cpp
     api/api_credits_history_entry.h

@@ -176,6 +176,21 @@ namespace Settings {
 			}, container->lifetime());
 		}
 
+		AddButtonWithIcon(
+			inner,
+			tr::lng_settings_copy_resend_protected(),
+			st::settingsButtonNoIcon
+		)->toggleOn(
+			rpl::single(GetEnhancedBool("copy_resend_protected_content"))
+		)->toggledChanges(
+		) | rpl::filter([](bool enabled) {
+			return enabled != GetEnhancedBool("copy_resend_protected_content");
+		}) | rpl::on_next([=](bool enabled) {
+			SetEnhancedValue("copy_resend_protected_content", enabled);
+			EnhancedSettings::Write();
+		}, container->lifetime());
+		AddDividerText(inner, tr::lng_settings_copy_resend_protected_warning());
+
 		auto value = rpl::single(
 				AlwaysDeleteBox::DeleteLabel(GetEnhancedInt("always_delete_for"))
 		) | rpl::then(

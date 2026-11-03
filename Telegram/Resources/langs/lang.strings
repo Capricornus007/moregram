@@ -9484,6 +9484,24 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_context_repeater" = "Repeater";
 "lng_context_forward" = "Forward";
 "lng_context_view_as_json" = "View As JSON";
+"lng_settings_copy_resend_protected" = "Allow manual protected-content copy resend";
+"lng_settings_copy_resend_protected_warning" = "Warning: This opt-in downloads protected media and uploads it as a new message when you explicitly choose Copy protected content to…. The normal Forward, Save and Copy restrictions remain unchanged. Respect the sender's rights and local law.";
+"lng_context_copy_resend_protected" = "Copy protected content to…";
+"lng_title_copy_resend_protected" = "Copy protected content to…";
+"lng_copy_resend_progress_title" = "Copying protected content";
+"lng_copy_resend_preparing" = "Preparing a bounded temporary workspace…";
+"lng_copy_resend_progress" = "Preparing item {done} of {total}…";
+"lng_copy_resend_uploading" = "Queued for upload. You can cancel individual uploads in their destination chats.";
+"lng_copy_resend_cancelled" = "Copy resend cancelled.";
+"lng_copy_resend_disabled" = "Enable protected-content copy resend in Enhanced Settings first.";
+"lng_copy_resend_empty" = "Select at least one destination.";
+"lng_copy_resend_not_protected" = "This action is only available for protected content.";
+"lng_copy_resend_service_unsupported" = "Service messages cannot be reconstructed as new messages.";
+"lng_copy_resend_expiring_unsupported" = "Self-destructing media cannot be reconstructed safely.";
+"lng_copy_resend_media_unsupported" = "This message type cannot be reconstructed as a new message.";
+"lng_copy_resend_too_many" = "Select no more than 100 messages for copy resend.";
+"lng_copy_resend_storage_limit" = "Copy resend requires more than the 2 GB temporary-storage limit.";
+"lng_copy_resend_busy" = "Two copy-resend jobs are already active. Wait for one to finish.";
 
 "lng_pinned_message_show" = "Show pinned message";
 "lng_pinned_message_hide" = "Hide pinned message";

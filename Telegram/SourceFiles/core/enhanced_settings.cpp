@@ -295,6 +295,7 @@ namespace EnhancedSettings {
 		settings.insert(qsl("always_delete_for"), 0);
 		settings.insert(qsl("show_phone_number"), true);
 		settings.insert(qsl("repeater_reply_to_orig_msg"), false);
+		settings.insert(qsl("copy_resend_protected_content"), false);
 		settings.insert(qsl("disable_cloud_draft_sync"), false);
 		settings.insert(qsl("hide_classic_fwd"), false);
 		settings.insert(qsl("show_scheduled_button"), false);
@@ -349,6 +350,7 @@ namespace EnhancedSettings {
 		settings.insert(qsl("always_delete_for"), GetEnhancedInt("always_delete_for"));
 		settings.insert(qsl("show_phone_number"), GetEnhancedBool("show_phone_number"));
 		settings.insert(qsl("repeater_reply_to_orig_msg"), GetEnhancedBool("repeater_reply_to_orig_msg"));
+		settings.insert(qsl("copy_resend_protected_content"), GetEnhancedBool("copy_resend_protected_content"));
 		settings.insert(qsl("disable_cloud_draft_sync"), GetEnhancedBool("disable_cloud_draft_sync"));
 		settings.insert(qsl("hide_classic_fwd"), GetEnhancedBool("hide_classic_fwd"));
 		settings.insert(qsl("show_scheduled_button"), GetEnhancedBool("show_scheduled_button"));

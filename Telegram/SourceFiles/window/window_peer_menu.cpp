@@ -22,6 +22,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/wrap/vertical_layout.h"
 #include "ui/widgets/fields/input_field.h"
 #include "api/api_chat_participants.h"
+#include "api/api_copy_resend.h"
 #include "api/api_communities.h"
 #include "api/api_global_privacy.h"
 #include "base/random.h"
@@ -3277,6 +3278,68 @@ QPointer<Ui::BoxContent> ShowNewForwardMessagesBox(
 						.moneyRestrictionError = WriteMoneyRestrictionError,
 					}), Ui::LayerOption::CloseOther);
 	return weak->get();
+}
+
+QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
+		not_null<Window::SessionNavigation*> navigation,
+		MessageIdsList &&msgIds,
+		FnMut<void()>&& successCallback) {
+	const auto session = &navigation->session();
+	const auto items = session->data().idsToItems(msgIds);
+	const auto show = navigation->parentController()->uiShow();
+	const auto sending = std::make_shared<bool>(false);
+	const auto done = std::make_shared<FnMut<void()>>(
+		std::move(successCallback));
+	auto filterCallback = [items](not_null<Data::Thread*> thread) {
+		return ranges::all_of(items, [=](not_null<HistoryItem*> item) {
+			return Data::CanSend(thread, item->requiredSendRight());
+		});
+	};
+	auto submitCallback = [=](
+			std::vector<not_null<Data::Thread*>> &&destinations,
+			Fn<bool()> checkPaid,
+			TextWithTags &&comment,
+			Api::SendOptions options,
+			Data::ForwardOptions) {
+		if (*sending || destinations.empty()) {
+			return;
+		}
+		const auto error = GetErrorForSending(destinations, {
+			.text = &comment,
+			.messagesCount = int(msgIds.size()) + (comment.empty() ? 0 : 1),
+		});
+		if (error.error) {
+			show->showBox(MakeSendErrorBox(error, destinations.size() > 1));
+			return;
+		} else if (!checkPaid()) {
+			return;
+		}
+		*sending = true;
+		Api::CopyResend::Start({
+			.show = show,
+			.session = session,
+			.ids = msgIds,
+			.destinations = std::move(destinations),
+			.comment = std::move(comment),
+			.options = options,
+			.done = [done] {
+				if (*done) {
+					base::take(*done)();
+				}
+			},
+		});
+	};
+	return Ui::show(Box<ShareBox>(ShareBox::Descriptor{
+		.session = session,
+		.countMessagesCallback = [count = int(msgIds.size())](
+				const TextWithTags &comment) {
+			return count + (comment.empty() ? 0 : 1);
+		},
+		.submitCallback = std::move(submitCallback),
+		.filterCallback = std::move(filterCallback),
+		.title = tr::lng_title_copy_resend_protected(),
+		.moneyRestrictionError = WriteMoneyRestrictionError,
+	}), Ui::LayerOption::CloseOther);
 }
 
 base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(

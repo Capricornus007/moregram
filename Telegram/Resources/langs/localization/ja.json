@@ -141,7 +141,6 @@
     "lng_group_requests_ban": "禁止",
     "lng_blocked_user_hint": "[ブロックしたユーザーのメッセージ]\n",
     "lng_settings_copy_resend_protected": "保護された内容のコピー/再送",
-    "lng_settings_copy_resend_protected_warning": "保護された内容のコピー/再送の警告",
     "lng_settings_enhanced_blocklist_fetching": "しばらくお待ちください。ブロックリストを取得しています…",
     "lng_settings_enhanced_blocklist_save_failed": "ブロックリストを保存できませんでした",
     "lng_settings_enhanced_restart_in_seconds": "3 秒後に再起動します！",

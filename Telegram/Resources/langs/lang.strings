@@ -9610,7 +9610,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_context_forward" = "Forward";
 "lng_context_view_as_json" = "View As JSON";
 "lng_settings_copy_resend_protected" = "Allow manual protected-content copy resend";
-"lng_settings_copy_resend_protected_warning" = "Warning: This opt-in downloads protected media and uploads it as a new message when you explicitly choose Copy protected content to…. The normal Forward, Save and Copy restrictions remain unchanged. Respect the sender's rights and local law.";
 "lng_context_copy_resend_protected" = "Copy protected content to…";
 "lng_title_copy_resend_protected" = "Copy protected content to…";
 "lng_copy_resend_progress_title" = "Copying protected content";

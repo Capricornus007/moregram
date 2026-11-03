@@ -141,7 +141,6 @@
     "lng_group_requests_ban": "금지",
     "lng_blocked_user_hint": "[차단된 사용자 메시지]\n",
     "lng_settings_copy_resend_protected": "보호된 콘텐츠 복사/재전송",
-    "lng_settings_copy_resend_protected_warning": "보호된 콘텐츠 복사/재전송 경고",
     "lng_settings_enhanced_blocklist_fetching": "잠시 기다려 주세요. 차단 목록을 가져오는 중…",
     "lng_settings_enhanced_blocklist_save_failed": "차단 목록을 저장하지 못했습니다",
     "lng_settings_enhanced_restart_in_seconds": "3초 후 다시 시작합니다!",

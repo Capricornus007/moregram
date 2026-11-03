@@ -308,7 +308,6 @@ namespace Settings {
 			SetEnhancedValue("copy_resend_protected_content", enabled);
 			EnhancedSettings::Write();
 		}, container->lifetime());
-		AddDividerText(inner, tr::lng_settings_copy_resend_protected_warning());
 
 		auto value = rpl::single(
 				AlwaysDeleteBox::DeleteLabel(GetEnhancedInt("always_delete_for"))

@@ -141,7 +141,6 @@
     "lng_group_requests_ban": "封禁",
     "lng_blocked_user_hint": "[被屏蔽用户消息]\n",
     "lng_settings_copy_resend_protected": "受保护内容的复制/重发",
-    "lng_settings_copy_resend_protected_warning": "受保护内容的复制/重发警告",
     "lng_settings_enhanced_blocklist_fetching": "请稍候，正在获取屏蔽列表…",
     "lng_settings_enhanced_blocklist_save_failed": "屏蔽列表保存失败",
     "lng_settings_enhanced_restart_in_seconds": "3 秒后重启！",

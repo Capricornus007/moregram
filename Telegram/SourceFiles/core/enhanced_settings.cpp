@@ -295,7 +295,7 @@ namespace EnhancedSettings {
 		settings.insert(qsl("always_delete_for"), 0);
 		settings.insert(qsl("show_phone_number"), true);
 		settings.insert(qsl("repeater_reply_to_orig_msg"), false);
-		settings.insert(qsl("copy_resend_protected_content"), false);
+		settings.insert(qsl("copy_resend_protected_content"), true);
 		settings.insert(qsl("disable_cloud_draft_sync"), false);
 		settings.insert(qsl("hide_classic_fwd"), false);
 		settings.insert(qsl("show_scheduled_button"), false);

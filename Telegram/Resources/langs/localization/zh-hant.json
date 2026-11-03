@@ -141,7 +141,6 @@
     "lng_group_requests_ban": "封鎖",
     "lng_blocked_user_hint": "[被封鎖使用者訊息]\n",
     "lng_settings_copy_resend_protected": "受保護內容的副本/重發",
-    "lng_settings_copy_resend_protected_warning": "受保護內容的副本/重發警告",
     "lng_settings_enhanced_blocklist_fetching": "請稍候，正在取得封鎖清單…",
     "lng_settings_enhanced_blocklist_save_failed": "封鎖清單儲存失敗",
     "lng_settings_enhanced_restart_in_seconds": "3 秒後重啟！",

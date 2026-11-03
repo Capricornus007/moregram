@@ -141,7 +141,6 @@
     "lng_group_requests_ban": "Ban",
     "lng_blocked_user_hint": "[Blocked User Message]\n",
     "lng_settings_copy_resend_protected": "Protected copy/resend",
-    "lng_settings_copy_resend_protected_warning": "Protected copy/resend warning",
     "lng_settings_enhanced_blocklist_fetching": "Please wait a moment, fetching blocklist...",
     "lng_settings_enhanced_blocklist_save_failed": "Failed to save blocklist",
     "lng_settings_enhanced_restart_in_seconds": "Restart in 3 seconds!",

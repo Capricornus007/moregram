@@ -5607,7 +5607,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_context_save_custom_sound" = "Save for Notifications";
 "lng_context_translate" = "Translate";
 "lng_context_translate_selected" = "Translate Selected Text";
-"lng_context_view_as_json" = "View As JSON";
 "lng_context_read_hidden" = "read";
 "lng_context_read_show" = "show when";
 "lng_context_edit_shortcut" = "Edit Shortcut";

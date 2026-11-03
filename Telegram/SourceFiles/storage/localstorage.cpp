@@ -566,7 +566,7 @@ QString readAutoupdatePrefixRaw() {
 	{
 		return value;
 	}
-	return AutoupdatePrefix("https://updates.64gr.am");
+	return AutoupdatePrefix("https://td.telegram.org");
 }
 
 void writeAutoupdatePrefix(const QString &prefix) {
@@ -1481,9 +1481,9 @@ void CustomLangPack::fetchCustomLangPack(const QString& langPackId, const QStrin
 
 	QUrl url;
 	if (!langPackId.isEmpty() && !langPackBaseId.isEmpty() && !needFallback) {
-		url.setUrl(qsl("https://tdesktop-x64.github.io/Localization/%1.json").arg(langPackId));
+		url.setUrl(qsl("https://raw.githubusercontent.com/Capricornus007/moregram/dev/Telegram/Resources/langs/localization/%1.json").arg(langPackId));
 	} else {
-		url.setUrl(qsl("https://tdesktop-x64.github.io/Localization/%1.json").arg(needFallback ? langPackBaseId : langPackId));
+		url.setUrl(qsl("https://raw.githubusercontent.com/Capricornus007/moregram/dev/Telegram/Resources/langs/localization/%1.json").arg(needFallback ? langPackBaseId : langPackId));
 	}
 	_chkReply = networkManager.get(QNetworkRequest(url));
 	connect(_chkReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(fetchError(QNetworkReply::NetworkError)));

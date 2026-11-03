@@ -682,9 +682,10 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 	} else if (message->context() == Context::MediaEditor) {
 		result.flags |= Flag::FullDate;
 	}
-	if (!item->isPost()
-		|| !item->hasRealFromId()
-		|| !item->history()->peer->asChannel()->signatureProfiles()) {
+	if (!GetEnhancedBool("screenshot_mode")
+		&& (!item->isPost()
+			|| !item->hasRealFromId()
+			|| !item->history()->peer->asChannel()->signatureProfiles())) {
 		if (const auto msgsigned = item->Get<HistoryMessageSigned>()) {
 			if (!msgsigned->isAnonymousRank) {
 				result.author = msgsigned->author;

@@ -1456,9 +1456,7 @@ void TopBar::setupUserpicButton(
 
 	const auto editorData = [=](ChosenType type) {
 		const auto user = _peer->asUser();
-		const auto name = (user && !user->firstName.isEmpty())
-			? user->firstName
-			: _peer->name();
+		const auto name = _peer->shortName();
 		const auto phrase = (type == ChosenType::Suggest)
 			? &tr::lng_profile_suggest_sure
 			: (user && !user->isSelf() && !_peer->isBot())

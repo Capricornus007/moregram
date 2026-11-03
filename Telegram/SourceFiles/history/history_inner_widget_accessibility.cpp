@@ -51,11 +51,13 @@ QString MessageAccessibilityName(
 		lines.push_back(from->name());
 	}
 
-	if (const auto bot = item->viaBot()) {
-		lines.push_back(tr::lng_inline_bot_via(
-			tr::now,
-			lt_inline_bot,
-			'@' + bot->username()));
+	if (!GetEnhancedBool("screenshot_mode")) {
+		if (const auto bot = item->viaBot()) {
+			lines.push_back(tr::lng_inline_bot_via(
+				tr::now,
+				lt_inline_bot,
+				'@' + bot->username()));
+		}
 	}
 
 	if (const auto reply = item->Get<HistoryMessageReply>()) {
@@ -322,9 +324,11 @@ QString MessageAccessibilityName(
 				+ tr::lng_stats_overview_message_views(tr::now));
 		}
 	}
-	if (const auto signed_ = item->Get<HistoryMessageSigned>()) {
-		if (!signed_->author.isEmpty()) {
-			statusParts.push_back(signed_->author);
+	if (!GetEnhancedBool("screenshot_mode")) {
+		if (const auto signed_ = item->Get<HistoryMessageSigned>()) {
+			if (!signed_->author.isEmpty()) {
+				statusParts.push_back(signed_->author);
+			}
 		}
 	}
 	lines.push_back(statusParts.join(u" "_q));
@@ -500,11 +504,13 @@ QString MessageSubItemValue(
 		}
 		return {};
 	case MessageSubItem::ViaBot:
-		if (const auto bot = data->viaBot()) {
-			return tr::lng_inline_bot_via(
-				tr::now,
-				lt_inline_bot,
-				'@' + bot->username());
+		if (!GetEnhancedBool("screenshot_mode")) {
+			if (const auto bot = data->viaBot()) {
+				return tr::lng_inline_bot_via(
+					tr::now,
+					lt_inline_bot,
+					'@' + bot->username());
+			}
 		}
 		return {};
 	case MessageSubItem::Reply:
@@ -762,7 +768,9 @@ QString MessageSubItemValue(
 	}
 	case MessageSubItem::Signature: {
 		const auto signed_ = data->Get<HistoryMessageSigned>();
-		if (signed_ && !signed_->author.isEmpty()) {
+		if (!GetEnhancedBool("screenshot_mode")
+			&& signed_
+			&& !signed_->author.isEmpty()) {
 			return signed_->author;
 		}
 		return {};
@@ -1127,7 +1135,8 @@ QString MessageSubItemValue(
 		if (!fwd) {
 			return {};
 		}
-		if (!fwd->originalPostAuthor.isEmpty()) {
+		if (!GetEnhancedBool("screenshot_mode")
+			&& !fwd->originalPostAuthor.isEmpty()) {
 			return fwd->originalPostAuthor;
 		}
 		if (fwd->imported) {

@@ -651,9 +651,8 @@ private:
 
 	QString _name;
 	uint32 _nameVersion : 16 = 1;
-	
-	mutable QString _fakeName = QString();
-	int _randomNumber = 0;
+
+	mutable QString _fakeName;
 	uint32 _sensitiveContent : 1 = 0;
 	uint32 _wallPaperOverriden : 1 = 0;
 	uint32 _checkedTrustedPayForMessage : 1 = 0;
@@ -678,7 +677,7 @@ private:
 	QString _themeToken;
 	std::unique_ptr<Data::WallPaper> _wallPaper;
 
-	mutable bool _previousMode;
+	mutable bool _previousMode = false;
 
 };
 

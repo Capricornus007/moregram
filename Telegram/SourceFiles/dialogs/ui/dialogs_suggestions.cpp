@@ -1388,8 +1388,10 @@ void GlobalPeersController::appendRow(not_null<PeerData*> peer) {
 	auto row = std::make_unique<ChannelRow>(peer);
 	row->setActive(isActive(peer));
 	auto status = QStringList();
-	if (const auto username = peer->username(); !username.isEmpty()) {
-		status.push_back('@' + username);
+	if (!GetEnhancedBool("screenshot_mode")) {
+		if (const auto username = peer->username(); !username.isEmpty()) {
+			status.push_back('@' + username);
+		}
 	}
 	const auto channel = peer->asChannel();
 	const auto user = peer->asUser();
@@ -1667,7 +1669,7 @@ void PopularAppsController::fill() {
 
 void PopularAppsController::appendRow(not_null<UserData*> bot) {
 	auto row = std::make_unique<PeerListRow>(bot);
-	if (bot->isBot()) {
+	if (bot->isBot() && !GetEnhancedBool("screenshot_mode")) {
 		if (!bot->botInfo->activeUsers && !bot->username().isEmpty()) {
 			row->setCustomStatus('@' + bot->username());
 		}

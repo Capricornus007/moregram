@@ -205,14 +205,15 @@ QString RowAccessibilityName(
 		parts << tr::lng_sr_chat_fake(tr::now);
 	}
 
-	if (const auto user = peer->asUser()) {
-		if (user->isPremium()) {
-			parts << tr::lng_premium(tr::now);
+	if (!GetEnhancedBool("screenshot_mode")) {
+		if (const auto user = peer->asUser()) {
+			if (user->isPremium()) {
+				parts << tr::lng_premium(tr::now);
+			}
 		}
-	}
-
-	if (peer->isVerified()) {
-		parts << tr::lng_sr_chat_verified(tr::now);
+		if (peer->isVerified()) {
+			parts << tr::lng_sr_chat_verified(tr::now);
+		}
 	}
 
 	if (const auto user = peer->asUser()) {
@@ -357,17 +358,18 @@ QString SubItemValue(
 		}
 		return {};
 	case SubItem::Premium:
-		if (const auto user = peer->asUser()) {
-			if (user->isPremium()) {
-				return tr::lng_premium(tr::now);
+		if (!GetEnhancedBool("screenshot_mode")) {
+			if (const auto user = peer->asUser()) {
+				if (user->isPremium()) {
+					return tr::lng_premium(tr::now);
+				}
 			}
 		}
 		return {};
 	case SubItem::Verified:
-		if (peer->isVerified()) {
-			return tr::lng_sr_chat_verified(tr::now);
-		}
-		return {};
+		return (!GetEnhancedBool("screenshot_mode") && peer->isVerified())
+			? tr::lng_sr_chat_verified(tr::now)
+			: QString();
 	case SubItem::Activity:
 		if (const auto user = peer->asUser()) {
 			if (Data::IsUserOnline(user)) {
@@ -619,14 +621,15 @@ QString PeerSearchResultAccessibilityName(
 		parts << tr::lng_sr_chat_fake(tr::now);
 	}
 
-	if (const auto user = peer->asUser()) {
-		if (user->isPremium()) {
-			parts << tr::lng_premium(tr::now);
+	if (!GetEnhancedBool("screenshot_mode")) {
+		if (const auto user = peer->asUser()) {
+			if (user->isPremium()) {
+				parts << tr::lng_premium(tr::now);
+			}
 		}
-	}
-
-	if (peer->isVerified()) {
-		parts << tr::lng_sr_chat_verified(tr::now);
+		if (peer->isVerified()) {
+			parts << tr::lng_sr_chat_verified(tr::now);
+		}
 	}
 
 	if (const auto user = peer->asUser()) {

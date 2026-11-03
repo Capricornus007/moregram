@@ -5545,10 +5545,11 @@ void Message::validateFromNameText(PeerData *from) const {
 			from->name(),
 			Ui::NameTextOptions());
 	}
-	if (from->isPremium()
-		|| (from->isChannel()
-			&& from->emojiStatusId()
-			&& from != history()->peer)) {
+	if (!GetEnhancedBool("screenshot_mode")
+		&& (from->isPremium()
+			|| (from->isChannel()
+				&& from->emojiStatusId()
+				&& from != history()->peer))) {
 		if (!_fromNameStatus) {
 			_fromNameStatus = std::make_unique<FromNameStatus>();
 			const auto size = st::emojiSize;

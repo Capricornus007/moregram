@@ -35,7 +35,9 @@ void RefreshEphemeralPlate(
 		return;
 	}
 	if (const auto receiver = badge->receiver) {
-		const auto username = receiver->username();
+		const auto username = GetEnhancedBool("screenshot_mode")
+			? QString()
+			: receiver->username();
 		text.setMarkedText(
 			st::historyEphemeralPlateStyle,
 			tr::lng_ephemeral_visible_to(

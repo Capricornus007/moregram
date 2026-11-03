@@ -45,10 +45,7 @@ void ShowUserpicSuggestion(
 		not_null<PeerData*> peer,
 		Fn<void()> setDone) {
 	const auto photo = media->owner();
-	const auto from = peer->asUser();
-	const auto name = (from && !from->firstName.isEmpty())
-		? from->firstName
-		: peer->name();
+	const auto name = peer->shortName();
 	if (photo->hasVideo()) {
 		const auto done = [=](Fn<void()> close) {
 			using namespace Settings;

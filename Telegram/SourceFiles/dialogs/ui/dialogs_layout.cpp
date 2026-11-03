@@ -865,6 +865,9 @@ void PaintRow(
 
 	p.setFont(st::semiboldFont);
 	const auto paintPeerBadge = [&](int rowNameWidth) {
+		if (GetEnhancedBool("screenshot_mode")) {
+			return 0;
+		}
 		const auto badgeWidth = rowBadge.drawGetWidth(p, {
 			.peer = from,
 			.rectForName = rectForName,

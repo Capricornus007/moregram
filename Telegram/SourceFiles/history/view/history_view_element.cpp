@@ -744,7 +744,7 @@ QString DateTooltipText(not_null<Element*> view) {
 			}
 		}
 	}
-	if (view->isSignedAuthorElided()) {
+	if (!GetEnhancedBool("screenshot_mode") && view->isSignedAuthorElided()) {
 		if (const auto msgsigned = item->Get<HistoryMessageSigned>()) {
 			dateText += '\n' + tr::lng_signed_author(
 				tr::now,
@@ -1224,15 +1224,16 @@ void EphemeralBadge::init(not_null<const Element*> view) {
 	if (!plain && item->out() && !receiver) {
 		return;
 	}
+	const auto username = (receiver && !GetEnhancedBool("screenshot_mode"))
+		? receiver->username()
+		: QString();
 	text.setText(
 		st::msgNameStyle,
 		(receiver
 			? tr::lng_ephemeral_visible_to(
 				tr::now,
 				lt_user,
-				(receiver->username().isEmpty()
-					? receiver->name()
-					: ('@' + receiver->username())))
+				(username.isEmpty() ? receiver->name() : ('@' + username)))
 			: tr::lng_ephemeral_visible_you(tr::now)),
 		Ui::NameTextOptions());
 	maxWidth = st::msgPadding.left()

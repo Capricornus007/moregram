@@ -4225,6 +4225,9 @@ not_null<PeerData*> HistoryItem::fromOriginal() const {
 }
 
 QString HistoryItem::originalPostAuthor() const {
+	if (GetEnhancedBool("screenshot_mode")) {
+		return QString();
+	}
 	if (const auto forwarded = Get<HistoryMessageForwarded>()) {
 		return forwarded->originalPostAuthor;
 	} else if (const auto msgsigned = Get<HistoryMessageSigned>()) {

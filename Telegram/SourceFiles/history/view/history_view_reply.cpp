@@ -13,6 +13,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_channel.h"
 #include "data/data_document.h"
 #include "data/data_peer.h"
+#include "data/data_screenshot_mode.h"
 #include "data/data_photo.h"
 #include "data/data_poll.h"
 #include "data/data_session.h"
@@ -606,8 +607,7 @@ QString Reply::senderName(
 QString Reply::senderName(
 		not_null<PeerData*> peer,
 		bool shorten) const {
-	const auto user = shorten ? peer->asUser() : nullptr;
-	return user ? user->firstName : peer->name();
+	return shorten ? peer->shortName() : peer->name();
 }
 
 bool Reply::isNameUpdated(
@@ -635,7 +635,7 @@ void Reply::updateName(
 	const auto forwarded = message
 		? message->Get<HistoryMessageForwarded>()
 		: nullptr;
-	if (message && !forwarded) {
+	if (message && !forwarded && !GetEnhancedBool("screenshot_mode")) {
 		if (const auto bot = message->viaBot()) {
 			viaBotUsername = bot->username();
 		}
@@ -663,7 +663,11 @@ void Reply::updateName(
 			|| originalNameAdded);
 	const auto name = sender
 		? senderName(sender, shorten)
-		: senderName(view, data, shorten);
+		: (GetEnhancedBool("screenshot_mode")
+			? Data::Screenshot::HiddenPeerName(
+				Data::Screenshot::PeerKind::User,
+				senderName(view, data, shorten))
+			: senderName(view, data, shorten));
 	const auto previewSkip = _hasPreview
 		? (st::messageQuoteStyle.outline
 			+ st::historyReplyPreviewMargin.left()

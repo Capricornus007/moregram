@@ -9382,6 +9382,13 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_translate_to_tc" = "使用正體中文翻譯訊息";
 "lng_settings_screen_shot_mode" = "Screenshot Mode";
 "lng_settings_restart_hint" = "WARNING: Changing options that are colored in red will take effect only after the app restarts.";
+"lng_settings_screen_shot_mode_desc" = "Anonymizes names, usernames, bios, avatars and identity badges in the app UI for safer screenshots. It does not capture screenshots. Restart is automatic.";
+"lng_screenshot_pseudonym_user" = "Person {token}";
+"lng_screenshot_pseudonym_bot" = "Bot {token}";
+"lng_screenshot_pseudonym_channel" = "Channel {token}";
+"lng_screenshot_pseudonym_forum" = "Forum {token}";
+"lng_screenshot_pseudonym_group" = "Group {token}";
+"lng_screenshot_pseudonym_chat" = "Chat {token}";
 
 "lng_settings_skip_message" = "Skip to next unread chat";
 "lng_settings_skip_message_desc" = "Note: Allow ALT+↑/↓ shortcut to skip to next unread chat";

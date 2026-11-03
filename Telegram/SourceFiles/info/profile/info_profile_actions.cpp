@@ -2433,7 +2433,9 @@ void DetailsFiller::addBotVerify() {
 }
 
 void DetailsFiller::addManagedBotFooter(not_null<UserData*> managerUser) {
-	const auto botUsername = managerUser->username();
+	const auto botUsername = GetEnhancedBool("screenshot_mode")
+		? QString()
+		: managerUser->username();
 	const auto linkText = botUsername.isEmpty()
 		? managerUser->name()
 		: (u"@"_q + botUsername);

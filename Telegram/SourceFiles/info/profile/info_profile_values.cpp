@@ -49,7 +49,7 @@ auto PlainAboutValue(not_null<PeerData*> peer) {
 		peer,
 		UpdateFlag::About
 	) | rpl::map([=] {
-		return peer->about();
+		return GetEnhancedBool("screenshot_mode") ? QString() : peer->about();
 	});
 }
 
@@ -58,7 +58,7 @@ auto PlainUsernameValue(not_null<PeerData*> peer) {
 		peer->session().changes().peerFlagsValue(peer, UpdateFlag::Username),
 		peer->session().changes().peerFlagsValue(peer, UpdateFlag::Usernames)
 	) | rpl::map([=] {
-		return peer->username();
+		return GetEnhancedBool("screenshot_mode") ? QString() : peer->username();
 	});
 }
 
@@ -138,7 +138,9 @@ rpl::producer<TextWithEntities> PhoneValue(not_null<UserData*> user) {
 			user,
 			UpdateFlag::PhoneNumber) | rpl::to_empty
 	) | rpl::map([=] {
-		return tr::marked(Ui::FormatPhone(user->phone()));
+		return GetEnhancedBool("screenshot_mode")
+			? TextWithEntities()
+			: tr::marked(Ui::FormatPhone(user->phone()));
 	});
 }
 
@@ -223,6 +225,9 @@ QString UsernameUrl(
 
 rpl::producer<std::vector<TextWithEntities>> UsernamesValue(
 		not_null<PeerData*> peer) {
+	if (GetEnhancedBool("screenshot_mode")) {
+		return rpl::single(std::vector<TextWithEntities>());
+	}
 	const auto map = [=](const std::vector<QString> &usernames) {
 		return ranges::views::all(
 			usernames
@@ -250,6 +255,9 @@ rpl::producer<std::vector<TextWithEntities>> UsernamesValue(
 TextWithEntities AboutWithEntities(
 		not_null<PeerData*> peer,
 		const QString &value) {
+	if (GetEnhancedBool("screenshot_mode")) {
+		return {};
+	}
 	auto flags = TextParseLinks | TextParseMentions;
 	const auto user = peer->asUser();
 	const auto isBot = user && user->isBot();
@@ -741,6 +749,9 @@ rpl::producer<BadgeType> BadgeValueFromFlags(Peer peer) {
 }
 
 rpl::producer<BadgeType> BadgeValue(not_null<PeerData*> peer) {
+	if (GetEnhancedBool("screenshot_mode")) {
+		return rpl::single(BadgeType::None);
+	}
 	if (const auto user = peer->asUser()) {
 		return BadgeValueFromFlags<UserDataFlag>(user);
 	} else if (const auto channel = peer->asChannel()) {

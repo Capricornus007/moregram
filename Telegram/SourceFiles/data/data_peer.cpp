@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "api/api_sensitive_content.h"
 #include "data/data_user.h"
+#include "data/data_screenshot_mode.h"
 #include "data/data_chat.h"
 #include "data/data_chat_participant_status.h"
 #include "data/data_channel.h"
@@ -54,7 +55,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/storage_account.h"
 #include "storage/storage_facade.h"
 #include "storage/storage_shared_media.h"
-#include <QRandomGenerator>
 
 namespace {
 
@@ -327,9 +327,6 @@ void PeerData::updateNameDelayed(
 	_name = newName;
 	invalidateEmptyUserpic();
 
-	if (_randomNumber == 0) {
-		_randomNumber = QRandomGenerator::global()->bounded(10000000);
-	}
 
 	auto flags = UpdateFlag::None | UpdateFlag::None;
 	auto oldFirstLetters = base::flat_set<QChar>();
@@ -365,11 +362,13 @@ void PeerData::updateNameDelayed(
 }
 
 not_null<Ui::EmptyUserpic*> PeerData::ensureEmptyUserpic() const {
-	if (!_userpicEmpty || GetEnhancedBool("screenshot_mode") != _previousMode) {
+	const auto mode = GetEnhancedBool("screenshot_mode");
+	if (!_userpicEmpty || mode != _previousMode) {
+		_previousMode = mode;
 		const auto user = asUser();
 		_userpicEmpty = std::make_unique<Ui::EmptyUserpic>(
 			Ui::EmptyUserpic::UserpicColor(colorIndex()),
-			((user && user->isInaccessible())
+			((user && user->isInaccessible() && !mode)
 				? Ui::EmptyUserpic::InaccessibleName()
 				: name()));
 	}
@@ -419,6 +418,11 @@ void PeerData::setUserpicPhoto(const MTPPhoto &data) {
 }
 
 QImage *PeerData::userpicCloudImage(Ui::PeerUserpicView &view) const {
+	if (GetEnhancedBool("screenshot_mode")) {
+		view.cloud = nullptr;
+		view.cached = QImage();
+		return nullptr;
+	}
 	if (!_userpic.isCurrentView(view.cloud)) {
 		if (!_userpic.empty()) {
 			view.cloud = _userpic.createView();
@@ -453,37 +457,37 @@ void PeerData::paintUserpic(
 	}
 	const auto size = context.size;
 	const auto cloud = userpicCloudImage(view);
-	const auto shouldLoad = cloud
-		&& (!GetEnhancedBool("screenshot_mode")
-			|| isVerified()
-			|| isServiceUser());
 	const auto ratio = style::DevicePixelRatio();
 	if (context.shape == Ui::PeerUserpicShape::Auto) {
 		context.shape = userpicShape();
 	}
 	Ui::ValidateUserpicCache(
 		view,
-		shouldLoad ? cloud : nullptr,
-		shouldLoad ? nullptr : ensureEmptyUserpic().get(),
+		cloud,
+		cloud ? nullptr : ensureEmptyUserpic().get(),
 		size * ratio,
 		context.shape);
 	p.drawImage(QRect(context.position, QSize(size, size)), view.cached);
 }
 
 void PeerData::loadUserpic() {
-	_userpic.load(&session(), userpicOrigin());
+	if (!GetEnhancedBool("screenshot_mode")) {
+		_userpic.load(&session(), userpicOrigin());
+	}
 }
 
 bool PeerData::hasUserpic() const {
-	return !_userpic.empty();
+	return !GetEnhancedBool("screenshot_mode") && !_userpic.empty();
 }
 
 Ui::PeerUserpicView PeerData::activeUserpicView() {
-	return { .cloud = _userpic.empty() ? nullptr : _userpic.activeView() };
+	return GetEnhancedBool("screenshot_mode")
+		? Ui::PeerUserpicView()
+		: Ui::PeerUserpicView{ .cloud = _userpic.empty() ? nullptr : _userpic.activeView() };
 }
 
 Ui::PeerUserpicView PeerData::createUserpicView() {
-	if (_userpic.empty()) {
+	if (GetEnhancedBool("screenshot_mode") || _userpic.empty()) {
 		return {};
 	}
 	auto result = _userpic.createView();
@@ -1335,33 +1339,12 @@ ChannelData *PeerData::broadcastMonoforum() const {
 const QString &PeerData::topBarNameText() const {
 	if (const auto to = migrateTo()) {
 		return to->topBarNameText();
+	} else if (GetEnhancedBool("screenshot_mode")) {
+		return name();
 	} else if (const auto user = asUser()) {
-		if (!user->nameOrPhone.isEmpty() && !GetEnhancedBool("screenshot_mode")) {
+		if (!user->nameOrPhone.isEmpty()) {
 			return user->nameOrPhone;
 		}
-	}
-	if (isLoaded()
-		&& !isServiceUser()
-		&& !isVerified()
-		&& GetEnhancedBool("screenshot_mode")) {
-		if (const auto user = asUser()) {
-			if (user->isInaccessible()) {
-				return _name;
-			}
-		}
-		if (!_fakeName.isEmpty()) {
-			return _fakeName;
-		}
-		return _fakeName.append(isUser()
-			? (asUser()->isBot() ? "Bot " : "User ")
-			: isBroadcast()
-			? "Channel "
-			: isForum()
-			? "Forum "
-			: isMegagroup()
-			? "Group "
-			: "Chat ")
-			.append(QString::number(_randomNumber));
 	}
 	return _name;
 }
@@ -1376,34 +1359,33 @@ const QString &PeerData::name() const {
 	} else if (const auto broadcast = monoforumBroadcast()) {
 		return broadcast->name();
 	}
-	if (isLoaded()
-		&& !isServiceUser()
-		&& !isVerified()
-		&& GetEnhancedBool("screenshot_mode")) {
-		if (const auto user = asUser()) {
-			if (user->isInaccessible()) {
-				return _name;
-			}
-		}
-		if (!_fakeName.isEmpty()) {
-			return _fakeName;
-		}
-		return _fakeName.append(isUser()
-				? (asUser()->isBot() ? "Bot " : "User ")
+	if (GetEnhancedBool("screenshot_mode") && isLoaded()) {
+		if (_fakeName.isEmpty()) {
+			const auto kind = isUser()
+				? (asUser()->isBot()
+					? Data::Screenshot::PeerKind::Bot
+					: Data::Screenshot::PeerKind::User)
 				: isBroadcast()
-				? "Channel "
+				? Data::Screenshot::PeerKind::Channel
 				: isForum()
-				? "Forum "
+				? Data::Screenshot::PeerKind::Forum
 				: isMegagroup()
-				? "Group "
-				: "Chat ")
-			.append(QString::number(_randomNumber));
+				? Data::Screenshot::PeerKind::Group
+				: Data::Screenshot::PeerKind::Chat;
+			_fakeName = Data::Screenshot::PeerName(
+				kind,
+				&owner(),
+				id.value);
+		}
+		return _fakeName;
 	}
 	return _name;
 }
 
 const QString &PeerData::shortName() const {
-	if (const auto user = asUser()) {
+	if (GetEnhancedBool("screenshot_mode")) {
+		return name();
+	} else if (const auto user = asUser()) {
 		return user->firstName.isEmpty() ? user->lastName : user->firstName;
 	} else if (const auto to = migrateTo()) {
 		return to->shortName();
@@ -1489,7 +1471,7 @@ bool PeerData::clearColorIndex() {
 }
 
 DocumentId PeerData::backgroundEmojiId() const {
-	return _backgroundEmojiId;
+	return GetEnhancedBool("screenshot_mode") ? 0 : _backgroundEmojiId;
 }
 
 bool PeerData::changeBackgroundEmojiId(DocumentId id) {
@@ -1549,7 +1531,7 @@ bool PeerData::clearColorProfileIndex() {
 }
 
 DocumentId PeerData::profileBackgroundEmojiId() const {
-	return _profileBackgroundEmojiId;
+	return GetEnhancedBool("screenshot_mode") ? 0 : _profileBackgroundEmojiId;
 }
 
 bool PeerData::changeProfileBackgroundEmojiId(DocumentId id) {

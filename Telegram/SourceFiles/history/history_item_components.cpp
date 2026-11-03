@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history_item_components.h"
 
 #include "api/api_text_entities.h"
+#include "data/data_screenshot_mode.h"
 #include "base/qt/qt_key_modifiers.h"
 #include "base/algorithm.h"
 #include "base/options.h"
@@ -204,9 +205,7 @@ void HistoryMessageGuestChat::resize(int32 availw) const {
 		text = QString();
 		width = 0;
 	} else {
-		const auto firstName = visitor->isUser()
-			? visitor->asUser()->firstName
-			: visitor->name();
+		const auto firstName = visitor->shortName();
 		text = tr::lng_guest_chat_for(tr::now, lt_user, firstName);
 		if (availw < maxWidth) {
 			text = st::msgServiceNameFont->elided(text, availw);
@@ -221,17 +220,21 @@ HiddenSenderInfo::HiddenSenderInfo(
 	const QString &name,
 	bool external,
 	std::optional<uint8> colorIndex)
-: name(name)
+: name(GetEnhancedBool("screenshot_mode")
+	? Data::Screenshot::HiddenPeerName(
+		Data::Screenshot::PeerKind::User,
+		name)
+	: name)
 , colorIndex(colorIndex.value_or(
-	Data::DecideColorIndex(Data::FakePeerIdForJustName(name))))
+	Data::DecideColorIndex(Data::FakePeerIdForJustName(this->name))))
 , emptyUserpic(
 	Ui::EmptyUserpic::UserpicColor(this->colorIndex),
 	(external
 		? Ui::EmptyUserpic::ExternalName()
-		: name)) {
+		: this->name)) {
 	Expects(!name.isEmpty());
 
-	const auto parts = name.trimmed().split(' ', Qt::SkipEmptyParts);
+	const auto parts = this->name.trimmed().split(' ', Qt::SkipEmptyParts);
 	if (parts.isEmpty()) {
 		return;
 	}
@@ -276,6 +279,12 @@ bool HiddenSenderInfo::paintCustomUserpic(
 		int outerWidth,
 		int size) const {
 	Expects(!customUserpic.empty());
+	if (GetEnhancedBool("screenshot_mode")) {
+		view.cloud = nullptr;
+		view.cached = QImage();
+		emptyUserpic.paintCircle(p, x, y, outerWidth, size);
+		return true;
+	}
 
 	auto valid = true;
 	if (!customUserpic.isCurrentView(view.cloud)) {
@@ -325,7 +334,7 @@ TextWithEntities HistoryMessageForwarded::phrase(
 			lt_user,
 			Ui::Text::Wrapped(result, EntityType::CustomUrl, QString()), // Link 1.
 			tr::marked);
-	} else if (via && psaType.isEmpty()) {
+	} else if (via && psaType.isEmpty() && !GetEnhancedBool("screenshot_mode")) {
 		const auto linkData = tr::link(
 			QString(),
 			1).entities.front().data(); // Link 1.

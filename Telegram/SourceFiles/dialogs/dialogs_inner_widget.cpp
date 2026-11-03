@@ -2017,23 +2017,28 @@ void InnerWidget::paintPeerSearchResult(
 
 	QRect tr(context.st->textLeft, context.st->textTop, namewidth, st::dialogsTextFont->height);
 	p.setFont(st::dialogsTextFont);
-	QString username = peer->username();
-	if (!context.active && username.startsWith(_peerSearchQuery, Qt::CaseInsensitive)) {
-		auto first = '@' + username.mid(0, _peerSearchQuery.size());
-		auto second = username.mid(_peerSearchQuery.size());
-		auto w = st::dialogsTextFont->width(first);
-		if (w >= tr.width()) {
-			p.setPen(st::dialogsTextFgService);
-			p.drawText(tr.left(), tr.top() + st::dialogsTextFont->ascent, st::dialogsTextFont->elided(first, tr.width()));
+	const auto username = GetEnhancedBool("screenshot_mode")
+		? QString()
+		: peer->username();
+	if (!username.isEmpty()) {
+		if (!context.active
+			&& username.startsWith(_peerSearchQuery, Qt::CaseInsensitive)) {
+			auto first = '@' + username.mid(0, _peerSearchQuery.size());
+			auto second = username.mid(_peerSearchQuery.size());
+			auto w = st::dialogsTextFont->width(first);
+			if (w >= tr.width()) {
+				p.setPen(st::dialogsTextFgService);
+				p.drawText(tr.left(), tr.top() + st::dialogsTextFont->ascent, st::dialogsTextFont->elided(first, tr.width()));
+			} else {
+				p.setPen(st::dialogsTextFgService);
+				p.drawText(tr.left(), tr.top() + st::dialogsTextFont->ascent, first);
+				p.setPen(st::dialogsTextFg);
+				p.drawText(tr.left() + w, tr.top() + st::dialogsTextFont->ascent, st::dialogsTextFont->elided(second, tr.width() - w));
+			}
 		} else {
-			p.setPen(st::dialogsTextFgService);
-			p.drawText(tr.left(), tr.top() + st::dialogsTextFont->ascent, first);
-			p.setPen(st::dialogsTextFg);
-			p.drawText(tr.left() + w, tr.top() + st::dialogsTextFont->ascent, st::dialogsTextFont->elided(second, tr.width() - w));
+			p.setPen(context.active ? st::dialogsTextFgActive : st::dialogsTextFgService);
+			p.drawText(tr.left(), tr.top() + st::dialogsTextFont->ascent, st::dialogsTextFont->elided('@' + username, tr.width()));
 		}
-	} else {
-		p.setPen(context.active ? st::dialogsTextFgActive : st::dialogsTextFgService);
-		p.drawText(tr.left(), tr.top() + st::dialogsTextFont->ascent, st::dialogsTextFont->elided('@' + username, tr.width()));
 	}
 
 	p.setPen(context.active ? st::dialogsTextFgActive : st::dialogsNameFg);

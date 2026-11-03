@@ -99,7 +99,7 @@ void AddUnofficialSecurityRiskWarning(
 					lt_icon,
 					rpl::single(std::move(icon)),
 					lt_name,
-					rpl::single(TextWithEntities{ user->firstName }),
+					rpl::single(TextWithEntities{ user->shortName() }),
 					tr::marked),
 				st::defaultDividerLabel.label,
 				st::defaultPopupMenu,

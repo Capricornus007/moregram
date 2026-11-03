@@ -572,6 +572,23 @@ namespace Settings {
 			EnhancedSettings::Write();
 		}, container->lifetime());
 
+		auto screenshotMode = AddButtonWithIcon(
+			container,
+			tr::lng_settings_screen_shot_mode(),
+			st::settingsButtonNoIcon);
+		screenshotMode->setColorOverride(QColor(255, 0, 0));
+		screenshotMode->toggleOn(
+			rpl::single(GetEnhancedBool("screenshot_mode"))
+		)->toggledValue(
+		) | rpl::filter([](bool enabled) {
+			return enabled != GetEnhancedBool("screenshot_mode");
+		}) | rpl::on_next([=](bool enabled) {
+			SetEnhancedValue("screenshot_mode", enabled);
+			EnhancedSettings::Write();
+			Core::Restart();
+		}, container->lifetime());
+		AddDividerText(container, tr::lng_settings_screen_shot_mode_desc());
+
 		AddSkip(container);
 	}
 

@@ -213,9 +213,12 @@ void ProcessFullPhoto(
 			| UpdateFlag::Birthday
 			| UpdateFlag::ContactNote)
 	) | rpl::map([=] {
+		const auto anonymized = GetEnhancedBool("screenshot_mode");
 		const auto user = peer->asUser();
-		const auto username = peer->username();
-		const auto channelId = user ? user->personalChannelId() : 0;
+		const auto username = anonymized ? QString() : peer->username();
+		const auto channelId = (!anonymized && user)
+			? user->personalChannelId()
+			: 0;
 		const auto channel = channelId
 			? user->owner().channel(channelId).get()
 			: nullptr;
@@ -229,11 +232,15 @@ void ProcessFullPhoto(
 			.channelLink = (hasChannel
 				? channel->session().createInternalLinkFull(channelUsername)
 				: QString()),
-			.phone = user ? Ui::FormatPhone(user->phone()) : QString(),
+			.phone = (user && !anonymized)
+				? Ui::FormatPhone(user->phone())
+				: QString(),
 			.link = ((user || username.isEmpty())
 				? QString()
 				: peer->session().createInternalLinkFull(username)),
-			.about = Info::Profile::AboutWithEntities(peer, peer->about()),
+			.about = anonymized
+				? TextWithEntities()
+				: Info::Profile::AboutWithEntities(peer, peer->about()),
 			.username = ((user && !username.isEmpty())
 				? ('@' + username)
 				: QString()),

@@ -22,7 +22,17 @@ enum class PeerKind : uchar {
 	Chat,
 };
 
-[[nodiscard]] QString PseudonymToken(uint64 sessionSalt, uint64 identity);
+[[nodiscard]] inline QString PseudonymToken(uint64 sessionSalt, uint64 identity) {
+	const auto mix = [](uint64 value) {
+		value ^= value >> 30;
+		value *= 0xbf58476d1ce4e5b9ULL;
+		value ^= value >> 27;
+		value *= 0x94d049bb133111ebULL;
+		return value ^ (value >> 31);
+	};
+	const auto mixed = mix(identity ^ mix(sessionSalt));
+	return QString::number(mixed, 36).toUpper().rightJustified(13, QChar('0'));
+}
 [[nodiscard]] QString PeerName(
 	PeerKind kind,
 	const void *sessionIdentity,

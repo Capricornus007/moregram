@@ -104,3 +104,25 @@ if (APPLE)
             "$<TARGET_FILE_DIR:test_bot_menu_hold>/Contents/Resources/"
     )
 endif()
+
+add_executable(test_moregram_features WIN32)
+init_target(test_moregram_features "(tests)")
+
+target_include_directories(test_moregram_features PRIVATE ${src_loc})
+
+nice_target_sources(test_moregram_features ${src_loc}
+PRIVATE
+    api/api_copy_resend_plan.cpp
+    api/api_copy_resend_plan.h
+    data/data_screenshot_mode.h
+    tests/test_moregram_features.cpp
+)
+
+target_link_libraries(test_moregram_features
+PRIVATE
+    desktop-app::lib_base
+    desktop-app::external_qt
+)
+
+set_target_properties(test_moregram_features PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+add_dependencies(Telegram test_moregram_features)

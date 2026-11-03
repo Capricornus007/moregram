@@ -60,7 +60,8 @@
 56. Disable global search
 57. Recent sticker display limit
 58. Add quick forward when pressed ctrl
-59. Screenshot privacy mode
+59. Screenshot Mode (default off): anonymizes identity-bearing app UI for screenshots with stable per-session pseudonyms; it does not capture screenshots
 60. Support to drag and drop in the filter menu
 61. Support sending and viewing location
 62. Sticker pack owner info
+63. Manual protected-content copy resend (default off): explicitly reconstructs supported text, photo, document/video, voice, round-video, album, sticker, caption and rich-message content through the normal send pipeline while leaving Forward, Save and Copy restrictions intact

@@ -14,13 +14,6 @@ https://github.com/telegramdesktop/tdesktop/blob/dev/LEGAL
 namespace Data::Screenshot {
 namespace {
 
-[[nodiscard]] uint64 Mix(uint64 value) {
-	value ^= value >> 30;
-	value *= 0xbf58476d1ce4e5b9ULL;
-	value ^= value >> 27;
-	value *= 0x94d049bb133111ebULL;
-	return value ^ (value >> 31);
-}
 
 [[nodiscard]] uint64 ProcessSalt() {
 	static const auto result = base::RandomValue<uint64>();
@@ -47,11 +40,6 @@ namespace {
 
 } // namespace
 
-QString PseudonymToken(uint64 sessionSalt, uint64 identity) {
-	const auto mixed = Mix(identity ^ Mix(sessionSalt));
-	auto result = QString::number(mixed, 36).toUpper();
-	return result.rightJustified(13, QChar('0'));
-}
 
 QString PeerName(
 		PeerKind kind,

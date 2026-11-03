@@ -57,7 +57,6 @@ public:
 	void showTonSite(const Webview::StorageId &storageId, QString uri);
 	void showTLViewer(const Webview::StorageId &storageId, QString uri);
 
-	void showTLViewer(const Webview::StorageId& storageId, QString uri);
 
 	[[nodiscard]] bool active() const;
 	void minimize();

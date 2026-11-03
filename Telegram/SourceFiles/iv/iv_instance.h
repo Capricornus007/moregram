@@ -234,7 +234,6 @@ private:
 	std::unique_ptr<TonSite> _tonSite;
 	std::unique_ptr<TLViewer> _tlv;
 
-	std::unique_ptr<TLViewer> _tlv;
 	struct MarkdownBinding {
 		Main::Session *session = nullptr;
 		FullMsgId itemId;

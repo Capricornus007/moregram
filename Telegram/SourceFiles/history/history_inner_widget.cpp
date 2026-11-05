@@ -3616,7 +3616,10 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 				}
 				if (GetEnhancedBool("copy_resend_protected_content")) {
 					const auto ids = item->history()->owner().itemOrItsGroup(item);
-					const auto plan = Api::CopyResend::Inspect(&session(), ids, true);
+					const auto plan = Api::CopyResend::Inspect(
+						&item->history()->session(),
+						ids,
+						true);
 					if (plan.error != Api::CopyResend::Error::NoProtectedContent) {
 						_menu->addAction(tr::lng_context_copy_resend_protected(tr::now), [=] {
 							if (!plan) {
@@ -4016,7 +4019,10 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 				}
 				if (GetEnhancedBool("copy_resend_protected_content")) {
 					const auto ids = item->history()->owner().itemOrItsGroup(item);
-					const auto plan = Api::CopyResend::Inspect(&session(), ids, true);
+					const auto plan = Api::CopyResend::Inspect(
+						&item->history()->session(),
+						ids,
+						true);
 					if (plan.error != Api::CopyResend::Error::NoProtectedContent) {
 						_menu->addAction(tr::lng_context_copy_resend_protected(tr::now), [=] {
 							if (!plan) {

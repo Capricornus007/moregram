@@ -3329,7 +3329,8 @@ QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
 			},
 		});
 	};
-	return Ui::show(Box<ShareBox>(ShareBox::Descriptor{
+	QPointer<Ui::BoxContent> result;
+	result = Ui::show(Box<ShareBox>(ShareBox::Descriptor{
 		.session = session,
 		.countMessagesCallback = [count = int(msgIds.size())](
 				const TextWithTags &comment) {
@@ -3340,6 +3341,7 @@ QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
 		.title = tr::lng_title_copy_resend_protected(),
 		.moneyRestrictionError = WriteMoneyRestrictionError,
 	}), Ui::LayerOption::CloseOther);
+	return result;
 }
 
 base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(

@@ -3220,7 +3220,7 @@ Api::SendAction prepareSendAction(
 }
 
 // Source from share box
-QPointer<Ui::BoxContent> ShowNewForwardMessagesBox(
+base::weak_qptr<Ui::BoxContent> ShowNewForwardMessagesBox(
 		not_null<Window::SessionNavigation*> navigation,
 		MessageIdsList &&msgIds,
 		bool no_quote,
@@ -3277,10 +3277,10 @@ QPointer<Ui::BoxContent> ShowNewForwardMessagesBox(
 						},
 						.moneyRestrictionError = WriteMoneyRestrictionError,
 					}), Ui::LayerOption::CloseOther);
-	return weak->get();
+	return *weak;
 }
 
-QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
+base::weak_qptr<Ui::BoxContent> ShowCopyResendMessagesBox(
 		not_null<Window::SessionNavigation*> navigation,
 		MessageIdsList &&msgIds,
 		FnMut<void()>&& successCallback) {
@@ -3329,8 +3329,9 @@ QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
 			},
 		});
 	};
-	QPointer<Ui::BoxContent> result;
-	result = Ui::show(Box<ShareBox>(ShareBox::Descriptor{
+	// Ui::show 回傳的是 base::weak_qptr<BoxType>，不是 QPointer；直接回傳即可
+	// （上游 tdesktop 同名系列函式已全部改為 weak_qptr，見 window_peer_menu.h）。
+	return Ui::show(Box<ShareBox>(ShareBox::Descriptor{
 		.session = session,
 		.countMessagesCallback = [count = int(msgIds.size())](
 				const TextWithTags &comment) {
@@ -3341,7 +3342,6 @@ QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
 		.title = tr::lng_title_copy_resend_protected(),
 		.moneyRestrictionError = WriteMoneyRestrictionError,
 	}), Ui::LayerOption::CloseOther);
-	return result;
 }
 
 base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(

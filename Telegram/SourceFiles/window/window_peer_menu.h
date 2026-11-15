@@ -191,12 +191,12 @@ Fn<void()> DeleteSublistHandler(
 [[nodiscard]] Api::SendAction prepareSendAction(
 		History *history, Api::SendOptions options);
 
-QPointer<Ui::BoxContent> ShowNewForwardMessagesBox(
+base::weak_qptr<Ui::BoxContent> ShowNewForwardMessagesBox(
 	not_null<Window::SessionNavigation*> navigation,
 	MessageIdsList &&items,
 	bool no_quote,
 	FnMut<void()>&& successCallback = nullptr);
-QPointer<Ui::BoxContent> ShowCopyResendMessagesBox(
+base::weak_qptr<Ui::BoxContent> ShowCopyResendMessagesBox(
 	not_null<Window::SessionNavigation*> navigation,
 	MessageIdsList &&items,
 	FnMut<void()>&& successCallback = nullptr);

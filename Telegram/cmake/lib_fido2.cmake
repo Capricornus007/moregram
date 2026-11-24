@@ -39,6 +39,10 @@ set(CBOR_VERSION_MINOR 11)
 set(CBOR_VERSION_PATCH 0)
 set(CBOR_BUFFER_GROWTH 2)
 set(CBOR_MAX_STACK_SIZE 2048)
+# libcbor cf5bd4bd (bumped by b391465c) added this to configuration.h.in;
+# without it configure_file() errors with "uninitialized variable".
+# 16 is libcbor's own CMake default.
+set(CBOR_MAX_UNCHECKED_DECLARED_SIZE 16)
 set(CBOR_PRETTY_PRINTER 1)
 if (MSVC)
     set(CBOR_RESTRICT_SPECIFIER __restrict)
